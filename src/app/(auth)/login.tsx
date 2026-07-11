@@ -56,8 +56,8 @@ export default function LoginScreen() {
     try {
       setIsLoading(true);
       
-      // Secara eksplisit menggunakan scheme aplikasi kita
-      const redirectUrl = makeRedirectUri({ scheme: 'lemburin', path: '' });
+      // Secara eksplisit menggunakan scheme URL
+      const redirectUrl = 'lemburin://';
       console.log('Redirect URL:', redirectUrl);
 
       const { data, error } = await supabase.auth.signInWithOAuth({
@@ -101,7 +101,7 @@ export default function LoginScreen() {
       if (error.message?.includes('provider is not enabled') || error.message?.includes('redirect_uri_mismatch')) {
         Alert.alert(
           'Konfigurasi Belum Selesai',
-          `Google Login belum diaktifkan di Supabase.\n\n1. Buka Supabase Dashboard > Authentication > Providers > Google\n2. Masukkan Client ID & Secret dari Google Cloud.\n3. Tambahkan URL ini ke Redirect URLs:\n\n${makeRedirectUri({ scheme: 'lemburin', path: '' })}`,
+          `Google Login belum diaktifkan di Supabase.\n\n1. Buka Supabase Dashboard > Authentication > Providers > Google\n2. Masukkan Client ID & Secret dari Google Cloud.\n3. Tambahkan URL ini ke Redirect URLs:\n\nlemburin://**`,
           [{ text: 'Mengerti' }]
         );
       } else {
