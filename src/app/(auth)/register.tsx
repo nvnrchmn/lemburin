@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabase';
 import * as WebBrowser from 'expo-web-browser';
 import { makeRedirectUri } from 'expo-auth-session';
 import { SymbolView } from 'expo-symbols';
+import { Ionicons } from '@expo/vector-icons';
 
 import { useToastStore } from '@/stores/toast-store';
 
@@ -221,7 +222,7 @@ export default function RegisterScreen() {
           onPress={onGoogleLogin}
           disabled={isLoading}
         >
-          <SymbolView name="g.circle.fill" size={20} tintColor="#fff" />
+          <Ionicons name="logo-google" size={20} color="#fff" />
           <Text className="text-white font-bold text-lg">
             Daftar dengan Google
           </Text>
