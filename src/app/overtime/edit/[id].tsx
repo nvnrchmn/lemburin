@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect } from 'react';
-import { View, Text, Pressable, ScrollView, TextInput, ActivityIndicator, Alert, Switch } from 'react-native';
+import { useState, useMemo } from 'react';
+import { View, Text, Pressable, ScrollView, TextInput, ActivityIndicator, Alert, Switch, Image } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -13,6 +13,7 @@ import { useDataStore } from '@/stores/data-store';
 import { supabase } from '@/lib/supabase';
 import { calculateOvertimeMinutes, calculateOvertimePay, calculateTotalFixedAllowance } from '@/utils/calculator';
 import { formatCurrency, formatDuration } from '@/utils/formatting';
+import { pickImage } from '@/utils/upload';
 import { useToastStore } from '@/stores/toast-store';
 
 const overtimeSchema = z.object({
@@ -43,6 +44,8 @@ export default function EditOvertimeScreen() {
     return null;
   }, [id, overtimeEntries]);
 
+  const [attachmentUrl, setAttachmentUrl] = useState<string | null>(editingEntry?.attachment_url || null);
+
   // Initial values setup
   let initialValues: OvertimeFormValues = {
     workDate: new Date(),
@@ -69,16 +72,30 @@ export default function EditOvertimeScreen() {
       endTime: endT,
       breakMinutes: String(editingEntry.break_minutes),
       notes: editingEntry.notes || '',
-      isHoliday: false,
+      isHoliday: editingEntry.is_holiday ?? false,
     };
   }
 
-  const { control, handleSubmit, watch, setValue, formState: { errors } } = useForm<OvertimeFormValues>({
+  const { control, handleSubmit, watch, setValue } = useForm<OvertimeFormValues>({
     resolver: zodResolver(overtimeSchema),
     defaultValues: initialValues
   });
 
   const watchAllFields = watch();
+
+  const handlePickAttachment = () => {
+    Alert.alert('Lampirkan Foto Bukti SPL / Absensi', 'Pilih sumber foto:', [
+      { text: 'Kamera', onPress: async () => {
+        const res = await pickImage(true);
+        if (res?.base64) setAttachmentUrl(res.base64);
+      }},
+      { text: 'Galeri Foto', onPress: async () => {
+        const res = await pickImage(false);
+        if (res?.base64) setAttachmentUrl(res.base64);
+      }},
+      { text: 'Batal', style: 'cancel' }
+    ]);
+  };
 
   const estimation = useMemo(() => {
     if (!activePayPeriod || !employment?.basic_salary) return { pay: 0, hoursStr: '0 jam' };
@@ -95,7 +112,10 @@ export default function EditOvertimeScreen() {
       employment.basic_salary, 
       calculateTotalFixedAllowance(employment.allowances_detail || null),
       activePayPeriod.flat_rate_amount,
-      watchAllFields.isHoliday
+      watchAllFields.isHoliday,
+      employment.work_system || '5_days',
+      employment.overtime_meal_allowance || 0,
+      employment.overtime_transport_allowance || 0
     );
 
     return {
@@ -123,21 +143,22 @@ export default function EditOvertimeScreen() {
       start_time: startStr,
       end_time: endStr,
       break_minutes: isNaN(breakMins) ? 0 : breakMins,
+      is_holiday: data.isHoliday,
+      attachment_url: attachmentUrl,
       notes: data.notes || null,
     };
 
     try {
-      // @ts-ignore
       const { data: resultData, error } = await supabase
         .from('overtime_entries')
-        .update(payload)
+        .update(payload as any)
         .eq('id', id)
         .select()
         .single();
         
       if (error) throw error;
       
-      updateOvertimeEntry(resultData);
+      updateOvertimeEntry(resultData as any);
       showToast('Data lembur berhasil diperbarui', 'success');
       router.back();
     } catch (error: any) {
@@ -340,6 +361,47 @@ export default function EditOvertimeScreen() {
               />
             </View>
           </View>
+        </View>
+
+        {/* GROUP 4: Bukti SPL / Absensi */}
+        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">Bukti SPL / Absensi (Opsional)</Text>
+        <View className="bg-dark-card rounded-3xl overflow-hidden p-4 mb-6">
+          {attachmentUrl ? (
+            <View className="relative">
+              <Image 
+                source={{ uri: attachmentUrl }} 
+                className="w-full h-44 rounded-2xl bg-dark-bg" 
+                resizeMode="cover"
+              />
+              <View className="flex-row gap-2 absolute top-2 right-2">
+                <Pressable
+                  className="bg-primary-600 px-3 py-1.5 rounded-xl flex-row items-center gap-1 shadow-lg"
+                  onPress={handlePickAttachment}
+                >
+                  <SymbolView name="arrow.triangle.2.circlepath" size={14} tintColor="#fff" />
+                  <Text className="text-white text-xs font-bold">Ganti</Text>
+                </Pressable>
+                <Pressable
+                  className="bg-red-600 px-3 py-1.5 rounded-xl flex-row items-center gap-1 shadow-lg"
+                  onPress={() => setAttachmentUrl(null)}
+                >
+                  <SymbolView name="trash.fill" size={14} tintColor="#fff" />
+                  <Text className="text-white text-xs font-bold">Hapus</Text>
+                </Pressable>
+              </View>
+            </View>
+          ) : (
+            <Pressable
+              className="border border-dashed border-dark-border rounded-2xl py-6 items-center justify-center active:bg-dark-border/40"
+              onPress={handlePickAttachment}
+            >
+              <View className="w-12 h-12 bg-primary-950/40 rounded-full items-center justify-center mb-2 border border-primary-500/30">
+                <SymbolView name="camera.fill" size={22} tintColor="#60a5fa" />
+              </View>
+              <Text className="text-white font-bold text-sm">Lampirkan Foto Bukti SPL</Text>
+              <Text className="text-dark-muted text-xs mt-0.5">Ambil foto atau pilih dari galeri</Text>
+            </Pressable>
+          )}
         </View>
 
         {/* Estimation Preview */}

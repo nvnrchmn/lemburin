@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, Pressable, TextInput, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, Pressable, TextInput, ScrollView, ActivityIndicator, Alert, Image, Modal } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useDataStore } from '@/stores/data-store';
@@ -9,6 +9,7 @@ import Animated, { FadeInUp, Layout } from 'react-native-reanimated';
 import { PayPeriod, SalaryVerification } from '@/types/database';
 import { calculateOvertimeMinutes, calculateOvertimePay, calculateTotalFixedAllowance } from '@/utils/calculator';
 import { formatCurrency } from '@/utils/formatting';
+import { pickImage } from '@/utils/upload';
 import { useToastStore } from '@/stores/toast-store';
 
 export default function SalaryVerificationScreen() {
@@ -16,8 +17,9 @@ export default function SalaryVerificationScreen() {
   const { employment } = useDataStore();
   const { showToast } = useToastStore();
   
-  const [period, setPeriod] = useState<PayPeriod | null>(null);
   const [verification, setVerification] = useState<SalaryVerification | null>(null);
+  const [slipPhotoUrl, setSlipPhotoUrl] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
   const [estimatedAppAmount, setEstimatedAppAmount] = useState(0);
   const [slipAmountStr, setSlipAmountStr] = useState('');
@@ -38,7 +40,7 @@ export default function SalaryVerificationScreen() {
           .single();
           
         if (periodError) throw periodError;
-        setPeriod(periodData);
+        const currentPeriod = periodData as PayPeriod;
 
         // Fetch entries to calculate estimation
         const { data: entriesData, error: entriesError } = await supabase
@@ -49,15 +51,18 @@ export default function SalaryVerificationScreen() {
         if (entriesError) throw entriesError;
         
         let totalPay = 0;
-        entriesData?.forEach(entry => {
+        (entriesData as any[] | null)?.forEach((entry) => {
           const mins = calculateOvertimeMinutes(entry.start_time, entry.end_time, entry.break_minutes);
           const payInfo = calculateOvertimePay(
             mins,
-            periodData.formula_type,
+            currentPeriod.formula_type,
             employment.basic_salary || 0,
             calculateTotalFixedAllowance(employment.allowances_detail || null),
-            periodData.flat_rate_amount,
-            false // no holiday support implemented fully yet
+            currentPeriod.flat_rate_amount,
+            entry.is_holiday ?? false,
+            employment.work_system || '5_days',
+            employment.overtime_meal_allowance || 0,
+            employment.overtime_transport_allowance || 0
           );
           totalPay += payInfo.totalPay;
         });
@@ -74,9 +79,13 @@ export default function SalaryVerificationScreen() {
         if (verifError && verifError.code !== 'PGRST116') throw verifError;
         
         if (verifData) {
-          setVerification(verifData);
-          setSlipAmountStr(verifData.slip_amount.toString());
-          setNotes(verifData.notes || '');
+          const currentVerif = verifData as SalaryVerification;
+          setVerification(currentVerif);
+          setSlipAmountStr(currentVerif.slip_amount.toString());
+          setNotes(currentVerif.notes || '');
+          if (currentVerif.slip_photo_url) {
+            setSlipPhotoUrl(currentVerif.slip_photo_url);
+          }
         }
 
       } catch (error) {
@@ -88,7 +97,21 @@ export default function SalaryVerificationScreen() {
     }
     
     loadData();
-  }, [periodId, employment]);
+  }, [periodId, employment, showToast]);
+
+  const handlePickSlipPhoto = () => {
+    Alert.alert('Foto Slip Gaji Fisik', 'Pilih sumber foto:', [
+      { text: 'Kamera', onPress: async () => {
+        const res = await pickImage(true);
+        if (res?.base64) setSlipPhotoUrl(res.base64);
+      }},
+      { text: 'Galeri Foto', onPress: async () => {
+        const res = await pickImage(false);
+        if (res?.base64) setSlipPhotoUrl(res.base64);
+      }},
+      { text: 'Batal', style: 'cancel' }
+    ]);
+  };
 
   const slipAmount = parseInt(slipAmountStr.replace(/[^0-9]/g, ''), 10) || 0;
   const difference = slipAmount - estimatedAppAmount;
@@ -128,6 +151,7 @@ export default function SalaryVerificationScreen() {
       difference: difference,
       deduction: 0,
       notes: notes.trim() || null,
+      slip_photo_url: slipPhotoUrl,
       verified_at: new Date().toISOString(),
     };
 
@@ -136,7 +160,7 @@ export default function SalaryVerificationScreen() {
         // Update
         const { error } = await supabase
           .from('salary_verifications')
-          .update(payload)
+          .update(payload as any)
           .eq('id', verification.id);
         if (error) throw error;
         showToast('Verifikasi berhasil diperbarui', 'success');
@@ -144,7 +168,7 @@ export default function SalaryVerificationScreen() {
         // Insert
         const { error } = await supabase
           .from('salary_verifications')
-          .insert(payload);
+          .insert(payload as any);
         if (error) throw error;
         showToast('Verifikasi berhasil disimpan', 'success');
       }
@@ -216,6 +240,49 @@ export default function SalaryVerificationScreen() {
           </View>
         </View>
 
+        {/* Lampiran Foto Slip Gaji Fisik */}
+        <View className="bg-dark-card border border-dark-border rounded-3xl p-4 mb-6 shadow-sm">
+          <Text className="text-dark-muted font-sans-bold text-xs uppercase tracking-wider mb-3">
+            Foto Slip Gaji Fisik (Opsional)
+          </Text>
+          {slipPhotoUrl ? (
+            <View className="relative">
+              <Image 
+                source={{ uri: slipPhotoUrl }} 
+                className="w-full h-44 rounded-2xl bg-dark-bg" 
+                resizeMode="cover"
+              />
+              <View className="flex-row gap-2 absolute top-2 right-2">
+                <Pressable
+                  className="bg-primary-600 px-3 py-1.5 rounded-xl flex-row items-center gap-1 shadow-lg"
+                  onPress={() => setIsModalOpen(true)}
+                >
+                  <SymbolView name="arrow.up.left.and.arrow.down.right" size={12} tintColor="#fff" />
+                  <Text className="text-white text-xs font-bold">Perbesar</Text>
+                </Pressable>
+                <Pressable
+                  className="bg-red-600 px-3 py-1.5 rounded-xl flex-row items-center gap-1 shadow-lg"
+                  onPress={() => setSlipPhotoUrl(null)}
+                >
+                  <SymbolView name="trash.fill" size={12} tintColor="#fff" />
+                  <Text className="text-white text-xs font-bold">Hapus</Text>
+                </Pressable>
+              </View>
+            </View>
+          ) : (
+            <Pressable
+              className="border border-dashed border-dark-border rounded-2xl py-6 items-center justify-center active:bg-dark-border/40"
+              onPress={handlePickSlipPhoto}
+            >
+              <View className="w-12 h-12 bg-primary-950/40 rounded-full items-center justify-center mb-2 border border-primary-500/30">
+                <SymbolView name="camera.fill" size={22} tintColor="#60a5fa" />
+              </View>
+              <Text className="text-white font-bold text-sm">Ambil Foto Slip Gaji</Text>
+              <Text className="text-dark-muted text-xs mt-0.5">Untuk perbandingan visual berdampingan</Text>
+            </Pressable>
+          )}
+        </View>
+
         {/* Result Status Panel */}
         <View className={`border rounded-3xl p-5 mb-6 ${statusBg}`}>
           <View className="flex-row items-center justify-between mb-4 border-b border-white/10 pb-4">
@@ -263,6 +330,30 @@ export default function SalaryVerificationScreen() {
           {!isSaving && <SymbolView name="checkmark.circle.fill" size={20} tintColor="#fff" style={{ marginLeft: 8 }} />}
         </Pressable>
       </Animated.View>
+
+      {/* Slip Photo Zoom Modal */}
+      {slipPhotoUrl && (
+        <Modal
+          visible={isModalOpen}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setIsModalOpen(false)}
+        >
+          <View className="flex-1 bg-black/90 justify-center items-center p-4">
+            <Pressable 
+              className="absolute top-12 right-6 z-10 bg-dark-card p-3 rounded-full border border-dark-border"
+              onPress={() => setIsModalOpen(false)}
+            >
+              <SymbolView name="xmark" size={20} tintColor="#fff" />
+            </Pressable>
+            <Image 
+              source={{ uri: slipPhotoUrl }}
+              className="w-full h-4/5 rounded-2xl"
+              resizeMode="contain"
+            />
+          </View>
+        </Modal>
+      )}
     </ScrollView>
   );
 }

@@ -4,11 +4,22 @@ import { useAuthStore } from '@/stores/auth-store';
 
 export const syncService = async () => {
   const { session } = useAuthStore.getState();
-  const { setEmployment, setActivePayPeriod, setOvertimeEntries } = useDataStore.getState();
+  const { setProfile, setEmployment, setActivePayPeriod, setOvertimeEntries } = useDataStore.getState();
 
   if (!session?.user) return;
 
   try {
+    // 0. Fetch Profile
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .maybeSingle();
+
+    if (profileData) {
+      setProfile(profileData as any);
+    }
+
     // 1. Fetch Employment
     const { data: employments, error: empError } = await supabase
       .from('employments')

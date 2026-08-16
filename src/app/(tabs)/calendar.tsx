@@ -117,9 +117,16 @@ export default function CalendarScreen() {
                     onPress={() => router.push(`/overtime/${entry.id}` as any)}
                   >
                     <View>
-                      <Text className="text-white font-bold text-base">
-                        {entry.start_time.slice(0, 5)} - {entry.end_time.slice(0, 5)}
-                      </Text>
+                      <View className="flex-row items-center gap-2">
+                        <Text className="text-white font-bold text-base">
+                          {entry.start_time.slice(0, 5)} - {entry.end_time.slice(0, 5)}
+                        </Text>
+                        {entry.is_holiday && (
+                          <View className="bg-red-500/20 px-2 py-0.5 rounded-full border border-red-500/30">
+                            <Text className="text-red-400 text-[10px] font-bold">Libur</Text>
+                          </View>
+                        )}
+                      </View>
                       {entry.notes && (
                         <Text className="text-dark-muted text-xs mt-1">{entry.notes}</Text>
                       )}

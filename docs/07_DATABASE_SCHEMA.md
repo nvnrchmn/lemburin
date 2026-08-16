@@ -78,18 +78,22 @@ Menyimpan informasi profil pengguna.
 
 Riwayat pekerjaan pengguna.
 
-| Column        | Type         | Null | Default           | Description        |
-| ------------- | ------------ | ---- | ----------------- | ------------------ |
-| id            | UUID         | No   | gen_random_uuid() | Primary Key        |
-| user_id       | UUID         | No   | -                 | FK → auth.users.id |
-| company_name  | VARCHAR(200) | No   | -                 | Nama perusahaan    |
-| job_title     | VARCHAR(150) | Yes  | NULL              | Jabatan            |
-| employee_code | VARCHAR(100) | Yes  | NULL              | Nomor karyawan     |
-| start_date    | DATE         | No   | -                 | Mulai bekerja      |
-| end_date      | DATE         | Yes  | NULL              | Selesai bekerja    |
-| is_active     | BOOLEAN      | No   | TRUE              | Status pekerjaan   |
-| created_at    | TIMESTAMPTZ  | No   | now()             | Dibuat pada        |
-| updated_at    | TIMESTAMPTZ  | No   | now()             | Diperbarui pada    |
+| Column                       | Type         | Null | Default           | Description         |
+| ---------------------------- | ------------ | ---- | ----------------- | ------------------- |
+| id                           | UUID         | No   | gen_random_uuid() | Primary Key         |
+| user_id                      | UUID         | No   | -                 | FK → auth.users.id  |
+| company_name                 | VARCHAR(200) | No   | -                 | Nama perusahaan     |
+| job_title                    | VARCHAR(150) | Yes  | NULL              | Jabatan             |
+| employee_code                | VARCHAR(100) | Yes  | NULL              | Nomor karyawan      |
+| work_system                  | VARCHAR(20)  | No   | '5_days'          | 5_days / 6_days     |
+| basic_salary                 | NUMERIC(12,2)| Yes  | NULL              | Gaji Pokok          |
+| overtime_meal_allowance      | NUMERIC(12,2)| Yes  | NULL              | Uang Makan Lembur   |
+| overtime_transport_allowance | NUMERIC(12,2)| Yes  | NULL              | Uang Transp Lembur  |
+| start_date                   | DATE         | No   | -                 | Mulai bekerja       |
+| end_date                     | DATE         | Yes  | NULL              | Selesai bekerja     |
+| is_active                    | BOOLEAN      | No   | TRUE              | Status pekerjaan    |
+| created_at                   | TIMESTAMPTZ  | No   | now()             | Dibuat pada         |
+| updated_at                   | TIMESTAMPTZ  | No   | now()             | Diperbarui pada     |
 
 ### Index
 
@@ -134,17 +138,19 @@ Periode gaji yang menjadi pusat seluruh pencatatan lembur.
 
 Catatan aktivitas lembur.
 
-| Column        | Type        | Null | Default           | Description         |
-| ------------- | ----------- | ---- | ----------------- | ------------------- |
-| id            | UUID        | No   | gen_random_uuid() | Primary Key         |
-| pay_period_id | UUID        | No   | -                 | FK → pay_periods.id |
-| work_date     | DATE        | No   | -                 | Tanggal lembur      |
-| start_time    | TIME        | No   | -                 | Jam mulai           |
-| end_time      | TIME        | No   | -                 | Jam selesai         |
-| break_minutes | INTEGER     | No   | 0                 | Lama istirahat      |
-| notes         | TEXT        | Yes  | NULL              | Catatan             |
-| created_at    | TIMESTAMPTZ | No   | now()             | Dibuat pada         |
-| updated_at    | TIMESTAMPTZ | No   | now()             | Diperbarui pada     |
+| Column         | Type        | Null | Default           | Description          |
+| -------------- | ----------- | ---- | ----------------- | -------------------- |
+| id             | UUID        | No   | gen_random_uuid() | Primary Key          |
+| pay_period_id  | UUID        | No   | -                 | FK → pay_periods.id  |
+| work_date      | DATE        | No   | -                 | Tanggal lembur       |
+| start_time     | TIME        | No   | -                 | Jam mulai            |
+| end_time       | TIME        | No   | -                 | Jam selesai          |
+| break_minutes  | INTEGER     | No   | 0                 | Lama istirahat       |
+| is_holiday     | BOOLEAN     | No   | FALSE             | Hari libur / tgl mrh |
+| attachment_url | TEXT        | Yes  | NULL              | Foto SPL / Absensi   |
+| notes          | TEXT        | Yes  | NULL              | Catatan              |
+| created_at     | TIMESTAMPTZ | No   | now()             | Dibuat pada          |
+| updated_at     | TIMESTAMPTZ | No   | now()             | Diperbarui pada      |
 
 ### Index
 
@@ -160,16 +166,17 @@ Catatan aktivitas lembur.
 
 Verifikasi nominal lembur berdasarkan slip gaji.
 
-| Column        | Type          | Null | Default           | Description         |
-| ------------- | ------------- | ---- | ----------------- | ------------------- |
-| id            | UUID          | No   | gen_random_uuid() | Primary Key         |
-| pay_period_id | UUID          | No   | -                 | FK → pay_periods.id |
-| slip_amount   | NUMERIC(12,2) | No   | 0                 | Nominal pada slip   |
-| difference    | NUMERIC(12,2) | No   | 0                 | Selisih hasil       |
-| notes         | TEXT          | Yes  | NULL              | Catatan             |
-| verified_at   | TIMESTAMPTZ   | Yes  | NULL              | Waktu verifikasi    |
-| created_at    | TIMESTAMPTZ   | No   | now()             | Dibuat pada         |
-| updated_at    | TIMESTAMPTZ   | No   | now()             | Diperbarui pada     |
+| Column         | Type          | Null | Default           | Description         |
+| -------------- | ------------- | ---- | ----------------- | ------------------- |
+| id             | UUID          | No   | gen_random_uuid() | Primary Key         |
+| pay_period_id  | UUID          | No   | -                 | FK → pay_periods.id |
+| slip_amount    | NUMERIC(12,2) | No   | 0                 | Nominal pada slip   |
+| difference     | NUMERIC(12,2) | No   | 0                 | Selisih hasil       |
+| notes          | TEXT          | Yes  | NULL              | Catatan             |
+| slip_photo_url | TEXT          | Yes  | NULL              | Foto Slip Gaji Asli |
+| verified_at    | TIMESTAMPTZ   | Yes  | NULL              | Waktu verifikasi    |
+| created_at     | TIMESTAMPTZ   | No   | now()             | Dibuat pada         |
+| updated_at     | TIMESTAMPTZ   | No   | now()             | Diperbarui pada     |
 
 ### Index
 

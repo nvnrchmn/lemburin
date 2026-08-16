@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { View, Text, ScrollView, Pressable, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, Pressable, Alert, ActivityIndicator, Image, Modal } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { format, differenceInMinutes, parse } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
+import { SymbolView } from 'expo-symbols';
 
 import { useDataStore } from '@/stores/data-store';
 import { supabase } from '@/lib/supabase';
@@ -14,6 +15,7 @@ export default function OvertimeDetailScreen() {
   const { overtimeEntries, removeOvertimeEntry, activePayPeriod, employment } = useDataStore();
   const { showToast } = useToastStore();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isImageModalVisible, setIsImageModalVisible] = useState(false);
 
   const entry = overtimeEntries.find(e => e.id === id);
 
@@ -48,12 +50,26 @@ export default function OvertimeDetailScreen() {
         employment.basic_salary || 0,
         employment.allowances_detail?.filter(a => a.is_fixed).reduce((sum, a) => sum + a.amount, 0) || 0,
         null,
-        false
+        entry.is_holiday ?? false,
+        employment.work_system || '5_days',
+        employment.overtime_meal_allowance || 0,
+        employment.overtime_transport_allowance || 0
       );
       estimatedWage = calcResult.totalPay;
     } else if (activePayPeriod.formula_type === 'flat_rate' && activePayPeriod.flat_rate_amount) {
       formulaName = 'Tarif Tetap (Flat Rate)';
-      estimatedWage = (diffMins / 60) * activePayPeriod.flat_rate_amount;
+      const calcResult = calculateOvertimePay(
+        diffMins,
+        'flat_rate',
+        null,
+        0,
+        activePayPeriod.flat_rate_amount,
+        entry.is_holiday ?? false,
+        employment.work_system || '5_days',
+        employment.overtime_meal_allowance || 0,
+        employment.overtime_transport_allowance || 0
+      );
+      estimatedWage = calcResult.totalPay;
     }
   }
 
@@ -99,9 +115,16 @@ export default function OvertimeDetailScreen() {
       <View className="px-5 pt-6">
         {/* Date Header */}
         <View className="bg-primary-950 border border-primary-800 rounded-2xl p-5 mb-4">
-          <Text className="text-primary-300 text-xs font-medium mb-1">
-            TANGGAL LEMBUR
-          </Text>
+          <View className="flex-row justify-between items-start mb-1">
+            <Text className="text-primary-300 text-xs font-medium">
+              TANGGAL LEMBUR
+            </Text>
+            {entry.is_holiday && (
+              <View className="bg-red-500/20 border border-red-500/30 px-2.5 py-0.5 rounded-full">
+                <Text className="text-red-400 text-[10px] font-bold uppercase tracking-wider">Hari Libur</Text>
+              </View>
+            )}
+          </View>
           <Text className="text-dark-text text-xl font-bold">
             {format(new Date(entry.work_date), 'EEEE, d MMMM yyyy', { locale: localeId })}
           </Text>
@@ -146,6 +169,24 @@ export default function OvertimeDetailScreen() {
           </Text>
         </View>
 
+        {/* Photo Attachment View */}
+        {entry.attachment_url && (
+          <View className="bg-dark-card border border-dark-border rounded-2xl p-4 mb-4">
+            <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2">Bukti Foto SPL / Absensi</Text>
+            <Pressable onPress={() => setIsImageModalVisible(true)} className="relative">
+              <Image 
+                source={{ uri: entry.attachment_url }}
+                className="w-full h-48 rounded-xl bg-dark-bg"
+                resizeMode="cover"
+              />
+              <View className="absolute bottom-2 right-2 bg-black/70 px-3 py-1 rounded-lg flex-row items-center gap-1">
+                <SymbolView name="arrow.up.left.and.arrow.down.right" size={12} tintColor="#fff" />
+                <Text className="text-white text-[11px] font-bold">Perbesar</Text>
+              </View>
+            </Pressable>
+          </View>
+        )}
+
         {/* Notes */}
         {entry.notes && (
           <View className="bg-dark-card border border-dark-border rounded-xl p-4 mb-6">
@@ -175,6 +216,30 @@ export default function OvertimeDetailScreen() {
           </Pressable>
         </View>
       </View>
+
+      {/* Full Screen Image Zoom Modal */}
+      {entry.attachment_url && (
+        <Modal
+          visible={isImageModalVisible}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setIsImageModalVisible(false)}
+        >
+          <View className="flex-1 bg-black/90 justify-center items-center p-4">
+            <Pressable 
+              className="absolute top-12 right-6 z-10 bg-dark-card p-3 rounded-full border border-dark-border"
+              onPress={() => setIsImageModalVisible(false)}
+            >
+              <SymbolView name="xmark" size={20} tintColor="#fff" />
+            </Pressable>
+            <Image 
+              source={{ uri: entry.attachment_url }}
+              className="w-full h-4/5 rounded-2xl"
+              resizeMode="contain"
+            />
+          </View>
+        </Modal>
+      )}
     </ScrollView>
   );
 }

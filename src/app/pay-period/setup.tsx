@@ -63,7 +63,7 @@ export default function PayPeriodSetupScreen() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: ReturnType<typeof setTimeout>;
 
     if (activePayPeriod?.start_date) {
       const startObj = new Date(activePayPeriod.start_date);

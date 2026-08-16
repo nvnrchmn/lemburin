@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, Dimensions, Image } from 'react-native';
+import { View, Text, Pressable, Image } from 'react-native';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -11,13 +11,10 @@ import Animated, {
   withSequence,
   interpolate,
   Extrapolation,
-  withSpring,
   Easing,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SymbolView } from 'expo-symbols';
-
-const { width, height } = Dimensions.get('window');
 
 const ONBOARDING_DATA = [
   {
@@ -62,7 +59,7 @@ export default function WelcomeScreen() {
     // Floating blobs
     floatY1.value = withRepeat(withTiming(-20, { duration: 3000, easing: Easing.inOut(Easing.ease) }), -1, true);
     floatY2.value = withRepeat(withTiming(20, { duration: 2500, easing: Easing.inOut(Easing.ease) }), -1, true);
-  }, []);
+  }, [floatY1, floatY2, pulse]);
 
   const handleNext = async () => {
     if (currentIndex < ONBOARDING_DATA.length - 1) {
@@ -228,7 +225,7 @@ export default function WelcomeScreen() {
                   {currentIndex === ONBOARDING_DATA.length - 1 ? 'Mulai Sekarang' : 'Selanjutnya'}
                 </Text>
                 <SymbolView 
-                  name={currentIndex === ONBOARDING_DATA.length - 1 ? 'rocket.fill' : 'chevron.right'} 
+                  name={currentIndex === ONBOARDING_DATA.length - 1 ? 'arrow.right.circle.fill' : 'chevron.right'} 
                   size={20} 
                   tintColor="#fff" 
                   style={{ marginLeft: 8 }} 

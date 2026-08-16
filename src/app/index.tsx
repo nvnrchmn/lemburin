@@ -13,7 +13,7 @@ export default function Index() {
       try {
         const value = await AsyncStorage.getItem('hasSeenOnboarding');
         setHasSeenOnboarding(value === 'true');
-      } catch (error) {
+      } catch {
         setHasSeenOnboarding(false);
       }
     }

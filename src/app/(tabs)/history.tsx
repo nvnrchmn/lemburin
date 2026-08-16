@@ -7,6 +7,7 @@ import { id } from 'date-fns/locale';
 import { router } from 'expo-router';
 import Animated, { FadeInUp, Layout } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
+import type { PayPeriod } from '@/types/database';
 
 export default function HistoryScreen() {
   const { employment } = useDataStore();

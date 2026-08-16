@@ -5,6 +5,8 @@
 
 export type FormulaType = 'indonesia' | 'flat_rate' | 'custom';
 
+export type WorkSystem = '5_days' | '6_days';
+
 export type VerificationStatus = 'matched' | 'mismatched' | 'pending';
 
 export interface SalaryComponent {
@@ -32,8 +34,11 @@ export interface Employment {
   company_name: string;
   job_title: string | null;
   employee_code: string | null;
+  work_system?: WorkSystem | null;
   basic_salary: number | null;
   allowance: number | null; // legacy
+  overtime_meal_allowance?: number | null;
+  overtime_transport_allowance?: number | null;
   allowances_detail: SalaryComponent[] | null;
   deductions_detail: SalaryComponent[] | null;
   start_date: string;
@@ -64,6 +69,8 @@ export interface OvertimeEntry {
   start_time: string;
   end_time: string;
   break_minutes: number;
+  is_holiday?: boolean;
+  attachment_url?: string | null;
   notes: string | null;
   created_at: string;
   updated_at: string;
@@ -76,6 +83,7 @@ export interface SalaryVerification {
   deduction: number | null;
   difference: number;
   notes: string | null;
+  slip_photo_url?: string | null;
   verified_at: string | null;
   created_at: string;
   updated_at: string;
@@ -87,28 +95,33 @@ export interface Database {
     Tables: {
       profiles: {
         Row: Profile;
-        Insert: Omit<Profile, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<Profile, 'id' | 'created_at' | 'updated_at'>>;
+        Insert: Partial<Profile>;
+        Update: Partial<Profile>;
+        Relationships: [];
       };
       employments: {
         Row: Employment;
-        Insert: Omit<Employment, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<Employment, 'id' | 'created_at' | 'updated_at'>>;
+        Insert: Partial<Employment>;
+        Update: Partial<Employment>;
+        Relationships: [];
       };
       pay_periods: {
         Row: PayPeriod;
-        Insert: Omit<PayPeriod, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<PayPeriod, 'id' | 'created_at' | 'updated_at'>>;
+        Insert: Partial<PayPeriod>;
+        Update: Partial<PayPeriod>;
+        Relationships: [];
       };
       overtime_entries: {
         Row: OvertimeEntry;
-        Insert: Omit<OvertimeEntry, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<OvertimeEntry, 'id' | 'created_at' | 'updated_at'>>;
+        Insert: Partial<OvertimeEntry>;
+        Update: Partial<OvertimeEntry>;
+        Relationships: [];
       };
       salary_verifications: {
         Row: SalaryVerification;
-        Insert: Omit<SalaryVerification, 'id' | 'created_at' | 'updated_at'>;
-        Update: Partial<Omit<SalaryVerification, 'id' | 'created_at' | 'updated_at'>>;
+        Insert: Partial<SalaryVerification>;
+        Update: Partial<SalaryVerification>;
+        Relationships: [];
       };
     };
     Views: Record<string, never>;
@@ -116,5 +129,6 @@ export interface Database {
     Enums: {
       formula_type: FormulaType;
     };
+    CompositeTypes: Record<string, never>;
   };
 }

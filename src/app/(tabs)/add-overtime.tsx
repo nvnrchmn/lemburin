@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { View, Text, Pressable, ScrollView, TextInput, ActivityIndicator, Alert, Switch } from 'react-native';
+import { View, Text, Pressable, ScrollView, TextInput, ActivityIndicator, Alert, Switch, Image } from 'react-native';
 import { router } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,11 +7,13 @@ import * as z from 'zod';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
+import { SymbolView } from 'expo-symbols';
 
 import { useDataStore } from '@/stores/data-store';
 import { supabase } from '@/lib/supabase';
 import { calculateOvertimeMinutes, calculateOvertimePay, calculateTotalFixedAllowance } from '@/utils/calculator';
 import { formatCurrency, formatDuration } from '@/utils/formatting';
+import { pickImage } from '@/utils/upload';
 
 const overtimeSchema = z.object({
   workDate: z.date(),
@@ -27,6 +29,7 @@ type OvertimeFormValues = z.infer<typeof overtimeSchema>;
 export default function AddOvertimeTabScreen() {
   const { activePayPeriod, employment, addOvertimeEntry } = useDataStore();
   const [isLoading, setIsLoading] = useState(false);
+  const [attachmentUrl, setAttachmentUrl] = useState<string | null>(null);
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
@@ -39,7 +42,7 @@ export default function AddOvertimeTabScreen() {
   const defaultEndTime = new Date();
   defaultEndTime.setHours(22, 0, 0, 0);
 
-  const { control, handleSubmit, watch, setValue, formState: { errors } } = useForm<OvertimeFormValues>({
+  const { control, handleSubmit, watch, setValue } = useForm<OvertimeFormValues>({
     resolver: zodResolver(overtimeSchema),
     defaultValues: {
       workDate: new Date(),
@@ -52,6 +55,20 @@ export default function AddOvertimeTabScreen() {
   });
 
   const watchAllFields = watch();
+
+  const handlePickAttachment = () => {
+    Alert.alert('Lampirkan Foto Bukti SPL / Absensi', 'Pilih sumber foto:', [
+      { text: 'Kamera', onPress: async () => {
+        const res = await pickImage(true);
+        if (res?.base64) setAttachmentUrl(res.base64);
+      }},
+      { text: 'Galeri Foto', onPress: async () => {
+        const res = await pickImage(false);
+        if (res?.base64) setAttachmentUrl(res.base64);
+      }},
+      { text: 'Batal', style: 'cancel' }
+    ]);
+  };
 
   // Live calculation of estimation
   const estimation = useMemo(() => {
@@ -69,7 +86,10 @@ export default function AddOvertimeTabScreen() {
       employment.basic_salary, 
       calculateTotalFixedAllowance(employment.allowances_detail || null),
       activePayPeriod.flat_rate_amount,
-      watchAllFields.isHoliday
+      watchAllFields.isHoliday,
+      employment.work_system || '5_days',
+      employment.overtime_meal_allowance || 0,
+      employment.overtime_transport_allowance || 0
     );
 
     return {
@@ -98,6 +118,8 @@ export default function AddOvertimeTabScreen() {
       start_time: startStr,
       end_time: endStr,
       break_minutes: isNaN(breakMins) ? 0 : breakMins,
+      is_holiday: data.isHoliday,
+      attachment_url: attachmentUrl,
       notes: data.notes || null,
     };
 
@@ -318,6 +340,37 @@ export default function AddOvertimeTabScreen() {
                 )}
               />
             </View>
+          </View>
+        </View>
+
+        {/* Bukti SPL / Absensi */}
+        <View className="mt-3">
+          <Text className="text-dark-muted text-xs mb-1.5 ml-1">Foto Bukti SPL / Absensi (opsional)</Text>
+          <View className="bg-dark-card border border-dark-border rounded-2xl p-3">
+            {attachmentUrl ? (
+              <View className="relative">
+                <Image 
+                  source={{ uri: attachmentUrl }} 
+                  className="w-full h-40 rounded-xl bg-dark-bg" 
+                  resizeMode="cover"
+                />
+                <Pressable
+                  className="absolute top-2 right-2 bg-red-600 px-3 py-1 rounded-lg flex-row items-center gap-1"
+                  onPress={() => setAttachmentUrl(null)}
+                >
+                  <SymbolView name="trash.fill" size={12} tintColor="#fff" />
+                  <Text className="text-white text-xs font-bold">Hapus</Text>
+                </Pressable>
+              </View>
+            ) : (
+              <Pressable
+                className="border border-dashed border-dark-border rounded-xl py-5 items-center justify-center active:bg-dark-border/30"
+                onPress={handlePickAttachment}
+              >
+                <SymbolView name="camera.fill" size={20} tintColor="#60a5fa" style={{ marginBottom: 4 }} />
+                <Text className="text-white font-medium text-xs">Lampirkan Foto Bukti SPL</Text>
+              </Pressable>
+            )}
           </View>
         </View>
       </View>

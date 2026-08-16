@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { View, Text, ScrollView, Pressable, RefreshControl, Image } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -11,24 +11,41 @@ import { BarChart } from 'react-native-gifted-charts';
 import { useDataStore } from '@/stores/data-store';
 import { useSettingsStore } from '@/stores/settings-store';
 import { formatCurrency, formatDuration } from '@/utils/formatting';
-import { calculateOvertimeMinutes, calculateOvertimePay, calculateTotalFixedAllowance, calculateTotalDeduction, calculateTotalAllowance } from '@/utils/calculator';
+import { calculateOvertimeMinutes, calculateOvertimePay, calculateTotalFixedAllowance, calculateTotalDeduction } from '@/utils/calculator';
+import { syncService } from '@/services/sync-service';
 import { t } from '@/utils/i18n';
 
 export default function DashboardScreen() {
   const { profile, employment, activePayPeriod, overtimeEntries } = useDataStore();
   const { language, currency } = useSettingsStore();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await syncService();
+    setRefreshing(false);
+  }, []);
 
   const firstName = profile?.full_name?.split(' ')[0] || 'User';
 
   const stats = useMemo(() => {
-    if (!activePayPeriod) return { days: 0, hoursStr: '0 jam', totalPay: 0 };
+    if (!activePayPeriod) return { days: 0, hoursStr: '0 jam', totalPay: 0, weeklyHours: 0 };
 
     let totalMins = 0;
     let totalPay = 0;
+    let weeklyMins = 0;
+
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
     overtimeEntries.forEach(entry => {
       const mins = calculateOvertimeMinutes(entry.start_time, entry.end_time, entry.break_minutes);
       totalMins += mins;
+
+      const entryDate = new Date(entry.work_date);
+      if (entryDate >= sevenDaysAgo && !entry.is_holiday) {
+        weeklyMins += mins;
+      }
       
       const payInfo = calculateOvertimePay(
         mins,
@@ -36,7 +53,10 @@ export default function DashboardScreen() {
         employment?.basic_salary || 0,
         calculateTotalFixedAllowance(employment?.allowances_detail || null),
         activePayPeriod.flat_rate_amount,
-        false // Assuming we don't have is_holiday mapped strictly yet, default false or infer from Date
+        entry.is_holiday ?? false,
+        employment?.work_system || '5_days',
+        employment?.overtime_meal_allowance || 0,
+        employment?.overtime_transport_allowance || 0
       );
       totalPay += payInfo.totalPay;
     });
@@ -44,9 +64,16 @@ export default function DashboardScreen() {
     return {
       days: overtimeEntries.length,
       hoursStr: formatDuration(totalMins),
-      totalPay
+      totalPay,
+      weeklyHours: weeklyMins / 60
     };
   }, [overtimeEntries, activePayPeriod, employment]);
+
+  const isPeriodExpired = useMemo(() => {
+    if (!activePayPeriod?.end_date) return false;
+    const today = new Date().toISOString().split('T')[0];
+    return today > activePayPeriod.end_date;
+  }, [activePayPeriod]);
 
   const recentEntries = useMemo(() => {
     return [...overtimeEntries].sort((a, b) => 
@@ -84,6 +111,9 @@ export default function DashboardScreen() {
       className="flex-1 bg-dark-bg"
       contentContainerStyle={{ paddingBottom: 100 }}
       showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#3b82f6" />
+      }
     >
       <View className="px-5 pt-20 pb-4 flex-row justify-between items-end">
         <View>
@@ -141,6 +171,44 @@ export default function DashboardScreen() {
               <Text className="text-red-400 text-xs font-bold">
                 Total Potongan: {formatCurrency(calculateTotalDeduction(employment.deductions_detail), currency)}
               </Text>
+            </View>
+          )}
+
+          {/* K3 / PP 35/2021 Safety Warning Badge */}
+          {stats.weeklyHours >= 18 ? (
+            <View className="mb-4 flex-row items-center bg-amber-500/20 px-3.5 py-2 rounded-2xl border border-amber-500/30">
+              <Ionicons name="warning" size={16} color="#fbbf24" style={{ marginRight: 8 }} />
+              <View className="flex-1">
+                <Text className="text-amber-300 text-xs font-bold">Peringatan Beban Lembur K3</Text>
+                <Text className="text-amber-200/80 text-[11px]">
+                  Lembur minggu ini ({stats.weeklyHours.toFixed(1)} jam) telah mencapai batas maksimal regulasi PP 35/2021 (18 jam/minggu). Jaga kesehatan Anda!
+                </Text>
+              </View>
+            </View>
+          ) : stats.weeklyHours >= 14 ? (
+            <View className="mb-4 flex-row items-center bg-blue-500/10 px-3.5 py-1.5 rounded-2xl border border-blue-500/20">
+              <Ionicons name="information-circle" size={15} color="#60a5fa" style={{ marginRight: 8 }} />
+              <Text className="text-blue-200 text-xs">
+                Lembur minggu ini: <Text className="font-bold text-white">{stats.weeklyHours.toFixed(1)} / 18 jam</Text> (PP 35/2021)
+              </Text>
+            </View>
+          ) : null}
+
+          {/* Expired Period Rollover Prompt */}
+          {isPeriodExpired && activePayPeriod && (
+            <View className="mb-4 bg-emerald-500/20 p-3 rounded-2xl border border-emerald-500/30 flex-row items-center justify-between">
+              <View className="flex-1 mr-2">
+                <Text className="text-emerald-300 text-xs font-bold">Periode Berakhir</Text>
+                <Text className="text-emerald-100/80 text-[11px]">
+                  Periode {activePayPeriod.period_name} telah lewat. Buat periode baru untuk pencatatan berjalan?
+                </Text>
+              </View>
+              <Pressable
+                className="bg-emerald-500 px-3 py-1.5 rounded-xl"
+                onPress={() => router.push('/pay-period/setup')}
+              >
+                <Text className="text-white text-xs font-bold">Buat Baru</Text>
+              </Pressable>
             </View>
           )}
 

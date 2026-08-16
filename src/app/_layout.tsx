@@ -1,7 +1,6 @@
 import '../global.css';
-import { useEffect, useState, useRef } from 'react';
-import { ThemeProvider, DarkTheme, DefaultTheme } from 'expo-router';
-import { Stack } from 'expo-router';
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { ThemeProvider, DarkTheme, DefaultTheme, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme, AppState, AppStateStatus, View, Text, Pressable } from 'react-native';
@@ -65,7 +64,7 @@ export default function RootLayout() {
     }
   }, [fontsLoaded]);
 
-  const handleAuthentication = async () => {
+  const handleAuthentication = useCallback(async () => {
     if (!biometricEnabled) return;
     
     const hasHardware = await LocalAuthentication.hasHardwareAsync();
@@ -80,13 +79,16 @@ export default function RootLayout() {
     } else {
       setIsUnlocked(true); // Fail open if no hardware
     }
-  };
+  }, [biometricEnabled]);
 
   useEffect(() => {
     if (biometricEnabled && !isUnlocked) {
-      handleAuthentication();
+      const timer = setTimeout(() => {
+        handleAuthentication();
+      }, 50);
+      return () => clearTimeout(timer);
     }
-  }, [biometricEnabled]);
+  }, [biometricEnabled, isUnlocked, handleAuthentication]);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
@@ -96,7 +98,9 @@ export default function RootLayout() {
         biometricEnabled
       ) {
         setIsUnlocked(false);
-        handleAuthentication();
+        setTimeout(() => {
+          handleAuthentication();
+        }, 50);
       }
       appState.current = nextAppState;
     });
@@ -104,7 +108,7 @@ export default function RootLayout() {
     return () => {
       subscription.remove();
     };
-  }, [biometricEnabled]);
+  }, [biometricEnabled, handleAuthentication]);
 
   if (!fontsLoaded) {
     return null;

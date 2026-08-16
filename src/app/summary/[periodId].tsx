@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, Pressable, ActivityIndicator, Alert, Linking } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useDataStore } from '@/stores/data-store';
+import { useToastStore } from '@/stores/toast-store';
 import { format, parseISO } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import { SymbolView } from 'expo-symbols';
@@ -16,6 +17,7 @@ import { formatCurrency, formatDuration } from '@/utils/formatting';
 export default function MonthlySummaryScreen() {
   const { periodId } = useLocalSearchParams<{ periodId: string }>();
   const { employment, profile } = useDataStore();
+  const { showToast } = useToastStore();
   
   const [period, setPeriod] = useState<PayPeriod | null>(null);
   const [entries, setEntries] = useState<OvertimeEntry[]>([]);
@@ -90,13 +92,54 @@ export default function MonthlySummaryScreen() {
         employment.basic_salary,
         calculateTotalFixedAllowance(employment.allowances_detail || null),
         period.flat_rate_amount,
-        false // we don't have holiday flag stored yet, assume false
+        entry.is_holiday ?? false,
+        employment.work_system || '5_days',
+        employment.overtime_meal_allowance || 0,
+        employment.overtime_transport_allowance || 0
       );
       totalPay += payInfo.totalPay;
     }
   });
 
   const formulaName = period.formula_type === 'indonesia' ? 'Formula Kemenaker' : 'Tarif Flat';
+
+  const generateWhatsAppText = () => {
+    let text = `*Rekap Lembur - ${profile?.full_name || 'Karyawan'}*\n`;
+    text += `🏢 Perusahaan: ${employment?.company_name || '-'}\n`;
+    text += `📅 Periode: ${period.period_name} (${format(parseISO(period.start_date), 'dd MMM', { locale: localeId })} - ${format(parseISO(period.end_date), 'dd MMM yyyy', { locale: localeId })})\n`;
+    text += `------------------------------------\n`;
+    text += `⏱️ Total Durasi: *${formatDuration(totalMinutes)}*\n`;
+    text += `📆 Jumlah Hari: *${daysOfOvertime} Hari*\n`;
+    text += `💰 Estimasi Upah: *${formatCurrency(totalPay)}*\n`;
+    text += `------------------------------------\n`;
+    text += `*Rincian Lembur:*\n`;
+
+    entries.forEach((entry, idx) => {
+      const mins = calculateOvertimeMinutes(entry.start_time, entry.end_time, entry.break_minutes);
+      const dateStr = format(parseISO(entry.work_date), 'dd/MM/yyyy');
+      const holStr = entry.is_holiday ? ' 🔴 [Hari Libur]' : '';
+      text += `${idx + 1}. ${dateStr}: ${entry.start_time.slice(0, 5)} - ${entry.end_time.slice(0, 5)} (${formatDuration(mins)})${holStr}\n`;
+    });
+
+    text += `\n_Dibuat otomatis via Lemburin App_`;
+    return text;
+  };
+
+  const shareWhatsApp = async () => {
+    try {
+      const message = generateWhatsAppText();
+      const url = `whatsapp://send?text=${encodeURIComponent(message)}`;
+      const canOpen = await Linking.canOpenURL(url);
+      if (canOpen) {
+        await Linking.openURL(url);
+      } else {
+        const webUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+        await Linking.openURL(webUrl);
+      }
+    } catch {
+      showToast('Gagal membuka WhatsApp', 'error');
+    }
+  };
 
   const exportPDF = async () => {
     try {
@@ -176,21 +219,40 @@ export default function MonthlySummaryScreen() {
     <ScrollView className="flex-1 bg-dark-bg">
       <View className="px-5 pt-6">
         {/* Period Header */}
-        <View className="bg-primary-950 border border-primary-800 rounded-3xl p-6 mb-4 shadow-sm flex-row justify-between items-center">
-          <View>
-            <Text className="text-primary-300 text-xs font-bold mb-1 tracking-widest uppercase">
-              RINGKASAN PERIODE
-            </Text>
-            <Text className="text-white text-2xl font-sans-bold">{period.period_name}</Text>
-            <Text className="text-dark-muted text-sm mt-1">
-              {format(parseISO(period.start_date), 'dd MMM', { locale: localeId })} — {format(parseISO(period.end_date), 'dd MMM yyyy', { locale: localeId })}
-            </Text>
+        <View className="bg-primary-950 border border-primary-800 rounded-3xl p-6 mb-4 shadow-sm">
+          <View className="flex-row justify-between items-start mb-4">
+            <View className="flex-1 mr-3">
+              <Text className="text-primary-300 text-xs font-bold mb-1 tracking-widest uppercase">
+                RINGKASAN PERIODE
+              </Text>
+              <Text className="text-white text-2xl font-sans-bold">{period.period_name}</Text>
+              <Text className="text-dark-muted text-sm mt-1">
+                {format(parseISO(period.start_date), 'dd MMM', { locale: localeId })} — {format(parseISO(period.end_date), 'dd MMM yyyy', { locale: localeId })}
+              </Text>
+            </View>
+            <View className="flex-row gap-2">
+              <Pressable 
+                onPress={shareWhatsApp}
+                className="w-11 h-11 bg-emerald-600 rounded-2xl items-center justify-center active:bg-emerald-700 shadow-sm"
+              >
+                <SymbolView name="bubble.left.and.bubble.right.fill" size={18} tintColor="#fff" />
+              </Pressable>
+              <Pressable 
+                onPress={exportPDF}
+                className="w-11 h-11 bg-primary-600 rounded-2xl items-center justify-center active:bg-primary-700 shadow-sm"
+              >
+                <SymbolView name="square.and.arrow.up" size={18} tintColor="#fff" />
+              </Pressable>
+            </View>
           </View>
-          <Pressable 
-            onPress={exportPDF}
-            className="w-12 h-12 bg-primary-600 rounded-2xl items-center justify-center active:bg-primary-700"
+
+          {/* Quick Action Button */}
+          <Pressable
+            onPress={shareWhatsApp}
+            className="bg-emerald-600/20 border border-emerald-500/40 rounded-2xl py-2.5 px-4 flex-row items-center justify-center active:bg-emerald-600/30"
           >
-            <SymbolView name="square.and.arrow.up" size={20} tintColor="#fff" />
+            <SymbolView name="paperplane.fill" size={14} tintColor="#34d399" style={{ marginRight: 8 }} />
+            <Text className="text-emerald-300 font-bold text-xs">Bagikan Rekap ke WhatsApp</Text>
           </Pressable>
         </View>
 

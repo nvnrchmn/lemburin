@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
-import { View, Text, Pressable, TextInput, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import { useState } from 'react';
+import { View, Text, Pressable, TextInput, ActivityIndicator, Alert, ScrollView, Switch } from 'react-native';
 import { router } from 'expo-router';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
-import { Switch } from 'react-native';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -22,11 +21,16 @@ const componentSchema = z.object({
   is_fixed: z.boolean().optional(),
 });
 
+type SalaryComponent = { id: string; name: string; amount: number; is_fixed: boolean };
+
 const companySchema = z.object({
   companyName: z.string().min(2, { message: 'Nama perusahaan wajib diisi' }),
   jobTitle: z.string().optional(),
   employeeCode: z.string().optional(),
+  workSystem: z.enum(['5_days', '6_days']),
   basicSalary: z.string().min(1, { message: 'Gaji pokok wajib diisi' }),
+  overtimeMealAllowance: z.string().optional(),
+  overtimeTransportAllowance: z.string().optional(),
   allowancesDetail: z.array(componentSchema).optional(),
   deductionsDetail: z.array(componentSchema).optional(),
   startDate: z.date(),
@@ -51,7 +55,10 @@ export default function CompanySetupScreen() {
       companyName: employment?.company_name || '',
       jobTitle: employment?.job_title || '',
       employeeCode: employment?.employee_code || '',
+      workSystem: (employment?.work_system as '5_days' | '6_days') || '5_days',
       basicSalary: employment?.basic_salary ? formatNumberInput(employment.basic_salary) : '',
+      overtimeMealAllowance: employment?.overtime_meal_allowance ? formatNumberInput(employment.overtime_meal_allowance) : '',
+      overtimeTransportAllowance: employment?.overtime_transport_allowance ? formatNumberInput(employment.overtime_transport_allowance) : '',
       allowancesDetail: employment?.allowances_detail?.map(a => ({ ...a, amount: formatNumberInput(a.amount) })) || [],
       deductionsDetail: employment?.deductions_detail?.map(d => ({ ...d, amount: formatNumberInput(d.amount) })) || [],
       startDate: employment?.start_date ? new Date(employment.start_date) : new Date(),
@@ -69,19 +76,20 @@ export default function CompanySetupScreen() {
   });
 
   const onSubmit = async (data: CompanyFormValues) => {
-    if (!user) return;
-    setIsLoading(true);
-
-    const salaryNumber = parseNumberInput(data.basicSalary);
-    
-    if (isNaN(salaryNumber) || salaryNumber <= 0) {
-      Alert.alert('Error', 'Gaji pokok tidak valid');
-      setIsLoading(false);
+    if (!user) {
+      Alert.alert('Error', 'Sesi login tidak valid.');
       return;
     }
 
-    const mapComponents = (arr: any[]) => arr.map((c, i) => ({
-      id: c.id || `id-${Date.now()}-${i}`,
+    setIsLoading(true);
+
+    const salaryNumber = parseNumberInput(data.basicSalary);
+    const mealNumber = data.overtimeMealAllowance ? parseNumberInput(data.overtimeMealAllowance) : null;
+    const transportNumber = data.overtimeTransportAllowance ? parseNumberInput(data.overtimeTransportAllowance) : null;
+
+    const mapComponents = (list: { id?: string; name: string; amount: string; is_fixed?: boolean }[]): SalaryComponent[] => 
+      list.map(c => ({
+      id: c.id || Math.random().toString(36).substring(2, 9),
       name: c.name,
       amount: parseNumberInput(c.amount),
       is_fixed: c.is_fixed || false,
@@ -95,7 +103,10 @@ export default function CompanySetupScreen() {
       company_name: data.companyName,
       job_title: data.jobTitle || null,
       employee_code: data.employeeCode || null,
+      work_system: data.workSystem,
       basic_salary: salaryNumber,
+      overtime_meal_allowance: mealNumber,
+      overtime_transport_allowance: transportNumber,
       allowance: parsedAllowances.reduce((sum, a) => sum + a.amount, 0), // legacy fallback
       allowances_detail: parsedAllowances,
       deductions_detail: parsedDeductions,
@@ -245,11 +256,57 @@ export default function CompanySetupScreen() {
           />
         </View>
 
+        {/* GROUP: Sistem Hari Kerja (PP 35/2021) */}
+        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4 mt-2">Sistem Hari Kerja (PP 35/2021)</Text>
+        <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
+          <Controller
+            control={control}
+            name="workSystem"
+            render={({ field: { value, onChange } }) => (
+              <>
+                <Pressable 
+                  className={`flex-row items-center justify-between px-5 py-4 border-b border-dark-border active:bg-dark-border ${value === '5_days' ? 'bg-primary-950/30' : ''}`}
+                  onPress={() => onChange('5_days')}
+                >
+                  <View className="flex-1 mr-4">
+                    <Text className={`text-base font-bold ${value === '5_days' ? 'text-primary-300' : 'text-white'}`}>
+                      5 Hari Kerja (Kantor)
+                    </Text>
+                    <Text className="text-dark-muted text-xs mt-0.5">
+                      8 jam/hari (40 jam/minggu). Tarif libur 2x untuk 8 jam pertama.
+                    </Text>
+                  </View>
+                  {value === '5_days' && (
+                    <SymbolView name="checkmark" size={18} tintColor="#3b82f6" weight="bold" />
+                  )}
+                </Pressable>
+
+                <Pressable 
+                  className={`flex-row items-center justify-between px-5 py-4 active:bg-dark-border ${value === '6_days' ? 'bg-primary-950/30' : ''}`}
+                  onPress={() => onChange('6_days')}
+                >
+                  <View className="flex-1 mr-4">
+                    <Text className={`text-base font-bold ${value === '6_days' ? 'text-primary-300' : 'text-white'}`}>
+                      6 Hari Kerja (Pabrik / Shift)
+                    </Text>
+                    <Text className="text-dark-muted text-xs mt-0.5">
+                      7 jam/hari (40 jam/minggu). Tarif libur 2x untuk 7 jam pertama.
+                    </Text>
+                  </View>
+                  {value === '6_days' && (
+                    <SymbolView name="checkmark" size={18} tintColor="#3b82f6" weight="bold" />
+                  )}
+                </Pressable>
+              </>
+            )}
+          />
+        </View>
+
         {/* GROUP 2: Komponen Gaji */}
         <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4 mt-2">Komponen Upah</Text>
         <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
           {/* Basic Salary */}
-          <View className={`flex-row items-center px-5 py-4 ${errors.basicSalary ? 'border-b border-red-500/50' : ''}`}>
+          <View className={`flex-row items-center px-5 py-4 border-b border-dark-border ${errors.basicSalary ? 'border-b-red-500/50' : ''}`}>
             <SymbolView name="banknote.fill" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
             <View className="flex-1">
               <Controller
@@ -259,6 +316,50 @@ export default function CompanySetupScreen() {
                   <TextInput
                     className="text-white text-base p-0 m-0"
                     placeholder="Gaji Pokok Per Bulan *"
+                    placeholderTextColor="#64748b"
+                    keyboardType="numeric"
+                    onBlur={onBlur}
+                    onChangeText={(text) => onChange(formatNumberInput(text))}
+                    value={value}
+                  />
+                )}
+              />
+            </View>
+          </View>
+
+          {/* Overtime Meal Allowance */}
+          <View className="flex-row items-center px-5 py-4 border-b border-dark-border">
+            <SymbolView name="fork.knife" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
+            <View className="flex-1">
+              <Controller
+                control={control}
+                name="overtimeMealAllowance"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    className="text-white text-base p-0 m-0"
+                    placeholder="Uang Makan Lembur (per hari, opsional)"
+                    placeholderTextColor="#64748b"
+                    keyboardType="numeric"
+                    onBlur={onBlur}
+                    onChangeText={(text) => onChange(formatNumberInput(text))}
+                    value={value}
+                  />
+                )}
+              />
+            </View>
+          </View>
+
+          {/* Overtime Transport Allowance */}
+          <View className="flex-row items-center px-5 py-4">
+            <SymbolView name="car.fill" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
+            <View className="flex-1">
+              <Controller
+                control={control}
+                name="overtimeTransportAllowance"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    className="text-white text-base p-0 m-0"
+                    placeholder="Uang Transport Lembur (per hari, opsional)"
                     placeholderTextColor="#64748b"
                     keyboardType="numeric"
                     onBlur={onBlur}

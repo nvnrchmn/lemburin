@@ -33,7 +33,7 @@ export default function YearlyAnalyticsScreen() {
         
         const monthTotals = Array(12).fill(0);
         
-        data?.forEach(entry => {
+        (data as { work_date: string; start_time: string; end_time: string; break_minutes: number }[] | null)?.forEach((entry) => {
           const date = new Date(entry.work_date);
           const monthIndex = date.getMonth(); // 0-11
           const hours = calculateDuration(entry.start_time, entry.end_time, entry.break_minutes);
