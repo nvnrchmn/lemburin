@@ -13,6 +13,8 @@ import * as Sharing from 'expo-sharing';
 import { PayPeriod, OvertimeEntry } from '@/types/database';
 import { calculateOvertimeMinutes, calculateOvertimePay, calculateTotalFixedAllowance } from '@/utils/calculator';
 import { formatCurrency, formatDuration } from '@/utils/formatting';
+import { calculatePph21Ter } from '@/utils/tax';
+import { calculateBpjsDeductions } from '@/utils/bpjs';
 
 export default function MonthlySummaryScreen() {
   const { periodId } = useLocalSearchParams<{ periodId: string }>();
@@ -100,6 +102,21 @@ export default function MonthlySummaryScreen() {
       totalPay += payInfo.totalPay;
     }
   });
+
+  const baseSalary = employment?.basic_salary || 0;
+  const fixedAllowances = calculateTotalFixedAllowance(employment?.allowances_detail || null);
+  const grossIncome = baseSalary + fixedAllowances + totalPay;
+
+  const taxResult = calculatePph21Ter(grossIncome, employment?.ptkp_status || 'TK/0');
+  const bpjsResult = calculateBpjsDeductions(
+    baseSalary,
+    fixedAllowances,
+    employment?.has_bpjs_tk ?? true,
+    employment?.has_bpjs_kes ?? true
+  );
+  const otherDeductions = employment?.deductions_detail?.reduce((sum, d) => sum + d.amount, 0) || 0;
+  const totalDeductions = taxResult.taxAmount + bpjsResult.totalBpjs + otherDeductions;
+  const takeHomePay = Math.max(0, grossIncome - totalDeductions);
 
   const formulaName = period.formula_type === 'indonesia' ? 'Formula Kemenaker' : 'Tarif Flat';
 
@@ -269,9 +286,9 @@ export default function MonthlySummaryScreen() {
         </View>
 
         {/* Total Estimation */}
-        <View className="bg-primary-900/30 border border-primary-900/50 rounded-3xl p-6 mb-6 shadow-sm">
+        <View className="bg-primary-900/30 border border-primary-900/50 rounded-3xl p-6 mb-4 shadow-sm">
           <Text className="text-primary-300 text-xs font-bold mb-2 tracking-widest uppercase">
-            TOTAL ESTIMASI UPAH
+            TOTAL ESTIMASI UPAH LEMBUR
           </Text>
           <Text className="text-white text-4xl font-sans-extrabold tracking-tight mb-1">{formatCurrency(totalPay)}</Text>
           <View className="flex-row items-center">
@@ -281,6 +298,49 @@ export default function MonthlySummaryScreen() {
             </Text>
           </View>
         </View>
+
+        {/* Take-Home Pay & Tax Breakdown Card */}
+        {employment?.basic_salary && (
+          <View className="bg-dark-card border border-dark-border rounded-3xl p-6 mb-6 shadow-sm">
+            <View className="flex-row justify-between items-center mb-4 border-b border-dark-border pb-3">
+              <View>
+                <Text className="text-emerald-400 text-xs font-bold uppercase tracking-wider">Estimasi Gaji Bersih</Text>
+                <Text className="text-white text-2xl font-sans-extrabold mt-0.5">{formatCurrency(takeHomePay)}</Text>
+              </View>
+              <View className="bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full">
+                <Text className="text-emerald-400 text-xs font-bold">Take Home Pay</Text>
+              </View>
+            </View>
+
+            <View className="space-y-2.5">
+              <View className="flex-row justify-between items-center mb-2">
+                <Text className="text-dark-muted text-xs">Penghasilan Bruto (Gaji + Lembur)</Text>
+                <Text className="text-white text-xs font-bold">{formatCurrency(grossIncome)}</Text>
+              </View>
+
+              {taxResult.taxAmount > 0 && (
+                <View className="flex-row justify-between items-center mb-2">
+                  <Text className="text-red-400 text-xs">Potongan PPh 21 TER ({taxResult.ratePercentage}%)</Text>
+                  <Text className="text-red-400 text-xs font-bold">-{formatCurrency(taxResult.taxAmount)}</Text>
+                </View>
+              )}
+
+              {bpjsResult.totalBpjs > 0 && (
+                <View className="flex-row justify-between items-center mb-2">
+                  <Text className="text-amber-400 text-xs">Potongan BPJS (JHT, JP, Kes)</Text>
+                  <Text className="text-amber-400 text-xs font-bold">-{formatCurrency(bpjsResult.totalBpjs)}</Text>
+                </View>
+              )}
+
+              {otherDeductions > 0 && (
+                <View className="flex-row justify-between items-center mb-2">
+                  <Text className="text-red-400 text-xs">Potongan Lainnya</Text>
+                  <Text className="text-red-400 text-xs font-bold">-{formatCurrency(otherDeductions)}</Text>
+                </View>
+              )}
+            </View>
+          </View>
+        )}
 
         {/* Overtime List */}
         <View className="mb-6">

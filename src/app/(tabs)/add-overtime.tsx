@@ -15,6 +15,7 @@ import { calculateOvertimeMinutes, calculateOvertimePay, calculateTotalFixedAllo
 import { formatCurrency, formatDuration } from '@/utils/formatting';
 import { pickImage } from '@/utils/upload';
 import { getOrCreatePayPeriodForDate } from '@/services/pay-period-service';
+import { checkIsHoliday } from '@/utils/holidays';
 
 const overtimeSchema = z.object({
   workDate: z.date(),
@@ -211,7 +212,11 @@ export default function AddOvertimeTabScreen() {
                     display="default"
                     onChange={(event, selectedDate) => {
                       setShowDatePicker(false);
-                      if (event.type === 'set' && selectedDate) setValue('workDate', selectedDate);
+                      if (event.type === 'set' && selectedDate) {
+                        setValue('workDate', selectedDate);
+                        const holCheck = checkIsHoliday(selectedDate, employment?.work_system || '5_days');
+                        setValue('isHoliday', holCheck.isHoliday);
+                      }
                     }}
                   />
                 )}
@@ -311,9 +316,21 @@ export default function AddOvertimeTabScreen() {
 
         {/* Holiday Toggle */}
         <View className="mt-3 bg-dark-card border border-dark-border rounded-xl px-4 py-3.5 flex-row items-center justify-between">
-          <View>
+          <View className="flex-1 mr-3">
             <Text className="text-dark-text text-base">Hari Libur / Tanggal Merah</Text>
-            <Text className="text-dark-muted text-xs">Perhitungan formula otomatis menyesuaikan</Text>
+            {(() => {
+              const hol = checkIsHoliday(watchAllFields.workDate, employment?.work_system || '5_days');
+              if (hol.holidayName) {
+                return (
+                  <Text className="text-amber-400 text-xs mt-0.5 font-medium">
+                    ✦ {hol.holidayName}
+                  </Text>
+                );
+              }
+              return (
+                <Text className="text-dark-muted text-xs">Perhitungan formula otomatis menyesuaikan</Text>
+              );
+            })()}
           </View>
           <Controller
             control={control}

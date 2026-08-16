@@ -17,6 +17,7 @@ import { pickImage } from '@/utils/upload';
 import { useToastStore } from '@/stores/toast-store';
 import { getOrCreatePayPeriodForDate } from '@/services/pay-period-service';
 import { syncService } from '@/services/sync-service';
+import { checkIsHoliday } from '@/utils/holidays';
 
 const overtimeSchema = z.object({
   workDate: z.date(),
@@ -227,7 +228,11 @@ export default function EditOvertimeScreen() {
                     display="default"
                     onChange={(event, selectedDate) => {
                       setShowDatePicker(false);
-                      if (selectedDate) setValue('workDate', selectedDate);
+                      if (selectedDate) {
+                        setValue('workDate', selectedDate);
+                        const holCheck = checkIsHoliday(selectedDate, employment?.work_system || '5_days');
+                        setValue('isHoliday', holCheck.isHoliday);
+                      }
                     }}
                   />
                 )}
@@ -328,10 +333,25 @@ export default function EditOvertimeScreen() {
 
           {/* Holiday Toggle */}
           <View className="flex-row items-center justify-between px-5 py-4">
-            <View className="flex-row items-center">
+            <View className="flex-row items-center flex-1 mr-3">
               <SymbolView name="sparkles" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
-              <View>
+              <View className="flex-1">
                 <Text className="text-white text-base">Hari Libur / Merah</Text>
+                {(() => {
+                  const hol = checkIsHoliday(watchAllFields.workDate, employment?.work_system || '5_days');
+                  if (hol.holidayName) {
+                    return (
+                      <Text className="text-amber-400 text-xs mt-0.5 font-medium">
+                        ✦ {hol.holidayName}
+                      </Text>
+                    );
+                  }
+                  return (
+                    <Text className="text-dark-muted text-xs mt-0.5">
+                      Tarif libur PP 35/2021 (2x-4x)
+                    </Text>
+                  );
+                })()}
               </View>
             </View>
             <Controller

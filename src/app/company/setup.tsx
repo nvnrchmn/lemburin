@@ -31,6 +31,9 @@ const companySchema = z.object({
   basicSalary: z.string().min(1, { message: 'Gaji pokok wajib diisi' }),
   overtimeMealAllowance: z.string().optional(),
   overtimeTransportAllowance: z.string().optional(),
+  ptkpStatus: z.enum(['TK/0', 'TK/1', 'TK/2', 'TK/3', 'K/0', 'K/1', 'K/2', 'K/3']),
+  hasBpjsTk: z.boolean(),
+  hasBpjsKes: z.boolean(),
   allowancesDetail: z.array(componentSchema).optional(),
   deductionsDetail: z.array(componentSchema).optional(),
   startDate: z.date(),
@@ -59,6 +62,9 @@ export default function CompanySetupScreen() {
       basicSalary: employment?.basic_salary ? formatNumberInput(employment.basic_salary) : '',
       overtimeMealAllowance: employment?.overtime_meal_allowance ? formatNumberInput(employment.overtime_meal_allowance) : '',
       overtimeTransportAllowance: employment?.overtime_transport_allowance ? formatNumberInput(employment.overtime_transport_allowance) : '',
+      ptkpStatus: (employment?.ptkp_status as any) || 'TK/0',
+      hasBpjsTk: employment?.has_bpjs_tk ?? true,
+      hasBpjsKes: employment?.has_bpjs_kes ?? true,
       allowancesDetail: employment?.allowances_detail?.map(a => ({ ...a, amount: formatNumberInput(a.amount) })) || [],
       deductionsDetail: employment?.deductions_detail?.map(d => ({ ...d, amount: formatNumberInput(d.amount) })) || [],
       startDate: employment?.start_date ? new Date(employment.start_date) : new Date(),
@@ -107,6 +113,9 @@ export default function CompanySetupScreen() {
       basic_salary: salaryNumber,
       overtime_meal_allowance: mealNumber,
       overtime_transport_allowance: transportNumber,
+      ptkp_status: data.ptkpStatus,
+      has_bpjs_tk: data.hasBpjsTk,
+      has_bpjs_kes: data.hasBpjsKes,
       allowance: parsedAllowances.reduce((sum, a) => sum + a.amount, 0), // legacy fallback
       allowances_detail: parsedAllowances,
       deductions_detail: parsedDeductions,
@@ -369,6 +378,82 @@ export default function CompanySetupScreen() {
                 )}
               />
             </View>
+          </View>
+        </View>
+
+        {/* GROUP: Pajak PPh 21 (TER 2024) & BPJS */}
+        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">Pajak PPh 21 (TER) & Iuran BPJS</Text>
+        <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
+          {/* PTKP Status Selection */}
+          <View className="px-5 py-4 border-b border-dark-border">
+            <Text className="text-white font-bold text-sm mb-1">Status PTKP (Kategori TER PPh 21)</Text>
+            <Text className="text-dark-muted text-xs mb-3">Pilih status tanggungan keluarga untuk tarif pajak efektif 2024:</Text>
+            <Controller
+              control={control}
+              name="ptkpStatus"
+              render={({ field: { value, onChange } }) => (
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row gap-2 pb-1">
+                  {(['TK/0', 'TK/1', 'TK/2', 'TK/3', 'K/0', 'K/1', 'K/2', 'K/3'] as const).map((p) => {
+                    const isSelected = value === p;
+                    return (
+                      <Pressable
+                        key={p}
+                        onPress={() => onChange(p)}
+                        className={`px-3.5 py-2 rounded-xl border mr-2 ${
+                          isSelected
+                            ? 'bg-primary-600 border-primary-500'
+                            : 'bg-dark-bg border-dark-border active:bg-dark-border'
+                        }`}
+                      >
+                        <Text className={`font-bold text-xs ${isSelected ? 'text-white' : 'text-slate-300'}`}>
+                          {p}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </ScrollView>
+              )}
+            />
+          </View>
+
+          {/* BPJS Ketenagakerjaan Switch */}
+          <View className="flex-row items-center justify-between px-5 py-4 border-b border-dark-border">
+            <View className="flex-1 mr-4">
+              <Text className="text-white font-bold text-sm">BPJS Ketenagakerjaan</Text>
+              <Text className="text-dark-muted text-xs mt-0.5">Potongan JHT 2% & Jaminan Pensiun 1%</Text>
+            </View>
+            <Controller
+              control={control}
+              name="hasBpjsTk"
+              render={({ field: { value, onChange } }) => (
+                <Switch
+                  trackColor={{ false: '#334155', true: '#3b82f6' }}
+                  thumbColor={'#ffffff'}
+                  onValueChange={onChange}
+                  value={value}
+                />
+              )}
+            />
+          </View>
+
+          {/* BPJS Kesehatan Switch */}
+          <View className="flex-row items-center justify-between px-5 py-4">
+            <View className="flex-1 mr-4">
+              <Text className="text-white font-bold text-sm">BPJS Kesehatan</Text>
+              <Text className="text-dark-muted text-xs mt-0.5">Potongan iuran 1% karyawan</Text>
+            </View>
+            <Controller
+              control={control}
+              name="hasBpjsKes"
+              render={({ field: { value, onChange } }) => (
+                <Switch
+                  trackColor={{ false: '#334155', true: '#3b82f6' }}
+                  thumbColor={'#ffffff'}
+                  onValueChange={onChange}
+                  value={value}
+                />
+              )}
+            />
           </View>
         </View>
 

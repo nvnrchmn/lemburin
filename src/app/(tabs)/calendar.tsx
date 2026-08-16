@@ -11,6 +11,7 @@ import { formatDuration } from '@/utils/formatting';
 import { calculateOvertimeMinutes } from '@/utils/calculator';
 import { supabase } from '@/lib/supabase';
 import type { OvertimeEntry } from '@/types/database';
+import { checkIsHoliday } from '@/utils/holidays';
 
 // Setup Indonesian locale for calendar
 LocaleConfig.locales['id'] = {
@@ -116,9 +117,22 @@ export default function CalendarScreen() {
       </Animated.View>
 
       <ScrollView className="flex-1 px-5 pt-6 bg-dark-bg">
-        <Text className="text-dark-text text-lg font-bold mb-4">
-          {format(parseISO(selectedDate), 'EEEE, dd MMMM yyyy', { locale: id })}
-        </Text>
+        <View className="mb-4">
+          <Text className="text-dark-text text-lg font-bold">
+            {format(parseISO(selectedDate), 'EEEE, dd MMMM yyyy', { locale: id })}
+          </Text>
+          {(() => {
+            const hol = checkIsHoliday(selectedDate, employment?.work_system || '5_days');
+            if (hol.holidayName) {
+              return (
+                <View className="mt-1 self-start bg-red-500/10 border border-red-500/30 px-3 py-1 rounded-full flex-row items-center">
+                  <Text className="text-red-400 text-xs font-bold">🔴 {hol.holidayName}</Text>
+                </View>
+              );
+            }
+            return null;
+          })()}
+        </View>
 
         {selectedEntries.length === 0 ? (
           <Animated.View entering={FadeInUp.delay(200).duration(500).springify()}>

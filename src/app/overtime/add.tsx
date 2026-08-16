@@ -16,6 +16,7 @@ import { formatCurrency, formatDuration } from '@/utils/formatting';
 import { pickImage } from '@/utils/upload';
 import { useToastStore } from '@/stores/toast-store';
 import { getOrCreatePayPeriodForDate } from '@/services/pay-period-service';
+import { checkIsHoliday } from '@/utils/holidays';
 
 const overtimeSchema = z.object({
   workDate: z.date(),
@@ -193,7 +194,11 @@ export default function AddOvertimeScreen() {
                     display="default"
                     onChange={(event, selectedDate) => {
                       setShowDatePicker(false);
-                      if (selectedDate) setValue('workDate', selectedDate);
+                      if (selectedDate) {
+                        setValue('workDate', selectedDate);
+                        const holCheck = checkIsHoliday(selectedDate, employment?.work_system || '5_days');
+                        setValue('isHoliday', holCheck.isHoliday);
+                      }
                     }}
                   />
                 )}
@@ -240,10 +245,10 @@ export default function AddOvertimeScreen() {
             render={({ field: { value } }) => (
               <>
                 <Pressable 
-                  className="flex-row items-center px-5 py-4 active:bg-dark-border"
+                  className="flex-row items-center px-5 py-4 border-b border-dark-border active:bg-dark-border"
                   onPress={() => setShowEndTimePicker(true)}
                 >
-                  <SymbolView name="clock.badge.checkmark" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
+                  <SymbolView name="clock.badge.checkmark.fill" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
                   <View className="flex-1 flex-row justify-between items-center">
                     <Text className="text-white text-base">Jam Selesai</Text>
                     <Text className="text-primary-400 font-medium">{format(value, 'HH:mm')}</Text>
@@ -270,10 +275,15 @@ export default function AddOvertimeScreen() {
         <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">Pengaturan Tambahan</Text>
         <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
           {/* Break Minutes */}
-          <View className="flex-row items-center px-5 py-4 border-b border-dark-border">
-            <SymbolView name="cup.and.saucer.fill" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
-            <View className="flex-1 flex-row justify-between items-center">
-              <Text className="text-white text-base">Istirahat (menit)</Text>
+          <View className="flex-row items-center justify-between px-5 py-4 border-b border-dark-border">
+            <View className="flex-row items-center flex-1">
+              <SymbolView name="cup.and.saucer.fill" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
+              <View>
+                <Text className="text-white text-base">Istirahat</Text>
+                <Text className="text-dark-muted text-xs">Menit potongan</Text>
+              </View>
+            </View>
+            <View className="flex-row items-center">
               <Controller
                 control={control}
                 name="breakMinutes"
@@ -294,10 +304,25 @@ export default function AddOvertimeScreen() {
 
           {/* Holiday Toggle */}
           <View className="flex-row items-center justify-between px-5 py-4">
-            <View className="flex-row items-center">
+            <View className="flex-row items-center flex-1 mr-3">
               <SymbolView name="sparkles" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
-              <View>
+              <View className="flex-1">
                 <Text className="text-white text-base">Hari Libur / Merah</Text>
+                {(() => {
+                  const hol = checkIsHoliday(watchAllFields.workDate, employment?.work_system || '5_days');
+                  if (hol.holidayName) {
+                    return (
+                      <Text className="text-amber-400 text-xs mt-0.5 font-medium">
+                        ✦ {hol.holidayName}
+                      </Text>
+                    );
+                  }
+                  return (
+                    <Text className="text-dark-muted text-xs mt-0.5">
+                      Tarif libur PP 35/2021 (2x-4x)
+                    </Text>
+                  );
+                })()}
               </View>
             </View>
             <Controller

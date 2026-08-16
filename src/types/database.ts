@@ -28,6 +28,8 @@ export interface Profile {
   updated_at: string;
 }
 
+export type PtkpStatus = 'TK/0' | 'TK/1' | 'TK/2' | 'TK/3' | 'K/0' | 'K/1' | 'K/2' | 'K/3';
+
 export interface Employment {
   id: string;
   user_id: string;
@@ -39,6 +41,9 @@ export interface Employment {
   allowance: number | null; // legacy
   overtime_meal_allowance?: number | null;
   overtime_transport_allowance?: number | null;
+  ptkp_status?: PtkpStatus | null;
+  has_bpjs_tk?: boolean | null;
+  has_bpjs_kes?: boolean | null;
   allowances_detail: SalaryComponent[] | null;
   deductions_detail: SalaryComponent[] | null;
   start_date: string;

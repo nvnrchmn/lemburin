@@ -144,6 +144,28 @@ Sprint ini dirancang untuk menyempurnakan aplikasi **Lemburin** dari sekadar kal
 
 ---
 
+---
+
+## 🏛️ SPRINT 4 — Super Payroll, Tax & Compliance (Prioritas: Tinggi)
+
+### 📌 SP-10: Auto-Detect Hari Libur Nasional Indonesia (SKB 3 Menteri)
+* **Solusi**:
+  - Modul `src/utils/holidays.ts` memuat kalender resmi hari libur nasional & cuti bersama Indonesia.
+  - Form pencatatan lembur otomatis mengidentifikasi tanggal merah dan menerapkan formula lembur hari libur (2x–4x) tanpa input manual.
+  - Kalender menampilkan indikator dan badge nama libur resmi.
+
+### 📌 SP-11: Kalkulator Pajak PPh 21 TER 2024 & Iuran BPJS Karyawan
+* **Solusi**:
+  - Mengimplementasikan Skema TER PP 58/2023 & PMK 168/2023 (Kategori A, B, C berdasarkan status PTKP).
+  - Menghitung iuran resmi karyawan: BPJS JHT (2%), BPJS Jaminan Pensiun (1%), dan BPJS Kesehatan (1%).
+  - Menampilkan simulasi **Take-Home Pay (Gaji Bersih Diterima)** pada ringkasan bulanan.
+
+### 📌 SP-12: Generator Surat Klaim Selisih Lembur (Dispute Resolver PDF)
+* **Solusi**:
+  - Ketika slip gaji fisik kantor terdapat selisih kurang bayar (`difference < 0`), aplikasi menyediakan tombol ekspor surat formal PDF berlandaskan **Pasal 31 PP No. 35 Tahun 2021** yang siap diajukan ke HRD/Payroll.
+
+---
+
 ## 📊 Matriks Pelaksanaan Sprint
 
 | ID | Fitur | Sprint | Status | Target File |
@@ -157,3 +179,6 @@ Sprint ini dirancang untuk menyempurnakan aplikasi **Lemburin** dari sekadar kal
 | **SP-07** | Lampiran Foto SPL / Absensi | Sprint 3 | ✅ Completed | `overtime/add.tsx`, `overtime/[id].tsx`, `upload.ts` |
 | **SP-08** | Foto Slip Gaji pada Verifikasi | Sprint 3 | ✅ Completed | `verification/[periodId].tsx`, `upload.ts` |
 | **SP-09** | Uang Makan & Transport Lembur | Sprint 3 | ✅ Completed | `company/setup.tsx`, `utils/calculator.ts` |
+| **SP-10** | Auto-Detect Hari Libur Nasional SKB 3 Menteri | Sprint 4 | ✅ Completed | `utils/holidays.ts`, `overtime/add.tsx`, `calendar.tsx` |
+| **SP-11** | Kalkulator PPh 21 TER 2024 & BPJS (Take-Home Pay) | Sprint 4 | ✅ Completed | `utils/tax.ts`, `utils/bpjs.ts`, `summary/[periodId].tsx` |
+| **SP-12** | Surat Klaim Selisih Lembur PP 35/2021 (PDF) | Sprint 4 | ✅ Completed | `verification/[periodId].tsx` |
