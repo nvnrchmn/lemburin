@@ -1,10 +1,12 @@
 import { supabase } from '@/lib/supabase';
 import { useDataStore } from '@/stores/data-store';
 import { useAuthStore } from '@/stores/auth-store';
+import { getOrCreatePayPeriodForDate, reassignMismatchedEntries } from '@/services/pay-period-service';
+import type { PayPeriod } from '@/types/database';
 
-export const syncService = async () => {
+export const syncService = async (specifiedPeriodId?: string) => {
   const { session } = useAuthStore.getState();
-  const { setProfile, setEmployment, setActivePayPeriod, setOvertimeEntries } = useDataStore.getState();
+  const { setProfile, setEmployment, setActivePayPeriod, setOvertimeEntries, activePayPeriod } = useDataStore.getState();
 
   if (!session?.user) return;
 
@@ -35,29 +37,64 @@ export const syncService = async () => {
       const employment = (employments as any[])[0];
       setEmployment(employment);
 
-      // 2. Fetch Latest Pay Period for this employment
-      const { data: payPeriods, error: ppError } = await supabase
-        .from('pay_periods')
-        .select('*')
-        .eq('employment_id', employment.id)
-        .order('start_date', { ascending: false })
-        .limit(1);
+      // Jalankan pembersihan & penataan ulang entri lembur ke periode yang benar (self-healing)
+      await reassignMismatchedEntries(employment.id, activePayPeriod);
 
-      if (ppError) throw ppError;
+      let targetPeriod: PayPeriod | null = null;
 
-      if (payPeriods && (payPeriods as any[]).length > 0) {
-        const activePeriod = (payPeriods as any[])[0];
-        setActivePayPeriod(activePeriod);
+      if (specifiedPeriodId) {
+        const { data: pData } = await supabase
+          .from('pay_periods')
+          .select('*')
+          .eq('id', specifiedPeriodId)
+          .maybeSingle();
+        if (pData) targetPeriod = pData as PayPeriod;
+      }
 
-        // 3. Fetch Overtime Entries for this period
+      if (!targetPeriod) {
+        const todayStr = new Date().toISOString().split('T')[0];
+        
+        // Cari periode yang mencakup hari ini
+        const { data: currentPeriods } = await supabase
+          .from('pay_periods')
+          .select('*')
+          .eq('employment_id', employment.id)
+          .lte('start_date', todayStr)
+          .gte('end_date', todayStr)
+          .limit(1);
+
+        if (currentPeriods && currentPeriods.length > 0) {
+          targetPeriod = currentPeriods[0] as PayPeriod;
+        } else {
+          // Cari periode terbaru
+          const { data: latestPeriods } = await supabase
+            .from('pay_periods')
+            .select('*')
+            .eq('employment_id', employment.id)
+            .order('start_date', { ascending: false })
+            .limit(1);
+
+          if (latestPeriods && latestPeriods.length > 0) {
+            targetPeriod = latestPeriods[0] as PayPeriod;
+          } else {
+            // Jika belum ada sama sekali, otomatis buat untuk hari ini
+            targetPeriod = await getOrCreatePayPeriodForDate(employment.id, todayStr);
+          }
+        }
+      }
+
+      if (targetPeriod) {
+        setActivePayPeriod(targetPeriod);
+
+        // 3. Fetch Overtime Entries KHUSUS untuk periode ini saja
         const { data: entries, error: entriesError } = await supabase
           .from('overtime_entries')
           .select('*')
-          .eq('pay_period_id', activePeriod.id)
+          .eq('pay_period_id', targetPeriod.id)
           .order('work_date', { ascending: true });
 
         if (entriesError) throw entriesError;
-        if (entries) setOvertimeEntries(entries as any[]);
+        setOvertimeEntries((entries as any[]) || []);
       }
     }
   } catch (error) {

@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback } from 'react';
-import { View, Text, ScrollView, Pressable, RefreshControl, Image } from 'react-native';
+import { View, Text, ScrollView, Pressable, RefreshControl, Image, Modal } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { format, parseISO } from 'date-fns';
@@ -13,12 +13,16 @@ import { useSettingsStore } from '@/stores/settings-store';
 import { formatCurrency, formatDuration } from '@/utils/formatting';
 import { calculateOvertimeMinutes, calculateOvertimePay, calculateTotalFixedAllowance, calculateTotalDeduction } from '@/utils/calculator';
 import { syncService } from '@/services/sync-service';
+import { supabase } from '@/lib/supabase';
+import type { PayPeriod } from '@/types/database';
 import { t } from '@/utils/i18n';
 
 export default function DashboardScreen() {
-  const { profile, employment, activePayPeriod, overtimeEntries } = useDataStore();
+  const { profile, employment, activePayPeriod, overtimeEntries, setActivePayPeriod } = useDataStore();
   const { language, currency } = useSettingsStore();
   const [refreshing, setRefreshing] = useState(false);
+  const [isPeriodModalVisible, setIsPeriodModalVisible] = useState(false);
+  const [allPeriods, setAllPeriods] = useState<PayPeriod[]>([]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -212,7 +216,20 @@ export default function DashboardScreen() {
             </View>
           )}
 
-          <View className="bg-black/20 p-4 rounded-2xl border border-white/10 flex-row items-center justify-between">
+          <Pressable 
+            onPress={async () => {
+              if (employment?.id) {
+                const { data: pList } = await supabase
+                  .from('pay_periods')
+                  .select('*')
+                  .eq('employment_id', employment.id)
+                  .order('start_date', { ascending: false });
+                if (pList) setAllPeriods(pList as PayPeriod[]);
+              }
+              setIsPeriodModalVisible(true);
+            }}
+            className="bg-black/20 p-4 rounded-2xl border border-white/10 flex-row items-center justify-between active:bg-black/30"
+          >
             <View className="flex-1">
               <Text className="text-primary-200 text-xs font-medium mb-1">
                 {t('activePeriod', language)}
@@ -228,15 +245,11 @@ export default function DashboardScreen() {
                 <Text className="text-white font-bold">{t('noPeriod', language)}</Text>
               )}
             </View>
-            {!activePayPeriod && (
-              <Pressable 
-                className="bg-primary-500 px-4 py-2 rounded-xl"
-                onPress={() => router.push('/pay-period/setup')}
-              >
-                <Text className="text-white text-xs font-bold">{t('setPeriod', language)}</Text>
-              </Pressable>
-            )}
-          </View>
+            <View className="flex-row items-center gap-1 bg-white/10 px-3 py-1.5 rounded-xl border border-white/10">
+              <Text className="text-white text-xs font-bold">Ganti</Text>
+              <Ionicons name="chevron-down" size={14} color="#fff" />
+            </View>
+          </Pressable>
         </LinearGradient>
         </View>
       </Animated.View>
@@ -394,6 +407,76 @@ export default function DashboardScreen() {
         )}
         </View>
       </Animated.View>
+
+      {/* Period Selection Modal */}
+      <Modal
+        visible={isPeriodModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setIsPeriodModalVisible(false)}
+      >
+        <View className="flex-1 bg-black/80 justify-end">
+          <View className="bg-dark-card border-t border-dark-border rounded-t-3xl p-6 max-h-[80%]">
+            <View className="flex-row justify-between items-center mb-4">
+              <Text className="text-white text-xl font-bold">Pilih Periode Gaji</Text>
+              <Pressable 
+                onPress={() => setIsPeriodModalVisible(false)}
+                className="w-8 h-8 rounded-full bg-dark-bg items-center justify-center"
+              >
+                <Ionicons name="close" size={18} color="#fff" />
+              </Pressable>
+            </View>
+
+            <ScrollView className="mb-4" showsVerticalScrollIndicator={false}>
+              {allPeriods.length === 0 ? (
+                <Text className="text-dark-muted text-center py-6">Memuat daftar periode...</Text>
+              ) : (
+                allPeriods.map((p) => {
+                  const isSelected = activePayPeriod?.id === p.id;
+                  return (
+                    <Pressable
+                      key={p.id}
+                      onPress={async () => {
+                        setIsPeriodModalVisible(false);
+                        setActivePayPeriod(p);
+                        await syncService(p.id);
+                      }}
+                      className={`p-4 rounded-2xl mb-2 flex-row justify-between items-center border ${
+                        isSelected 
+                          ? 'bg-primary-950/40 border-primary-500' 
+                          : 'bg-dark-bg border-dark-border active:bg-dark-border/40'
+                      }`}
+                    >
+                      <View>
+                        <Text className={`font-bold text-base ${isSelected ? 'text-primary-300' : 'text-white'}`}>
+                          {p.period_name}
+                        </Text>
+                        <Text className="text-dark-muted text-xs mt-0.5">
+                          {format(parseISO(p.start_date), 'dd MMM yyyy', { locale: localeId })} - {format(parseISO(p.end_date), 'dd MMM yyyy', { locale: localeId })}
+                        </Text>
+                      </View>
+                      {isSelected && (
+                        <Ionicons name="checkmark-circle" size={22} color="#3b82f6" />
+                      )}
+                    </Pressable>
+                  );
+                })
+              )}
+            </ScrollView>
+
+            <Pressable
+              className="bg-primary-600 rounded-2xl py-3.5 items-center flex-row justify-center gap-2"
+              onPress={() => {
+                setIsPeriodModalVisible(false);
+                router.push('/pay-period/setup');
+              }}
+            >
+              <Ionicons name="add-circle-outline" size={18} color="#fff" />
+              <Text className="text-white font-bold">Atur / Buat Periode Baru</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }

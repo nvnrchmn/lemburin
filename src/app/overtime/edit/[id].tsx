@@ -15,6 +15,8 @@ import { calculateOvertimeMinutes, calculateOvertimePay, calculateTotalFixedAllo
 import { formatCurrency, formatDuration } from '@/utils/formatting';
 import { pickImage } from '@/utils/upload';
 import { useToastStore } from '@/stores/toast-store';
+import { getOrCreatePayPeriodForDate } from '@/services/pay-period-service';
+import { syncService } from '@/services/sync-service';
 
 const overtimeSchema = z.object({
   workDate: z.date(),
@@ -125,8 +127,8 @@ export default function EditOvertimeScreen() {
   }, [watchAllFields, activePayPeriod, employment]);
 
   const onSubmit = async (data: OvertimeFormValues) => {
-    if (!activePayPeriod || !id) {
-      Alert.alert('Perhatian', 'Harap atur Periode Gaji terlebih dahulu di Pengaturan.', [
+    if (!employment?.id || !id) {
+      Alert.alert('Perhatian', 'Harap atur Profil Perusahaan terlebih dahulu di Pengaturan.', [
         { text: 'OK', onPress: () => router.back() }
       ]);
       return;
@@ -137,32 +139,43 @@ export default function EditOvertimeScreen() {
     const startStr = format(data.startTime, 'HH:mm');
     const endStr = format(data.endTime, 'HH:mm');
     const breakMins = parseInt(data.breakMinutes || '0', 10);
-
-    const payload = {
-      work_date: data.workDate.toISOString().split('T')[0],
-      start_time: startStr,
-      end_time: endStr,
-      break_minutes: isNaN(breakMins) ? 0 : breakMins,
-      is_holiday: data.isHoliday,
-      attachment_url: attachmentUrl,
-      notes: data.notes || null,
-    };
+    const workDateStr = data.workDate.toISOString().split('T')[0];
 
     try {
+      // Cari atau buatkan otomatis periode yang tepat jika tanggal kerja berubah bulan/siklus
+      const targetPeriod = await getOrCreatePayPeriodForDate(employment.id, workDateStr, activePayPeriod);
+
+      const payload = {
+        pay_period_id: targetPeriod.id,
+        work_date: workDateStr,
+        start_time: startStr,
+        end_time: endStr,
+        break_minutes: isNaN(breakMins) ? 0 : breakMins,
+        is_holiday: data.isHoliday,
+        attachment_url: attachmentUrl,
+        notes: data.notes || null,
+      };
+
       const { data: resultData, error } = await supabase
         .from('overtime_entries')
         .update(payload as any)
         .eq('id', id)
         .select()
         .single();
-        
+
       if (error) throw error;
-      
-      updateOvertimeEntry(resultData as any);
-      showToast('Data lembur berhasil diperbarui', 'success');
+
+      if (activePayPeriod?.id === targetPeriod.id) {
+        updateOvertimeEntry(resultData as any);
+      } else {
+        // Jika dipindah ke periode lain, refresh data
+        await syncService();
+      }
+
+      showToast('Perubahan berhasil disimpan', 'success');
       router.back();
     } catch (error: any) {
-      showToast(error.message || 'Gagal Menyimpan', 'error');
+      Alert.alert('Gagal Menyimpan', error.message || 'Terjadi kesalahan sistem');
     } finally {
       setIsLoading(false);
     }

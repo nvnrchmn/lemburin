@@ -11,39 +11,8 @@ import { useAuthStore } from '@/stores/auth-store';
 import { useDataStore } from '@/stores/data-store';
 import { supabase } from '@/lib/supabase';
 
-function calculatePeriodDates(startDay: number) {
-  const today = new Date();
-  const currentDay = today.getDate();
-  
-  let startMonth = today.getMonth();
-  let startYear = today.getFullYear();
-  let endMonth = today.getMonth();
-  let endYear = today.getFullYear();
-  
-  if (currentDay < startDay) {
-    startMonth -= 1;
-    if (startMonth < 0) {
-      startMonth = 11;
-      startYear -= 1;
-    }
-  } else {
-    endMonth += 1;
-    if (endMonth > 11) {
-      endMonth = 0;
-      endYear += 1;
-    }
-  }
-  
-  const startDate = new Date(startYear, startMonth, startDay);
-  const endDate = new Date(endYear, endMonth, startDay - 1);
-  const periodName = new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric' }).format(endDate);
-  
-  return {
-    startDate: startDate.toISOString().split('T')[0],
-    endDate: endDate.toISOString().split('T')[0],
-    periodName
-  };
-}
+import { calculatePeriodDatesForTargetDate } from '@/utils/period';
+import { syncService } from '@/services/sync-service';
 
 export default function PayPeriodSetupScreen() {
   const { user } = useAuthStore();
@@ -108,14 +77,14 @@ export default function PayPeriodSetupScreen() {
 
     setIsLoading(true);
     
-    let startDateStr, endDateStr, periodName;
+    let startDateStr: string, endDateStr: string, periodName: string;
     
     if (selectedDay === 'custom') {
       startDateStr = customStart.toISOString().split('T')[0];
       endDateStr = customEnd.toISOString().split('T')[0];
       periodName = `Kustom: ${format(customStart, 'MMM')} - ${format(customEnd, 'MMM yyyy')}`;
     } else {
-      const dates = calculatePeriodDates(selectedDay as number);
+      const dates = calculatePeriodDatesForTargetDate(new Date(), selectedDay as number);
       startDateStr = dates.startDate;
       endDateStr = dates.endDate;
       periodName = dates.periodName;
@@ -132,32 +101,46 @@ export default function PayPeriodSetupScreen() {
     };
 
     try {
-      let response;
-      if (activePayPeriod?.id) {
-        response = await supabase
+      // Cari apakah periode dengan rentang ini sudah ada
+      const { data: existingPeriod } = await supabase
+        .from('pay_periods')
+        .select('*')
+        .eq('employment_id', employment.id)
+        .eq('start_date', startDateStr)
+        .eq('end_date', endDateStr)
+        .maybeSingle();
+
+      let savedPeriod: any;
+      if (existingPeriod) {
+        // Update data pada periode rentang ini
+        const { data: updated, error } = await supabase
           .from('pay_periods')
-          // @ts-ignore
           .update(payload as any)
-          .eq('id', activePayPeriod.id)
+          .eq('id', existingPeriod.id)
           .select()
           .single();
+        if (error) throw error;
+        savedPeriod = updated;
       } else {
-        response = await supabase
+        // Insert periode baru (jangan overwrite periode bulan lain!)
+        const { data: inserted, error } = await supabase
           .from('pay_periods')
-          // @ts-ignore
           .insert(payload as any)
           .select()
           .single();
+        if (error) throw error;
+        savedPeriod = inserted;
       }
 
-      if (response.error) throw response.error;
-      
-      setActivePayPeriod(response.data);
+      setActivePayPeriod(savedPeriod);
+      // Sinkronisasi data agar dashboard memuat entri khusus untuk periode ini
+      await syncService(savedPeriod.id);
+
       Alert.alert('Berhasil', 'Periode gaji telah disimpan', [
         { text: 'OK', onPress: () => router.back() }
       ]);
     } catch (error: any) {
-      Alert.alert('Gagal Menyimpan', error.message);
+      Alert.alert('Gagal Menyimpan', error.message || 'Terjadi kesalahan sistem');
     } finally {
       setIsLoading(false);
     }

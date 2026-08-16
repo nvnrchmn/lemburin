@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
@@ -9,6 +9,8 @@ import Animated, { FadeInDown, FadeInUp, Layout } from 'react-native-reanimated'
 import { useDataStore } from '@/stores/data-store';
 import { formatDuration } from '@/utils/formatting';
 import { calculateOvertimeMinutes } from '@/utils/calculator';
+import { supabase } from '@/lib/supabase';
+import type { OvertimeEntry } from '@/types/database';
 
 // Setup Indonesian locale for calendar
 LocaleConfig.locales['id'] = {
@@ -24,15 +26,42 @@ LocaleConfig.locales['id'] = {
 LocaleConfig.defaultLocale = 'id';
 
 export default function CalendarScreen() {
-  const { overtimeEntries } = useDataStore();
+  const { employment, overtimeEntries } = useDataStore();
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split('T')[0]
   );
+  const [allCalendarEntries, setAllCalendarEntries] = useState<OvertimeEntry[]>([]);
+
+  useEffect(() => {
+    async function loadAllEntries() {
+      if (!employment?.id) return;
+      try {
+        const { data: pList } = await supabase
+          .from('pay_periods')
+          .select('id')
+          .eq('employment_id', employment.id);
+        
+        if (pList && pList.length > 0) {
+          const pIds = pList.map(p => p.id);
+          const { data: entries } = await supabase
+            .from('overtime_entries')
+            .select('*')
+            .in('pay_period_id', pIds);
+          if (entries) setAllCalendarEntries(entries as OvertimeEntry[]);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    loadAllEntries();
+  }, [employment?.id, overtimeEntries]);
+
+  const displayedEntries = allCalendarEntries.length > 0 ? allCalendarEntries : overtimeEntries;
 
   // Mark dates with overtime
   const markedDates = useMemo(() => {
     const marks: any = {};
-    overtimeEntries.forEach(entry => {
+    displayedEntries.forEach(entry => {
       marks[entry.work_date] = { marked: true, dotColor: '#3b82f6' };
     });
     
@@ -44,12 +73,12 @@ export default function CalendarScreen() {
     }
     
     return marks;
-  }, [overtimeEntries, selectedDate]);
+  }, [displayedEntries, selectedDate]);
 
   // Entries for selected date
   const selectedEntries = useMemo(() => {
-    return overtimeEntries.filter(e => e.work_date === selectedDate);
-  }, [overtimeEntries, selectedDate]);
+    return displayedEntries.filter(e => e.work_date === selectedDate);
+  }, [displayedEntries, selectedDate]);
 
   return (
     <View className="flex-1 bg-dark-bg pt-12">

@@ -14,6 +14,7 @@ import { supabase } from '@/lib/supabase';
 import { calculateOvertimeMinutes, calculateOvertimePay, calculateTotalFixedAllowance } from '@/utils/calculator';
 import { formatCurrency, formatDuration } from '@/utils/formatting';
 import { pickImage } from '@/utils/upload';
+import { getOrCreatePayPeriodForDate } from '@/services/pay-period-service';
 
 const overtimeSchema = z.object({
   workDate: z.date(),
@@ -99,9 +100,9 @@ export default function AddOvertimeTabScreen() {
   }, [watchAllFields, activePayPeriod, employment]);
 
   const onSubmit = async (data: OvertimeFormValues) => {
-    if (!activePayPeriod) {
-      Alert.alert('Perhatian', 'Harap atur Periode Gaji terlebih dahulu di Pengaturan.', [
-        { text: 'OK', onPress: () => router.push('/(tabs)/settings') }
+    if (!employment?.id) {
+      Alert.alert('Perhatian', 'Harap atur Profil Perusahaan terlebih dahulu di Pengaturan.', [
+        { text: 'OK', onPress: () => router.push('/company/setup') }
       ]);
       return;
     }
@@ -111,19 +112,23 @@ export default function AddOvertimeTabScreen() {
     const startStr = format(data.startTime, 'HH:mm');
     const endStr = format(data.endTime, 'HH:mm');
     const breakMins = parseInt(data.breakMinutes || '0', 10);
-
-    const payload = {
-      pay_period_id: activePayPeriod.id,
-      work_date: data.workDate.toISOString().split('T')[0],
-      start_time: startStr,
-      end_time: endStr,
-      break_minutes: isNaN(breakMins) ? 0 : breakMins,
-      is_holiday: data.isHoliday,
-      attachment_url: attachmentUrl,
-      notes: data.notes || null,
-    };
+    const workDateStr = data.workDate.toISOString().split('T')[0];
 
     try {
+      // Cari atau buatkan otomatis periode yang tepat untuk tanggal lembur ini
+      const targetPeriod = await getOrCreatePayPeriodForDate(employment.id, workDateStr, activePayPeriod);
+
+      const payload = {
+        pay_period_id: targetPeriod.id,
+        work_date: workDateStr,
+        start_time: startStr,
+        end_time: endStr,
+        break_minutes: isNaN(breakMins) ? 0 : breakMins,
+        is_holiday: data.isHoliday,
+        attachment_url: attachmentUrl,
+        notes: data.notes || null,
+      };
+
       const { data: resultData, error } = await supabase
         .from('overtime_entries')
         .insert(payload as any)
@@ -132,14 +137,19 @@ export default function AddOvertimeTabScreen() {
 
       if (error) throw error;
 
-      addOvertimeEntry(resultData);
-      Alert.alert('Berhasil', 'Catatan lembur telah disimpan', [
+      // Jika tanggal lembur masuk ke periode yang sedang aktif ditampilkan di dashboard, update state lokal
+      if (activePayPeriod?.id === targetPeriod.id) {
+        addOvertimeEntry(resultData);
+      }
+
+      Alert.alert('Berhasil', `Catatan lembur tersimpan di Periode ${targetPeriod.period_name}`, [
         { text: 'OK', onPress: () => {
           // Reset slightly but keep date if they want to add another for same day
           setValue('startTime', defaultStartTime);
           setValue('endTime', defaultEndTime);
           setValue('breakMinutes', '0');
           setValue('notes', '');
+          setAttachmentUrl(null);
           
           router.push('/(tabs)');
         }}
