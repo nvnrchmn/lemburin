@@ -12,7 +12,7 @@ jobs:
     name: Build APK
     runs-on: ubuntu-latest
     env:
-      EXPO_PUBLIC_SUPABASE_URL: "https://ygyphebainyngkbnagae.supabase.co"
+      EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
       EXPO_PUBLIC_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlneXBoZWJhaW55bmdrYm5hZ2FlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1OTA1NDUsImV4cCI6MjA5OTE2NjU0NX0._7rY4n7MeYoaKHeWP6bF3NUXH99bFCqypQSEKjvRJaI"
 
     steps:
