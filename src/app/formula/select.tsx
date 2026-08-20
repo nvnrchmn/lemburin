@@ -56,16 +56,19 @@ export default function FormulaSelectScreen() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-dark-bg px-5 pt-6" showsVerticalScrollIndicator={false}>
-      <Text className="text-dark-muted text-sm mb-6 ml-1 font-medium">
+    <ScrollView
+      className="flex-1 bg-light-bg dark:bg-dark-bg px-5 pt-6"
+      showsVerticalScrollIndicator={false}
+    >
+      <Text className="text-light-muted dark:text-dark-muted text-sm mb-6 ml-1 font-medium">
         Pilih metode perhitungan lembur yang sesuai dengan kebijakan perusahaan Anda.
       </Text>
 
       <View className="w-full">
-        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
+        <Text className="text-light-muted dark:text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
           Formula Lembur
         </Text>
-        <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
+        <View className="bg-light-card dark:bg-dark-card rounded-3xl overflow-hidden mb-6">
           {formulas.map((formula, index) => {
             const isSelected = selectedFormula === formula.id;
             const isLast = index === formulas.length - 1;
@@ -74,7 +77,7 @@ export default function FormulaSelectScreen() {
               <Pressable
                 key={formula.id}
                 onPress={() => setSelectedFormula(formula.id as FormulaType)}
-                className={`px-5 py-4 flex-row justify-between items-center active:bg-dark-border ${!isLast ? 'border-b border-dark-border' : ''}`}
+                className={`px-5 py-4 flex-row justify-between items-center active:bg-light-border dark:active:bg-dark-border ${!isLast ? 'border-b border-light-border dark:border-dark-border' : ''}`}
               >
                 <View className="flex-1">
                   <Text
@@ -82,7 +85,9 @@ export default function FormulaSelectScreen() {
                   >
                     {formula.label}
                   </Text>
-                  <Text className="text-dark-muted text-xs mr-4">{formula.description}</Text>
+                  <Text className="text-light-muted dark:text-dark-muted text-xs mr-4">
+                    {formula.description}
+                  </Text>
                 </View>
                 {isSelected && <Ionicons name="checkmark" size={20} color="#3b82f6" />}
               </Pressable>
@@ -90,19 +95,19 @@ export default function FormulaSelectScreen() {
           })}
         </View>
 
-        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
+        <Text className="text-light-muted dark:text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
           Dasar Perhitungan (Simulasi)
         </Text>
-        <View className="bg-dark-card rounded-3xl overflow-hidden mb-6 p-5">
+        <View className="bg-light-card dark:bg-dark-card rounded-3xl overflow-hidden mb-6 p-5">
           {selectedFormula === 'indonesia' && (
             <View>
               <Text className="text-white text-base font-bold mb-2">Formula Kemenaker RI</Text>
-              <View className="bg-dark-bg p-4 rounded-xl border border-dark-border mb-3">
+              <View className="bg-light-bg dark:bg-dark-bg p-4 rounded-xl border border-light-border dark:border-dark-border mb-3">
                 <Text className="text-primary-400 font-mono text-sm leading-6">
                   Upah Sejam = (Gaji Pokok + Tunjangan Tetap) ÷ 173
                 </Text>
               </View>
-              <Text className="text-dark-muted text-sm leading-5">
+              <Text className="text-light-muted dark:text-dark-muted text-sm leading-5">
                 • Jam ke-1: Upah Sejam × 1.5{'\n'}• Jam ke-2 dst: Upah Sejam × 2{'\n'}• Hari Libur:
                 Berbeda (2x, 3x, 4x)
               </Text>
@@ -112,12 +117,12 @@ export default function FormulaSelectScreen() {
           {selectedFormula === 'flat_rate' && (
             <View>
               <Text className="text-white text-base font-bold mb-2">Tarif Flat</Text>
-              <View className="bg-dark-bg p-4 rounded-xl border border-dark-border mb-3">
+              <View className="bg-light-bg dark:bg-dark-bg p-4 rounded-xl border border-light-border dark:border-dark-border mb-3">
                 <Text className="text-primary-400 font-mono text-sm leading-6">
                   Total = Tarif Flat per Jam × Durasi (Jam)
                 </Text>
               </View>
-              <Text className="text-dark-muted text-sm leading-5">
+              <Text className="text-light-muted dark:text-dark-muted text-sm leading-5">
                 Nilai tarif per jam ditetapkan sendiri pada menu pengaturan periode tanpa mengikuti
                 standar Kemenaker.
               </Text>
@@ -127,7 +132,7 @@ export default function FormulaSelectScreen() {
           {selectedFormula === 'custom' && (
             <View>
               <Text className="text-white text-base font-bold mb-2">Kustomisasi</Text>
-              <Text className="text-dark-muted text-sm leading-5">
+              <Text className="text-light-muted dark:text-dark-muted text-sm leading-5">
                 Formula ini akan disesuaikan secara khusus sesuai dengan kontrak perusahaan Anda
                 (segera hadir).
               </Text>

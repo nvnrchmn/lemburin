@@ -44,19 +44,19 @@ export default function ForgotPasswordScreen() {
       setIsSuccess(true);
       Alert.alert(
         'Berhasil',
-        'Link reset password telah dikirim ke email Anda. Silakan periksa inbox atau folder spam.'
+        'Link reset password telah dikirim ke email Anda. Silakan periksa inbox atau folder spam.',
       );
     }
   };
 
   return (
-    <View className="flex-1 bg-dark-bg justify-center px-6">
+    <View className="flex-1 bg-light-bg dark:bg-dark-bg justify-center px-6">
       {/* Header */}
       <View className="items-center mb-10">
-        <Text className="text-3xl font-bold text-dark-text mb-2">
+        <Text className="text-3xl font-bold text-light-text dark:text-dark-text mb-2">
           Lupa Password
         </Text>
-        <Text className="text-dark-muted text-center">
+        <Text className="text-light-muted dark:text-dark-muted text-center">
           Masukkan email untuk reset password
         </Text>
       </View>
@@ -64,15 +64,17 @@ export default function ForgotPasswordScreen() {
       {/* Form */}
       <View className="w-full space-y-4">
         <View>
-          <View className={`bg-dark-card border rounded-xl px-4 py-1 flex-row items-center ${errors.email ? 'border-red-500' : 'border-dark-border'}`}>
+          <View
+            className={`bg-light-card dark:bg-dark-card border rounded-xl px-4 py-1 flex-row items-center ${errors.email ? 'border-red-500' : 'border-light-border dark:border-dark-border'}`}
+          >
             <View className="flex-1 py-1.5">
-              <Text className="text-dark-muted text-xs mb-0.5">Email</Text>
+              <Text className="text-light-muted dark:text-dark-muted text-xs mb-0.5">Email</Text>
               <Controller
                 control={control}
                 name="email"
                 render={({ field: { onChange, onBlur, value } }) => (
                   <TextInput
-                    className="text-dark-text text-base p-0 m-0"
+                    className="text-light-text dark:text-dark-text text-base p-0 m-0"
                     placeholder="user@email.com"
                     placeholderTextColor="#60646C"
                     autoCapitalize="none"
@@ -106,9 +108,7 @@ export default function ForgotPasswordScreen() {
       {/* Back to Login */}
       <Link href="/(auth)/login" asChild>
         <Pressable className="mt-8 self-center">
-          <Text className="text-primary-400 text-sm">
-            ← Kembali ke Login
-          </Text>
+          <Text className="text-primary-400 text-sm">← Kembali ke Login</Text>
         </Pressable>
       </Link>
     </View>

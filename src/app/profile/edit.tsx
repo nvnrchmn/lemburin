@@ -126,8 +126,11 @@ export default function ProfileEditScreen() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-dark-bg px-5 pt-6" showsVerticalScrollIndicator={false}>
-      <Text className="text-dark-muted text-sm mb-6 ml-1 font-medium">
+    <ScrollView
+      className="flex-1 bg-light-bg dark:bg-dark-bg px-5 pt-6"
+      showsVerticalScrollIndicator={false}
+    >
+      <Text className="text-light-muted dark:text-dark-muted text-sm mb-6 ml-1 font-medium">
         Perbarui informasi profil Anda
       </Text>
 
@@ -135,7 +138,7 @@ export default function ProfileEditScreen() {
       <View className="items-center mb-8">
         <Pressable
           onPress={pickImage}
-          className="w-28 h-28 bg-dark-card border-2 border-primary-500/50 rounded-full items-center justify-center overflow-hidden mb-3 active:opacity-70"
+          className="w-28 h-28 bg-light-card dark:bg-dark-card border-2 border-primary-500/50 rounded-full items-center justify-center overflow-hidden mb-3 active:opacity-70"
         >
           {avatarUrl ? (
             <Image source={{ uri: avatarUrl }} className="w-full h-full" />
@@ -147,13 +150,13 @@ export default function ProfileEditScreen() {
       </View>
 
       <View className="w-full">
-        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
+        <Text className="text-light-muted dark:text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
           Informasi Dasar
         </Text>
-        <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
+        <View className="bg-light-card dark:bg-dark-card rounded-3xl overflow-hidden mb-6">
           {/* Full Name Field */}
           <View
-            className={`flex-row items-center px-5 py-4 border-b ${errors.fullName ? 'border-red-500/50' : 'border-dark-border'}`}
+            className={`flex-row items-center px-5 py-4 border-b ${errors.fullName ? 'border-red-500/50' : 'border-light-border dark:border-dark-border'}`}
           >
             <Ionicons name="person" size={20} color="#64748b" />
             <View className="flex-1">
@@ -180,7 +183,9 @@ export default function ProfileEditScreen() {
             <Ionicons name="globe" size={20} color="#64748b" />
             <View className="flex-1 flex-row justify-between items-center">
               <Text className="text-white text-base">Zona Waktu</Text>
-              <Text className="text-dark-muted">{profile?.timezone || 'Asia/Jakarta'}</Text>
+              <Text className="text-light-muted dark:text-dark-muted">
+                {profile?.timezone || 'Asia/Jakarta'}
+              </Text>
             </View>
           </View>
         </View>

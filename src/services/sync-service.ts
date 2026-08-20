@@ -35,10 +35,15 @@ export const syncService = async (specifiedPeriodId?: string) => {
     setOvertimeEntries,
     activePayPeriod,
     setIsSyncing,
+    setSyncState,
   } = useDataStore.getState();
 
-  if (!session?.user) return;
+  if (!session?.user) {
+    setSyncState({ syncStatus: 'idle', syncError: null });
+    return;
+  }
 
+  setSyncState({ syncStatus: 'syncing', syncError: null });
   setIsSyncing(true);
   try {
     // 0. Fetch Profile
@@ -143,8 +148,12 @@ export const syncService = async (specifiedPeriodId?: string) => {
       error instanceof Error && error.message
         ? `Gagal sinkron: ${error.message}`
         : 'Gagal sinkron data. Periksa koneksi internet Anda.';
+    setSyncState({ syncStatus: 'error', syncError: message });
     useToastStore.getState().showToast(message, 'error');
   } finally {
     setIsSyncing(false);
+    if (useDataStore.getState().syncStatus === 'syncing') {
+      setSyncState({ syncStatus: 'synced', lastSyncedAt: new Date().toISOString() });
+    }
   }
 };

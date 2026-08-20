@@ -3,8 +3,9 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { ThemeProvider, DarkTheme, DefaultTheme, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useColorScheme, AppState, AppStateStatus, View, Text, Pressable } from 'react-native';
+import { AppState, AppStateStatus, View, Text, Pressable } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
+import { useColorScheme as useNativeWindColorScheme } from 'nativewind';
 
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/auth-store';
@@ -12,18 +13,20 @@ import { useSettingsStore } from '@/stores/settings-store';
 import { Toast } from '@/components/ui/toast';
 import { Ionicons } from '@expo/vector-icons';
 import { syncService } from '@/services/sync-service';
-import { 
-  useFonts, 
+import { useAppTheme } from '@/hooks/use-app-theme';
+import {
+  useFonts,
   PlusJakartaSans_400Regular,
   PlusJakartaSans_500Medium,
   PlusJakartaSans_700Bold,
-  PlusJakartaSans_800ExtraBold
+  PlusJakartaSans_800ExtraBold,
 } from '@expo-google-fonts/plus-jakarta-sans';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  const { resolvedTheme, colors } = useAppTheme();
+  const { setColorScheme } = useNativeWindColorScheme();
   const { setSession, setLoading } = useAuthStore();
   const { biometricEnabled } = useSettingsStore();
   const [isUnlocked, setIsUnlocked] = useState(!biometricEnabled);
@@ -35,6 +38,10 @@ export default function RootLayout() {
     'PlusJakartaSans-Bold': PlusJakartaSans_700Bold,
     'PlusJakartaSans-ExtraBold': PlusJakartaSans_800ExtraBold,
   });
+
+  useEffect(() => {
+    setColorScheme(resolvedTheme);
+  }, [resolvedTheme, setColorScheme]);
 
   useEffect(() => {
     // Get initial session
@@ -66,10 +73,10 @@ export default function RootLayout() {
 
   const handleAuthentication = useCallback(async () => {
     if (!biometricEnabled) return;
-    
+
     const hasHardware = await LocalAuthentication.hasHardwareAsync();
     const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-    
+
     if (hasHardware && isEnrolled) {
       const result = await LocalAuthentication.authenticateAsync({
         promptMessage: 'Buka Lemburin',
@@ -115,7 +122,7 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={resolvedTheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -194,18 +201,23 @@ export default function RootLayout() {
       </Stack>
       <Toast />
       <StatusBar style="auto" />
-      
+
       {/* Biometric Lock Screen Overlay */}
       {biometricEnabled && !isUnlocked && (
-        <View className="absolute inset-0 bg-dark-bg z-50 items-center justify-center">
+        <View
+          className="absolute inset-0 z-50 items-center justify-center"
+          style={{ backgroundColor: colors.background }}
+        >
           <View className="w-20 h-20 bg-primary-900/30 rounded-full items-center justify-center mb-6">
             <Ionicons name="lock-closed" size={40} color="#3b82f6" />
           </View>
-          <Text className="text-white text-2xl font-bold mb-2">Aplikasi Terkunci</Text>
-          <Text className="text-dark-muted text-center max-w-[250px] mb-10">
+          <Text className="text-2xl font-bold mb-2" style={{ color: colors.text }}>
+            Aplikasi Terkunci
+          </Text>
+          <Text className="text-center max-w-[250px] mb-10" style={{ color: colors.muted }}>
             Gunakan otentikasi biometrik untuk membuka aplikasi Lemburin
           </Text>
-          <Pressable 
+          <Pressable
             className="bg-primary-600 active:bg-primary-700 px-8 py-4 rounded-2xl flex-row items-center shadow-lg shadow-primary-900/50"
             onPress={handleAuthentication}
           >

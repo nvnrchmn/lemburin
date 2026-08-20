@@ -343,14 +343,14 @@ export default function SalaryVerificationScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 bg-dark-bg justify-center items-center">
+      <View className="flex-1 bg-light-bg dark:bg-dark-bg justify-center items-center">
         <ActivityIndicator color="#3b82f6" size="large" />
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-dark-bg" showsVerticalScrollIndicator={false}>
+    <ScrollView className="flex-1 bg-light-bg dark:bg-dark-bg" showsVerticalScrollIndicator={false}>
       <Animated.View
         entering={FadeInUp.duration(600).springify()}
         layout={Layout.springify()}
@@ -359,7 +359,7 @@ export default function SalaryVerificationScreen() {
         <Text className="text-white text-3xl font-sans-bold tracking-tight mb-2">
           Verifikasi Gaji
         </Text>
-        <Text className="text-dark-muted font-medium text-sm mb-6">
+        <Text className="text-light-muted dark:text-dark-muted font-medium text-sm mb-6">
           Bandingkan estimasi dari aplikasi dengan nominal asli yang tertera pada slip gaji Anda.
         </Text>
 
@@ -376,10 +376,10 @@ export default function SalaryVerificationScreen() {
               {formatCurrency(estimatedAppAmount)}
             </Text>
           </View>
-          <View className="flex-1 bg-dark-card border border-dark-border rounded-3xl p-5 shadow-sm">
+          <View className="flex-1 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-5 shadow-sm">
             <View className="flex-row items-center mb-2">
               <Ionicons name="document-text" size={14} color="#94a3b8" />
-              <Text className="text-dark-muted font-sans-bold text-xs uppercase tracking-wider">
+              <Text className="text-light-muted dark:text-dark-muted font-sans-bold text-xs uppercase tracking-wider">
                 Slip Gaji
               </Text>
             </View>
@@ -390,8 +390,8 @@ export default function SalaryVerificationScreen() {
         </View>
 
         {/* Input Slip Amount */}
-        <View className="bg-dark-card border border-dark-border rounded-3xl px-5 py-4 mb-6 shadow-sm">
-          <Text className="text-dark-muted font-sans-bold text-xs uppercase tracking-wider mb-2">
+        <View className="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl px-5 py-4 mb-6 shadow-sm">
+          <Text className="text-light-muted dark:text-dark-muted font-sans-bold text-xs uppercase tracking-wider mb-2">
             Nominal Lembur pada Slip Gaji
           </Text>
           <View className="flex-row items-center">
@@ -412,15 +412,15 @@ export default function SalaryVerificationScreen() {
         </View>
 
         {/* Lampiran Foto Slip Gaji Fisik */}
-        <View className="bg-dark-card border border-dark-border rounded-3xl p-4 mb-6 shadow-sm">
-          <Text className="text-dark-muted font-sans-bold text-xs uppercase tracking-wider mb-3">
+        <View className="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-4 mb-6 shadow-sm">
+          <Text className="text-light-muted dark:text-dark-muted font-sans-bold text-xs uppercase tracking-wider mb-3">
             Foto Slip Gaji Fisik (Opsional)
           </Text>
           {slipPhotoUrl ? (
             <View className="relative">
               <Image
                 source={{ uri: slipPhotoUrl }}
-                className="w-full h-44 rounded-2xl bg-dark-bg"
+                className="w-full h-44 rounded-2xl bg-light-bg dark:bg-dark-bg"
                 resizeMode="cover"
               />
               <View className="flex-row gap-2 absolute top-2 right-2">
@@ -442,14 +442,14 @@ export default function SalaryVerificationScreen() {
             </View>
           ) : (
             <Pressable
-              className="border border-dashed border-dark-border rounded-2xl py-6 items-center justify-center active:bg-dark-border/40"
+              className="border border-dashed border-light-border dark:border-dark-border rounded-2xl py-6 items-center justify-center active:bg-light-border dark:active:bg-dark-border/40"
               onPress={handlePickSlipPhoto}
             >
               <View className="w-12 h-12 bg-primary-950/40 rounded-full items-center justify-center mb-2 border border-primary-500/30">
                 <Ionicons name="camera" size={22} color="#60a5fa" />
               </View>
               <Text className="text-white font-bold text-sm">Ambil Foto Slip Gaji</Text>
-              <Text className="text-dark-muted text-xs mt-0.5">
+              <Text className="text-light-muted dark:text-dark-muted text-xs mt-0.5">
                 Untuk perbandingan visual berdampingan
               </Text>
             </Pressable>
@@ -459,13 +459,17 @@ export default function SalaryVerificationScreen() {
         {/* Result Status Panel */}
         <View className={`border rounded-3xl p-5 mb-4 ${statusBg}`}>
           <View className="flex-row items-center justify-between mb-4 border-b border-white/10 pb-4">
-            <Text className="text-dark-muted font-medium text-sm">Status Kecocokan</Text>
+            <Text className="text-light-muted dark:text-dark-muted font-medium text-sm">
+              Status Kecocokan
+            </Text>
             <Text style={{ color: statusColor }} className="text-base font-sans-bold">
               {statusText}
             </Text>
           </View>
           <View className="flex-row justify-between items-center mb-3">
-            <Text className="text-dark-muted font-medium text-sm">Selisih Nominal</Text>
+            <Text className="text-light-muted dark:text-dark-muted font-medium text-sm">
+              Selisih Nominal
+            </Text>
             <Text
               className={`text-lg font-sans-extrabold ${difference < 0 ? 'text-red-400' : difference > 0 ? 'text-emerald-400' : 'text-white'}`}
             >
@@ -474,7 +478,9 @@ export default function SalaryVerificationScreen() {
             </Text>
           </View>
           <View className="flex-row justify-between items-center">
-            <Text className="text-dark-muted font-medium text-sm">Persentase Deviasi</Text>
+            <Text className="text-light-muted dark:text-dark-muted font-medium text-sm">
+              Persentase Deviasi
+            </Text>
             <Text className="text-white text-lg font-sans-extrabold">
               {diffPercentage.toFixed(1)}%
             </Text>
@@ -510,8 +516,8 @@ export default function SalaryVerificationScreen() {
         )}
 
         {/* Notes */}
-        <View className="bg-dark-card border border-dark-border rounded-3xl px-5 py-4 mb-8 shadow-sm">
-          <Text className="text-dark-muted font-sans-bold text-xs uppercase tracking-wider mb-2">
+        <View className="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl px-5 py-4 mb-8 shadow-sm">
+          <Text className="text-light-muted dark:text-dark-muted font-sans-bold text-xs uppercase tracking-wider mb-2">
             Catatan (opsional)
           </Text>
           <TextInput
@@ -549,7 +555,7 @@ export default function SalaryVerificationScreen() {
         >
           <View className="flex-1 bg-black/90 justify-center items-center p-4">
             <Pressable
-              className="absolute top-12 right-6 z-10 bg-dark-card p-3 rounded-full border border-dark-border"
+              className="absolute top-12 right-6 z-10 bg-light-card dark:bg-dark-card p-3 rounded-full border border-light-border dark:border-dark-border"
               onPress={() => setIsModalOpen(false)}
             >
               <Ionicons name="close" size={20} color="#fff" />

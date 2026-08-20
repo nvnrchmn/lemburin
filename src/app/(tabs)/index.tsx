@@ -31,11 +31,21 @@ import { syncService } from '@/services/sync-service';
 import { supabase } from '@/lib/supabase';
 import type { PayPeriod } from '@/types/database';
 import { t } from '@/utils/i18n';
+import { useAppTheme } from '@/hooks/use-app-theme';
 
 export default function DashboardScreen() {
-  const { profile, employment, activePayPeriod, overtimeEntries, setActivePayPeriod, isSyncing } =
-    useDataStore();
+  const {
+    profile,
+    employment,
+    activePayPeriod,
+    overtimeEntries,
+    setActivePayPeriod,
+    isSyncing,
+    syncStatus,
+    lastSyncedAt,
+  } = useDataStore();
   const { language, currency } = useSettingsStore();
+  const { colors } = useAppTheme();
   const [refreshing, setRefreshing] = useState(false);
   const [isPeriodModalVisible, setIsPeriodModalVisible] = useState(false);
   const [allPeriods, setAllPeriods] = useState<PayPeriod[]>([]);
@@ -47,6 +57,22 @@ export default function DashboardScreen() {
   }, []);
 
   const firstName = profile?.full_name?.split(' ')[0] || 'User';
+  const syncLabel =
+    syncStatus === 'syncing'
+      ? 'Menyinkronkan'
+      : syncStatus === 'synced'
+        ? 'Tersinkron'
+        : syncStatus === 'error'
+          ? 'Gagal sinkron'
+          : 'Belum sinkron';
+  const syncColor =
+    syncStatus === 'synced'
+      ? '#22c55e'
+      : syncStatus === 'error'
+        ? '#ef4444'
+        : syncStatus === 'syncing'
+          ? '#60a5fa'
+          : colors.muted;
 
   const stats = useMemo(() => {
     if (!activePayPeriod) return { days: 0, hoursStr: '0 jam', totalPay: 0, weeklyHours: 0 };
@@ -130,7 +156,7 @@ export default function DashboardScreen() {
 
   return (
     <ScrollView
-      className="flex-1 bg-dark-bg"
+      style={{ backgroundColor: colors.background }}
       contentContainerStyle={{ paddingBottom: 100 }}
       showsVerticalScrollIndicator={false}
       refreshControl={
@@ -139,24 +165,46 @@ export default function DashboardScreen() {
     >
       <View className="px-5 pt-20 pb-4 flex-row justify-between items-end">
         <View>
-          <Text className="text-dark-muted text-xs font-sans-bold mb-1 uppercase tracking-widest">
+          <Text
+            style={{ color: colors.muted }}
+            className="text-xs font-sans-bold mb-1 uppercase tracking-widest"
+          >
             {t('welcome', language)}
           </Text>
           <View className="flex-row items-center gap-2">
-            <Text className="text-white text-4xl font-sans-extrabold tracking-tight">
+            <Text
+              style={{ color: colors.text }}
+              className="text-4xl font-sans-extrabold tracking-tight"
+            >
               {firstName}
             </Text>
-            {isSyncing && (
-              <View className="flex-row items-center bg-primary-900/30 px-2 py-1 rounded-full">
-                <ActivityIndicator size="small" color="#60a5fa" />
-                <Text className="text-primary-300 text-[10px] font-bold ml-1">Sync</Text>
-              </View>
-            )}
+            <View
+              className="flex-row items-center px-2 py-1 rounded-full"
+              style={{ backgroundColor: `${syncColor}20` }}
+            >
+              {isSyncing ? (
+                <ActivityIndicator size="small" color={syncColor} />
+              ) : (
+                <Ionicons
+                  name={syncStatus === 'error' ? 'alert-circle' : 'cloud-done-outline'}
+                  size={13}
+                  color={syncColor}
+                />
+              )}
+              <Text style={{ color: syncColor }} className="text-[10px] font-bold ml-1">
+                {syncLabel}
+              </Text>
+            </View>
           </View>
+          {lastSyncedAt && syncStatus === 'synced' && (
+            <Text style={{ color: colors.muted }} className="text-[10px] mt-1">
+              Terakhir: {format(parseISO(lastSyncedAt), 'HH:mm')}
+            </Text>
+          )}
         </View>
         <Pressable
           onPress={() => router.push('/(tabs)/settings')}
-          className="w-12 h-12 bg-dark-card rounded-full items-center justify-center overflow-hidden active:opacity-70"
+          className="w-12 h-12 bg-light-card dark:bg-dark-card rounded-full items-center justify-center overflow-hidden active:opacity-70"
         >
           {profile?.avatar_url ? (
             <Image source={{ uri: profile.avatar_url }} className="w-full h-full" />
@@ -316,11 +364,11 @@ export default function DashboardScreen() {
       {/* Stats Grid */}
       <Animated.View entering={FadeInDown.delay(200).duration(600).springify()}>
         <View className="flex-row mx-5 gap-4 mb-8">
-          <View className="flex-1 bg-dark-card border border-dark-border rounded-3xl p-5 shadow-lg shadow-black/20">
+          <View className="flex-1 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-5 shadow-lg shadow-black/20">
             <View className="w-10 h-10 bg-primary-900/30 rounded-full items-center justify-center mb-3">
               <Ionicons name="time" size={20} color="#60a5fa" />
             </View>
-            <Text className="text-dark-muted text-xs font-medium uppercase tracking-wider mb-1">
+            <Text className="text-light-muted dark:text-dark-muted text-xs font-medium uppercase tracking-wider mb-1">
               {t('totalHours', language)}
             </Text>
             <Text className="text-white text-2xl font-bold">
@@ -330,11 +378,11 @@ export default function DashboardScreen() {
             </Text>
           </View>
 
-          <View className="flex-1 bg-dark-card border border-dark-border rounded-3xl p-5 shadow-lg shadow-black/20">
+          <View className="flex-1 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-5 shadow-lg shadow-black/20">
             <View className="w-10 h-10 bg-secondary-900/30 rounded-full items-center justify-center mb-3">
               <Ionicons name="calendar" size={20} color="#f472b6" />
             </View>
-            <Text className="text-dark-muted text-xs font-medium uppercase tracking-wider mb-1">
+            <Text className="text-light-muted dark:text-dark-muted text-xs font-medium uppercase tracking-wider mb-1">
               {t('overtimeDays', language)}
             </Text>
             <Text className="text-white text-2xl font-bold">{stats.days}</Text>
@@ -344,7 +392,7 @@ export default function DashboardScreen() {
 
       {/* Chart Section */}
       <Animated.View entering={FadeInDown.delay(250).duration(600).springify()}>
-        <View className="mx-5 mb-8 bg-dark-card border border-dark-border rounded-3xl p-6 shadow-lg shadow-black/20">
+        <View className="mx-5 mb-8 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-6 shadow-lg shadow-black/20">
           <View className="flex-row justify-between items-center mb-6">
             <Text className="text-white text-lg font-bold tracking-tight">
               Tren 7 Hari Terakhir
@@ -371,7 +419,7 @@ export default function DashboardScreen() {
             />
           </View>
           <Pressable
-            className="mt-6 flex-row justify-center items-center py-3 bg-dark-bg/50 rounded-xl border border-dark-border active:bg-dark-border"
+            className="mt-6 flex-row justify-center items-center py-3 bg-light-bg dark:bg-dark-bg/50 rounded-xl border border-light-border dark:border-dark-border active:bg-light-border dark:active:bg-dark-border"
             onPress={() => router.push('/analytics/yearly')}
           >
             <Text className="text-primary-400 font-medium text-sm mr-2">Lihat Rekap Tahunan</Text>
@@ -405,7 +453,7 @@ export default function DashboardScreen() {
             {recentEntries.length > 0 && (
               <Pressable
                 onPress={() => router.push('/(tabs)/calendar')}
-                className="bg-dark-card px-3 py-1.5 rounded-lg border border-dark-border"
+                className="bg-light-card dark:bg-dark-card px-3 py-1.5 rounded-lg border border-light-border dark:border-dark-border"
               >
                 <Text className="text-primary-400 text-xs font-semibold uppercase tracking-wider">
                   {t('seeAll', language)}
@@ -415,19 +463,19 @@ export default function DashboardScreen() {
           </View>
 
           {recentEntries.length === 0 ? (
-            <View className="bg-dark-card rounded-3xl p-8 items-center justify-center">
+            <View className="bg-light-card dark:bg-dark-card rounded-3xl p-8 items-center justify-center">
               <Ionicons
                 name="document-text"
                 size={48}
                 color="#475569"
                 style={{ marginBottom: 16 }}
               />
-              <Text className="text-dark-muted text-sm text-center max-w-[200px]">
+              <Text className="text-light-muted dark:text-dark-muted text-sm text-center max-w-[200px]">
                 {t('noRecentOvertime', language)}
               </Text>
             </View>
           ) : (
-            <View className="bg-dark-card rounded-3xl overflow-hidden">
+            <View className="bg-light-card dark:bg-dark-card rounded-3xl overflow-hidden">
               {recentEntries.map((entry, index) => {
                 const mins = calculateOvertimeMinutes(
                   entry.start_time,
@@ -448,7 +496,7 @@ export default function DashboardScreen() {
                     layout={Layout.springify()}
                   >
                     <Pressable
-                      className={`px-5 py-4 flex-row justify-between items-center active:bg-dark-border ${!isLast ? 'border-b border-dark-border' : ''}`}
+                      className={`px-5 py-4 flex-row justify-between items-center active:bg-light-border dark:active:bg-dark-border ${!isLast ? 'border-b border-light-border dark:border-dark-border' : ''}`}
                       onPress={() => router.push(`/overtime/${entry.id}` as any)}
                     >
                       <View className="flex-row items-center gap-4">
@@ -474,7 +522,7 @@ export default function DashboardScreen() {
                           </Text>
                           <View className="flex-row items-center gap-1.5">
                             <Ionicons name="cafe" size={12} color="#64748b" />
-                            <Text className="text-dark-muted text-xs">
+                            <Text className="text-light-muted dark:text-dark-muted text-xs">
                               Istirahat {entry.break_minutes}m
                             </Text>
                           </View>
@@ -522,12 +570,12 @@ export default function DashboardScreen() {
         onRequestClose={() => setIsPeriodModalVisible(false)}
       >
         <View className="flex-1 bg-black/80 justify-end">
-          <View className="bg-dark-card border-t border-dark-border rounded-t-3xl p-6 max-h-[80%]">
+          <View className="bg-light-card dark:bg-dark-card border-t border-light-border dark:border-dark-border rounded-t-3xl p-6 max-h-[80%]">
             <View className="flex-row justify-between items-center mb-4">
               <Text className="text-white text-xl font-bold">Pilih Periode Gaji</Text>
               <Pressable
                 onPress={() => setIsPeriodModalVisible(false)}
-                className="w-8 h-8 rounded-full bg-dark-bg items-center justify-center"
+                className="w-8 h-8 rounded-full bg-light-bg dark:bg-dark-bg items-center justify-center"
               >
                 <Ionicons name="close" size={18} color="#fff" />
               </Pressable>
@@ -535,7 +583,9 @@ export default function DashboardScreen() {
 
             <ScrollView className="mb-4" showsVerticalScrollIndicator={false}>
               {allPeriods.length === 0 ? (
-                <Text className="text-dark-muted text-center py-6">Memuat daftar periode...</Text>
+                <Text className="text-light-muted dark:text-dark-muted text-center py-6">
+                  Memuat daftar periode...
+                </Text>
               ) : (
                 allPeriods.map(p => {
                   const isSelected = activePayPeriod?.id === p.id;
@@ -565,7 +615,7 @@ export default function DashboardScreen() {
                       className={`p-4 rounded-2xl mb-2 flex-row justify-between items-center border ${
                         isSelected
                           ? 'bg-primary-950/40 border-primary-500'
-                          : 'bg-dark-bg border-dark-border active:bg-dark-border/40'
+                          : 'bg-light-bg dark:bg-dark-bg border-light-border dark:border-dark-border active:bg-light-border dark:active:bg-dark-border/40'
                       }`}
                     >
                       <View>
@@ -574,7 +624,7 @@ export default function DashboardScreen() {
                         >
                           {p.period_name}
                         </Text>
-                        <Text className="text-dark-muted text-xs mt-0.5">
+                        <Text className="text-light-muted dark:text-dark-muted text-xs mt-0.5">
                           {format(parseISO(p.start_date), 'dd MMM yyyy', { locale: localeId })} -{' '}
                           {format(parseISO(p.end_date), 'dd MMM yyyy', { locale: localeId })}
                         </Text>

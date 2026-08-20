@@ -116,21 +116,21 @@ export default function LoginScreen() {
   };
 
   return (
-    <View className="flex-1 bg-dark-bg px-5 pt-20">
+    <View className="flex-1 bg-light-bg dark:bg-dark-bg px-5 pt-20">
       {/* Header */}
       <View className="mb-12">
         <Text className="text-white text-5xl font-bold tracking-tight mb-2">Masuk</Text>
-        <Text className="text-dark-muted text-base font-medium">
+        <Text className="text-light-muted dark:text-dark-muted text-base font-medium">
           Silakan masuk untuk melanjutkan ke Lemburin.
         </Text>
       </View>
 
       {/* Login Form Grouped */}
       <View className="w-full">
-        <View className="bg-dark-card rounded-3xl overflow-hidden mb-2">
+        <View className="bg-light-card dark:bg-dark-card rounded-3xl overflow-hidden mb-2">
           {/* Email Field */}
           <View
-            className={`flex-row items-center px-5 py-4 border-b ${errors.email ? 'border-red-500/50' : 'border-dark-border'}`}
+            className={`flex-row items-center px-5 py-4 border-b ${errors.email ? 'border-red-500/50' : 'border-light-border dark:border-dark-border'}`}
           >
             <Ionicons name="mail" size={20} color="#64748b" />
             <View className="flex-1">
@@ -199,7 +199,7 @@ export default function LoginScreen() {
         </Pressable>
 
         <Pressable
-          className={`bg-dark-card rounded-2xl py-4 items-center flex-row justify-center gap-2 active:opacity-70 border border-dark-border ${isLoading ? 'opacity-50' : ''}`}
+          className={`bg-light-card dark:bg-dark-card rounded-2xl py-4 items-center flex-row justify-center gap-2 active:opacity-70 border border-light-border dark:border-dark-border ${isLoading ? 'opacity-50' : ''}`}
           onPress={onGoogleLogin}
           disabled={isLoading}
         >
@@ -215,7 +215,7 @@ export default function LoginScreen() {
             <Text className="text-primary-400 font-semibold text-base">Buat Akun</Text>
           </Pressable>
         </Link>
-        <Text className="text-dark-muted self-center">|</Text>
+        <Text className="text-light-muted dark:text-dark-muted self-center">|</Text>
         <Link href="/(auth)/forgot-password" asChild>
           <Pressable className="active:opacity-50 p-2">
             <Text className="text-primary-400 font-semibold text-base">Lupa Password</Text>
