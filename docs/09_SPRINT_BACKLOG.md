@@ -44,9 +44,9 @@ Sprint ini dirancang untuk menyempurnakan aplikasi **Lemburin** dari sekadar kal
   ADD COLUMN IF NOT EXISTS is_holiday BOOLEAN NOT NULL DEFAULT FALSE;
   ```
 * **Acceptance Criteria**:
-  - [ ] Data lembur hari libur tersimpan permanen di Supabase dengan `is_holiday = true`.
-  - [ ] Saat dibuka kembali di layar edit, toggle `isHoliday` tetap aktif.
-  - [ ] Kalkulasi di Dashboard & Ringkasan Bulanan merefleksikan pengali tarif libur.
+  - [x] Data lembur hari libur tersimpan permanen di Supabase dengan `is_holiday = true`.
+  - [x] Saat dibuka kembali di layar edit, toggle `isHoliday` tetap aktif.
+  - [x] Kalkulasi di Dashboard & Ringkasan Bulanan merefleksikan pengali tarif libur.
 
 ---
 
@@ -63,8 +63,8 @@ Sprint ini dirancang untuk menyempurnakan aplikasi **Lemburin** dari sekadar kal
   ADD COLUMN IF NOT EXISTS work_system VARCHAR(20) NOT NULL DEFAULT '5_days';
   ```
 * **Acceptance Criteria**:
-  - [ ] Pengguna dapat memilih 5 Hari Kerja atau 6 Hari Kerja di form Profil Perusahaan.
-  - [ ] Nilai estimasi lembur hari libur terhitung presisi sesuai pilihan sistem kerja.
+  - [x] Pengguna dapat memilih 5 Hari Kerja atau 6 Hari Kerja di form Profil Perusahaan.
+  - [x] Nilai estimasi lembur hari libur terhitung presisi sesuai pilihan sistem kerja.
 
 ---
 
@@ -72,7 +72,7 @@ Sprint ini dirancang untuk menyempurnakan aplikasi **Lemburin** dari sekadar kal
 * **Solusi**:
   - Dashboard, Kalender, History, dan Monthly Summary menghitung total menggunakan parameter `is_holiday` yang aktual dari setiap entri.
 * **Acceptance Criteria**:
-  - [ ] Nilai di Dashboard Hero Card, Ringkasan Bulanan, dan Detail Lembur 100% konsisten.
+  - [x] Nilai di Dashboard Hero Card, Ringkasan Bulanan, dan Detail Lembur 100% konsisten.
 
 ---
 
@@ -85,8 +85,8 @@ Sprint ini dirancang untuk menyempurnakan aplikasi **Lemburin** dari sekadar kal
   - Mengenerate teks rapi lengkap dengan nama, periode, total jam, estimasi upah, dan rincian per tanggal.
   - Menggunakan deep linking `Linking.openURL('whatsapp://send?text=...')`.
 * **Acceptance Criteria**:
-  - [ ] Tombol WA Share membuka aplikasi WhatsApp dengan pesan terformat rapi.
-  - [ ] Disediakan juga opsi "Salin ke Clipboard" jika WhatsApp tidak terpasang.
+  - [x] Tombol WA Share membuka aplikasi WhatsApp dengan pesan terformat rapi.
+  - [x] Disediakan juga opsi "Salin ke Clipboard" jika WhatsApp tidak terpasang.
 
 ---
 
@@ -96,8 +96,8 @@ Sprint ini dirancang untuk menyempurnakan aplikasi **Lemburin** dari sekadar kal
   - Ketika tanggal hari ini melewati `end_date` periode aktif, tampilkan banner pintar: *"Periode baru telah dimulai. Buat periode [Bulan Tahun]?"*.
   - Tombol satu klik untuk men-generate pay period baru berdasarkan template cutoff sebelumnya.
 * **Acceptance Criteria**:
-  - [ ] Aplikasi otomatis mendeteksi periode kadaluarsa dan menawarkan pembuatan periode baru.
-  - [ ] Riwayat periode lama tetap tersimpan dan terkunci (*locked*).
+  - [x] Aplikasi otomatis mendeteksi periode kadaluarsa dan menawarkan pembuatan periode baru.
+  - [x] Riwayat periode lama tetap tersimpan dan terkunci (*locked*).
 
 ---
 
@@ -107,7 +107,7 @@ Sprint ini dirancang untuk menyempurnakan aplikasi **Lemburin** dari sekadar kal
   - Tampilkan badge peringatan visual jika total lembur minggu berjalan mencapai ≥ 18 jam.
   - Edukasi pekerja tentang hak kesehatan kerja mereka.
 * **Acceptance Criteria**:
-  - [ ] Badge peringatan muncul di dashboard ketika akumulasi lembur mingguan mendekati 18 jam.
+  - [x] Badge peringatan muncul di dashboard ketika akumulasi lembur mingguan mendekati 18 jam.
 
 ---
 
