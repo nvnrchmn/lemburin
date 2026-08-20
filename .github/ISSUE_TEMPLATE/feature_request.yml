@@ -1,0 +1,36 @@
+name: ✨ Feature Request
+description: Usulkan fitur atau peningkatan baru
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ceritakan ide fitur kamu! Jelaskan masalah yang ingin diselesaikan, bukan cuma solusinya.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Masalah yang Ingin Diselesaikan
+      description: Situasi apa yang membuat kamu butuh fitur ini?
+      placeholder: "Contoh: Saya sering lupa mencatat lembur kalau tidak ada pengingat otomatis..."
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solusi yang Diusulkan
+      description: Bagaimana fitur ini seharusnya bekerja?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatif yang Sudah Dicoba
+      description: Solusi lain yang sudah kamu coba (jika ada)
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Cakupan
+      options:
+        - label: Saya bersedia membantu mengimplementasikan fitur ini
+        - label: Ini fitur penting untuk kebutuhan saya

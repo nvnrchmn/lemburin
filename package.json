@@ -55,11 +55,14 @@
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
+    "@vitest/coverage-v8": "^3.2.4",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~57.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.3.0",
+    "prettier": "^3.9.6",
     "typescript": "~6.0.3",
-    "vitest": "^3.2.4",
-    "@vitest/coverage-v8": "^3.2.4"
+    "vitest": "^3.2.4"
   },
   "scripts": {
     "start": "expo start",
@@ -68,10 +71,13 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "prepare": "husky"
   },
   "private": true
 }

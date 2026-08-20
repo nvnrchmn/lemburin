@@ -1,0 +1,60 @@
+name: 🐛 Bug Report
+description: Laporkan bug atau perilaku yang tidak sesuai
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Terima kasih sudah melaporkan bug! Isi form di bawah dengan selengkap mungkin agar bisa kami reproduksi dan perbaiki.
+  - type: input
+    id: version
+    attributes:
+      label: Versi Aplikasi
+      description: Versi app yang dipakai (lihat di Settings → About)
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Android
+        - iOS
+        - Web
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Apa yang terjadi?
+      description: Jelaskan bug secara detail. Apa yang seharusnya terjadi vs apa yang terjadi?
+      placeholder: "Contoh: Saat menambah lembur di hari libur, kalkulasi upah tidak memakai pengali 2x..."
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Langkah Reproduksi
+      description: Langkah-langkah untuk memunculkan bug
+      placeholder: |
+        1. Buka tab Tambah Lembur
+        2. Pilih tanggal hari libur
+        3. Isi jam mulai & selesai
+        4. Simpan → lihat hasil kalkulasi
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Perilaku yang Diharapkan
+      description: Apa yang seharusnya terjadi?
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Screenshot / Log
+      description: Tempel screenshot atau error log jika ada
+      render: bash
