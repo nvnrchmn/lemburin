@@ -46,7 +46,8 @@ describe('calculateOvertimePay — formula Indonesia (PP 35/2021)', () => {
   it('hari kerja: jam pertama 1.5x, jam berikutnya 2x', () => {
     const r = calculateOvertimePay(60, 'indonesia', basicSalary, 0, null, false, '5_days');
     expect(r.multiplierTotal).toBeCloseTo(1.5, 10);
-    expect(r.totalPay).toBeCloseTo(hourlyRate * 1.5, 6);
+    // totalPay dibulatkan ke Rupiah integer (sen tidak ada)
+    expect(r.totalPay).toBe(Math.round(hourlyRate * 1.5));
   });
 
   it('hari kerja 2 jam: jam 1 = 1.5x + jam 2 = 2x → 3.5x total', () => {
@@ -56,18 +57,29 @@ describe('calculateOvertimePay — formula Indonesia (PP 35/2021)', () => {
 
   it('hari libur 5 hari kerja: 8 jam pertama = 2x, jam ke-9 = 3x', () => {
     const r = calculateOvertimePay(9 * 60, 'indonesia', basicSalary, 0, null, true, '5_days');
-    expect(r.multiplierTotal).toBeCloseTo((8 * 2) + 3, 10); // 19
+    expect(r.multiplierTotal).toBeCloseTo(8 * 2 + 3, 10); // 19
   });
 
   it('hari libur 6 hari kerja: 7 jam pertama = 2x, jam ke-8 = 3x', () => {
     const r = calculateOvertimePay(8 * 60, 'indonesia', basicSalary, 0, null, true, '6_days');
-    expect(r.multiplierTotal).toBeCloseTo((7 * 2) + 3, 10); // 17
+    expect(r.multiplierTotal).toBeCloseTo(7 * 2 + 3, 10); // 17
   });
 
   it('menambahkan insentif makan + transport', () => {
-    const r = calculateOvertimePay(60, 'indonesia', basicSalary, 0, null, false, '5_days', 15_000, 10_000);
+    const r = calculateOvertimePay(
+      60,
+      'indonesia',
+      basicSalary,
+      0,
+      null,
+      false,
+      '5_days',
+      15_000,
+      10_000,
+    );
     expect(r.incentivePay).toBe(25_000);
-    expect(r.totalPay).toBeCloseTo(hourlyRate * 1.5 + 25_000, 6);
+    // total = pay lembur (dibulatkan) + insentif (sudah integer)
+    expect(r.totalPay).toBe(Math.round(hourlyRate * 1.5) + 25_000);
   });
 
   it('mengembalikan 0 jika gaji pokok kosong', () => {
