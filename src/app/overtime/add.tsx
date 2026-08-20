@@ -1,5 +1,15 @@
 import { useState, useMemo } from 'react';
-import { View, Text, Pressable, ScrollView, TextInput, ActivityIndicator, Alert, Switch, Image } from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  TextInput,
+  ActivityIndicator,
+  Alert,
+  Switch,
+  Image,
+} from 'react-native';
 import { router } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,13 +17,17 @@ import * as z from 'zod';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { SymbolView } from 'expo-symbols';
+import { Ionicons } from '@expo/vector-icons';
 
 import { useDataStore } from '@/stores/data-store';
 import { supabase } from '@/lib/supabase';
-import { calculateOvertimeMinutes, calculateOvertimePay, calculateTotalFixedAllowance } from '@/utils/calculator';
+import {
+  calculateOvertimeMinutes,
+  calculateOvertimePay,
+  calculateTotalFixedAllowance,
+} from '@/utils/calculator';
 import { formatCurrency, formatDuration } from '@/utils/formatting';
-import { pickImage } from '@/utils/upload';
+import { pickAndUploadImage } from '@/utils/upload';
 import { useToastStore } from '@/stores/toast-store';
 import { getOrCreatePayPeriodForDate } from '@/services/pay-period-service';
 import { checkIsHoliday } from '@/utils/holidays';
@@ -42,7 +56,7 @@ export default function AddOvertimeScreen() {
   // Default times: 18:00 to 22:00
   const defaultStartTime = new Date();
   defaultStartTime.setHours(18, 0, 0, 0);
-  
+
   const defaultEndTime = new Date();
   defaultEndTime.setHours(22, 0, 0, 0);
 
@@ -57,22 +71,28 @@ export default function AddOvertimeScreen() {
 
   const { control, handleSubmit, watch, setValue } = useForm<OvertimeFormValues>({
     resolver: zodResolver(overtimeSchema),
-    defaultValues: initialValues
+    defaultValues: initialValues,
   });
 
   const watchAllFields = watch();
 
   const handlePickAttachment = () => {
     Alert.alert('Lampirkan Foto Bukti SPL / Absensi', 'Pilih sumber foto:', [
-      { text: 'Kamera', onPress: async () => {
-        const res = await pickImage(true);
-        if (res?.base64) setAttachmentUrl(res.base64);
-      }},
-      { text: 'Galeri Foto', onPress: async () => {
-        const res = await pickImage(false);
-        if (res?.base64) setAttachmentUrl(res.base64);
-      }},
-      { text: 'Batal', style: 'cancel' }
+      {
+        text: 'Kamera',
+        onPress: async () => {
+          const url = await pickAndUploadImage(true, 'overtime');
+          if (url) setAttachmentUrl(url);
+        },
+      },
+      {
+        text: 'Galeri Foto',
+        onPress: async () => {
+          const url = await pickAndUploadImage(false, 'overtime');
+          if (url) setAttachmentUrl(url);
+        },
+      },
+      { text: 'Batal', style: 'cancel' },
     ]);
   };
 
@@ -83,31 +103,31 @@ export default function AddOvertimeScreen() {
     const startStr = format(watchAllFields.startTime, 'HH:mm');
     const endStr = format(watchAllFields.endTime, 'HH:mm');
     const breakMins = parseInt(watchAllFields.breakMinutes || '0', 10);
-    
+
     const totalMins = calculateOvertimeMinutes(startStr, endStr, isNaN(breakMins) ? 0 : breakMins);
-    
+
     const payInfo = calculateOvertimePay(
-      totalMins, 
-      activePayPeriod.formula_type, 
-      employment.basic_salary, 
+      totalMins,
+      activePayPeriod.formula_type,
+      employment.basic_salary,
       calculateTotalFixedAllowance(employment.allowances_detail || null),
       activePayPeriod.flat_rate_amount,
       watchAllFields.isHoliday,
       employment.work_system || '5_days',
       employment.overtime_meal_allowance || 0,
-      employment.overtime_transport_allowance || 0
+      employment.overtime_transport_allowance || 0,
     );
 
     return {
       pay: payInfo.totalPay,
-      hoursStr: formatDuration(totalMins)
+      hoursStr: formatDuration(totalMins),
     };
   }, [watchAllFields, activePayPeriod, employment]);
 
   const onSubmit = async (data: OvertimeFormValues) => {
     if (!employment?.id) {
       Alert.alert('Perhatian', 'Harap atur Profil Perusahaan terlebih dahulu di Pengaturan.', [
-        { text: 'OK', onPress: () => router.back() }
+        { text: 'OK', onPress: () => router.back() },
       ]);
       return;
     }
@@ -121,7 +141,11 @@ export default function AddOvertimeScreen() {
 
     try {
       // Cari atau buatkan otomatis periode yang tepat untuk tanggal lembur ini
-      const targetPeriod = await getOrCreatePayPeriodForDate(employment.id, workDateStr, activePayPeriod);
+      const targetPeriod = await getOrCreatePayPeriodForDate(
+        employment.id,
+        workDateStr,
+        activePayPeriod,
+      );
 
       const payload = {
         pay_period_id: targetPeriod.id,
@@ -139,7 +163,7 @@ export default function AddOvertimeScreen() {
         .insert(payload as any)
         .select()
         .single();
-        
+
       if (error) throw error;
 
       // Jika tanggal lembur masuk ke periode yang sedang aktif ditampilkan di dashboard, update state lokal
@@ -160,16 +184,19 @@ export default function AddOvertimeScreen() {
     <ScrollView className="flex-1 bg-dark-bg px-5 pt-6" showsVerticalScrollIndicator={false}>
       {!activePayPeriod && (
         <View className="bg-red-500/10 border border-red-500/50 rounded-2xl p-4 mb-6 flex-row items-center">
-          <SymbolView name="exclamationmark.triangle.fill" size={24} tintColor="#f87171" style={{ marginRight: 12 }} />
+          <Ionicons name="warning" size={24} color="#f87171" />
           <Text className="text-red-400 text-sm flex-1">
-            Periode gaji belum diatur. Estimasi upah tidak dapat dihitung. Silakan atur di menu Pengaturan.
+            Periode gaji belum diatur. Estimasi upah tidak dapat dihitung. Silakan atur di menu
+            Pengaturan.
           </Text>
         </View>
       )}
 
       {/* GROUP 1: Waktu Lembur */}
       <View className="w-full">
-        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">Waktu Pelaksanaan</Text>
+        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
+          Waktu Pelaksanaan
+        </Text>
         <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
           {/* Date Field */}
           <Controller
@@ -177,14 +204,16 @@ export default function AddOvertimeScreen() {
             name="workDate"
             render={({ field: { value } }) => (
               <>
-                <Pressable 
+                <Pressable
                   className="flex-row items-center px-5 py-4 border-b border-dark-border active:bg-dark-border"
                   onPress={() => setShowDatePicker(true)}
                 >
-                  <SymbolView name="calendar" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
+                  <Ionicons name="calendar" size={20} color="#64748b" />
                   <View className="flex-1 flex-row justify-between items-center">
                     <Text className="text-white text-base">Tanggal</Text>
-                    <Text className="text-primary-400 font-medium">{format(value, 'EEE, dd MMM yyyy', { locale: id })}</Text>
+                    <Text className="text-primary-400 font-medium">
+                      {format(value, 'EEE, dd MMM yyyy', { locale: id })}
+                    </Text>
                   </View>
                 </Pressable>
                 {showDatePicker && (
@@ -196,7 +225,10 @@ export default function AddOvertimeScreen() {
                       setShowDatePicker(false);
                       if (selectedDate) {
                         setValue('workDate', selectedDate);
-                        const holCheck = checkIsHoliday(selectedDate, employment?.work_system || '5_days');
+                        const holCheck = checkIsHoliday(
+                          selectedDate,
+                          employment?.work_system || '5_days',
+                        );
                         setValue('isHoliday', holCheck.isHoliday);
                       }
                     }}
@@ -212,11 +244,11 @@ export default function AddOvertimeScreen() {
             name="startTime"
             render={({ field: { value } }) => (
               <>
-                <Pressable 
+                <Pressable
                   className="flex-row items-center px-5 py-4 border-b border-dark-border active:bg-dark-border"
                   onPress={() => setShowStartTimePicker(true)}
                 >
-                  <SymbolView name="clock.fill" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
+                  <Ionicons name="time" size={20} color="#64748b" />
                   <View className="flex-1 flex-row justify-between items-center">
                     <Text className="text-white text-base">Jam Mulai</Text>
                     <Text className="text-primary-400 font-medium">{format(value, 'HH:mm')}</Text>
@@ -244,11 +276,11 @@ export default function AddOvertimeScreen() {
             name="endTime"
             render={({ field: { value } }) => (
               <>
-                <Pressable 
+                <Pressable
                   className="flex-row items-center px-5 py-4 border-b border-dark-border active:bg-dark-border"
                   onPress={() => setShowEndTimePicker(true)}
                 >
-                  <SymbolView name="clock.badge.checkmark.fill" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
+                  <Ionicons name="time" size={20} color="#64748b" />
                   <View className="flex-1 flex-row justify-between items-center">
                     <Text className="text-white text-base">Jam Selesai</Text>
                     <Text className="text-primary-400 font-medium">{format(value, 'HH:mm')}</Text>
@@ -272,12 +304,14 @@ export default function AddOvertimeScreen() {
         </View>
 
         {/* GROUP 2: Pengaturan Tambahan */}
-        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">Pengaturan Tambahan</Text>
+        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
+          Pengaturan Tambahan
+        </Text>
         <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
           {/* Break Minutes */}
           <View className="flex-row items-center justify-between px-5 py-4 border-b border-dark-border">
             <View className="flex-row items-center flex-1">
-              <SymbolView name="cup.and.saucer.fill" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
+              <Ionicons name="cafe" size={20} color="#64748b" />
               <View>
                 <Text className="text-white text-base">Istirahat</Text>
                 <Text className="text-dark-muted text-xs">Menit potongan</Text>
@@ -305,11 +339,14 @@ export default function AddOvertimeScreen() {
           {/* Holiday Toggle */}
           <View className="flex-row items-center justify-between px-5 py-4">
             <View className="flex-row items-center flex-1 mr-3">
-              <SymbolView name="sparkles" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
+              <Ionicons name="sparkles" size={20} color="#64748b" />
               <View className="flex-1">
                 <Text className="text-white text-base">Hari Libur / Merah</Text>
                 {(() => {
-                  const hol = checkIsHoliday(watchAllFields.workDate, employment?.work_system || '5_days');
+                  const hol = checkIsHoliday(
+                    watchAllFields.workDate,
+                    employment?.work_system || '5_days',
+                  );
                   if (hol.holidayName) {
                     return (
                       <Text className="text-amber-400 text-xs mt-0.5 font-medium">
@@ -341,10 +378,12 @@ export default function AddOvertimeScreen() {
         </View>
 
         {/* GROUP 3: Catatan */}
-        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">Informasi Tambahan</Text>
+        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
+          Informasi Tambahan
+        </Text>
         <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
           <View className="flex-row px-5 py-4 min-h-[100px]">
-            <SymbolView name="note.text" size={20} tintColor="#64748b" style={{ marginRight: 16, marginTop: 2 }} />
+            <Ionicons name="document-text" size={20} color="#64748b" />
             <View className="flex-1">
               <Controller
                 control={control}
@@ -368,20 +407,22 @@ export default function AddOvertimeScreen() {
         </View>
 
         {/* GROUP 4: Bukti SPL / Absensi */}
-        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">Bukti SPL / Absensi (Opsional)</Text>
+        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
+          Bukti SPL / Absensi (Opsional)
+        </Text>
         <View className="bg-dark-card rounded-3xl overflow-hidden p-4 mb-6">
           {attachmentUrl ? (
             <View className="relative">
-              <Image 
-                source={{ uri: attachmentUrl }} 
-                className="w-full h-44 rounded-2xl bg-dark-bg" 
+              <Image
+                source={{ uri: attachmentUrl }}
+                className="w-full h-44 rounded-2xl bg-dark-bg"
                 resizeMode="cover"
               />
               <Pressable
                 className="absolute top-2 right-2 bg-red-600 px-3 py-1.5 rounded-xl flex-row items-center gap-1 shadow-lg"
                 onPress={() => setAttachmentUrl(null)}
               >
-                <SymbolView name="trash.fill" size={14} tintColor="#fff" />
+                <Ionicons name="trash" size={14} color="#fff" />
                 <Text className="text-white text-xs font-bold">Hapus</Text>
               </Pressable>
             </View>
@@ -391,20 +432,27 @@ export default function AddOvertimeScreen() {
               onPress={handlePickAttachment}
             >
               <View className="w-12 h-12 bg-primary-950/40 rounded-full items-center justify-center mb-2 border border-primary-500/30">
-                <SymbolView name="camera.fill" size={22} tintColor="#60a5fa" />
+                <Ionicons name="camera" size={22} color="#60a5fa" />
               </View>
               <Text className="text-white font-bold text-sm">Lampirkan Foto Bukti SPL</Text>
-              <Text className="text-dark-muted text-xs mt-0.5">Ambil foto atau pilih dari galeri</Text>
+              <Text className="text-dark-muted text-xs mt-0.5">
+                Ambil foto atau pilih dari galeri
+              </Text>
             </Pressable>
           )}
         </View>
 
         {/* Estimation Preview */}
         <View className="bg-primary-900/30 border border-primary-900/50 rounded-3xl p-5 mb-8 items-center">
-          <Text className="text-primary-400 text-xs font-bold tracking-widest mb-2">ESTIMASI UPAH (LIVE)</Text>
-          <Text className="text-white text-4xl font-bold mb-1">{formatCurrency(estimation.pay)}</Text>
+          <Text className="text-primary-400 text-xs font-bold tracking-widest mb-2">
+            ESTIMASI UPAH (LIVE)
+          </Text>
+          <Text className="text-white text-4xl font-bold mb-1">
+            {formatCurrency(estimation.pay)}
+          </Text>
           <Text className="text-primary-200/70 text-sm font-medium">
-            {estimation.hoursStr} × {activePayPeriod?.formula_type === 'indonesia' ? 'Formula Kemenaker' : 'Tarif Flat'}
+            {estimation.hoursStr} ×{' '}
+            {activePayPeriod?.formula_type === 'indonesia' ? 'Formula Kemenaker' : 'Tarif Flat'}
             {watchAllFields.isHoliday ? ' (Libur Nasional)' : ''}
           </Text>
         </View>

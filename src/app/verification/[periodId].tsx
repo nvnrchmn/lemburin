@@ -1,35 +1,49 @@
 import { useState, useEffect } from 'react';
-import { View, Text, Pressable, TextInput, ScrollView, ActivityIndicator, Alert, Image, Modal } from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  TextInput,
+  ScrollView,
+  ActivityIndicator,
+  Alert,
+  Image,
+  Modal,
+} from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useDataStore } from '@/stores/data-store';
-import { SymbolView } from 'expo-symbols';
+import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInUp, Layout } from 'react-native-reanimated';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { format, parseISO } from 'date-fns';
 
 import { PayPeriod, SalaryVerification, OvertimeEntry } from '@/types/database';
-import { calculateOvertimeMinutes, calculateOvertimePay, calculateTotalFixedAllowance } from '@/utils/calculator';
+import {
+  calculateOvertimeMinutes,
+  calculateOvertimePay,
+  calculateTotalFixedAllowance,
+} from '@/utils/calculator';
 import { formatCurrency, formatDuration } from '@/utils/formatting';
-import { pickImage } from '@/utils/upload';
+import { pickAndUploadImage } from '@/utils/upload';
 import { useToastStore } from '@/stores/toast-store';
 
 export default function SalaryVerificationScreen() {
   const { periodId } = useLocalSearchParams<{ periodId: string }>();
   const { employment, profile } = useDataStore();
   const { showToast } = useToastStore();
-  
+
   const [verification, setVerification] = useState<SalaryVerification | null>(null);
   const [period, setPeriod] = useState<PayPeriod | null>(null);
   const [entries, setEntries] = useState<OvertimeEntry[]>([]);
   const [slipPhotoUrl, setSlipPhotoUrl] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+
   const [estimatedAppAmount, setEstimatedAppAmount] = useState(0);
   const [slipAmountStr, setSlipAmountStr] = useState('');
   const [notes, setNotes] = useState('');
-  
+
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -44,7 +58,7 @@ export default function SalaryVerificationScreen() {
           .select('*')
           .eq('id', periodId)
           .single();
-          
+
         if (periodError) throw periodError;
         const currentPeriod = periodData as PayPeriod;
         setPeriod(currentPeriod);
@@ -55,13 +69,17 @@ export default function SalaryVerificationScreen() {
           .select('*')
           .eq('pay_period_id', periodId)
           .order('work_date', { ascending: true });
-          
+
         if (entriesError) throw entriesError;
         setEntries((entriesData as OvertimeEntry[]) || []);
-        
+
         let totalPay = 0;
-        (entriesData as any[] | null)?.forEach((entry) => {
-          const mins = calculateOvertimeMinutes(entry.start_time, entry.end_time, entry.break_minutes);
+        (entriesData as any[] | null)?.forEach(entry => {
+          const mins = calculateOvertimeMinutes(
+            entry.start_time,
+            entry.end_time,
+            entry.break_minutes,
+          );
           const payInfo = calculateOvertimePay(
             mins,
             currentPeriod.formula_type,
@@ -71,11 +89,11 @@ export default function SalaryVerificationScreen() {
             entry.is_holiday ?? false,
             employment.work_system || '5_days',
             employment.overtime_meal_allowance || 0,
-            employment.overtime_transport_allowance || 0
+            employment.overtime_transport_allowance || 0,
           );
           totalPay += payInfo.totalPay;
         });
-        
+
         setEstimatedAppAmount(totalPay);
 
         // Fetch existing verification
@@ -86,7 +104,7 @@ export default function SalaryVerificationScreen() {
           .maybeSingle();
 
         if (verifError && verifError.code !== 'PGRST116') throw verifError;
-        
+
         if (verifData) {
           const currentVerif = verifData as SalaryVerification;
           setVerification(currentVerif);
@@ -96,7 +114,6 @@ export default function SalaryVerificationScreen() {
             setSlipPhotoUrl(currentVerif.slip_photo_url);
           }
         }
-
       } catch (error) {
         console.error('Failed to load verification data:', error);
         showToast('Gagal memuat data.', 'error');
@@ -104,29 +121,34 @@ export default function SalaryVerificationScreen() {
         setIsLoading(false);
       }
     }
-    
+
     loadData();
   }, [periodId, employment, showToast]);
 
   const handlePickSlipPhoto = () => {
     Alert.alert('Foto Slip Gaji Fisik', 'Pilih sumber foto:', [
-      { text: 'Kamera', onPress: async () => {
-        const res = await pickImage(true);
-        if (res?.base64) setSlipPhotoUrl(res.base64);
-      }},
-      { text: 'Galeri Foto', onPress: async () => {
-        const res = await pickImage(false);
-        if (res?.base64) setSlipPhotoUrl(res.base64);
-      }},
-      { text: 'Batal', style: 'cancel' }
+      {
+        text: 'Kamera',
+        onPress: async () => {
+          const url = await pickAndUploadImage(true, 'slips');
+          if (url) setSlipPhotoUrl(url);
+        },
+      },
+      {
+        text: 'Galeri Foto',
+        onPress: async () => {
+          const url = await pickAndUploadImage(false, 'slips');
+          if (url) setSlipPhotoUrl(url);
+        },
+      },
+      { text: 'Batal', style: 'cancel' },
     ]);
   };
 
   const slipAmount = parseInt(slipAmountStr.replace(/[^0-9]/g, ''), 10) || 0;
   const difference = slipAmount - estimatedAppAmount;
-  const diffPercentage = estimatedAppAmount > 0 
-    ? (Math.abs(difference) / estimatedAppAmount) * 100 
-    : 0;
+  const diffPercentage =
+    estimatedAppAmount > 0 ? (Math.abs(difference) / estimatedAppAmount) * 100 : 0;
 
   let statusText = 'Belum Diverifikasi';
   let statusColor = '#94a3b8'; // slate-400
@@ -146,14 +168,14 @@ export default function SalaryVerificationScreen() {
 
   const handleSave = async () => {
     if (!periodId) return;
-    
+
     if (slipAmountStr.trim() === '') {
       Alert.alert('Perhatian', 'Mohon isi nominal pada slip gaji.');
       return;
     }
 
     setIsSaving(true);
-    
+
     const payload = {
       pay_period_id: periodId,
       slip_amount: slipAmount,
@@ -175,13 +197,11 @@ export default function SalaryVerificationScreen() {
         showToast('Verifikasi berhasil diperbarui', 'success');
       } else {
         // Insert
-        const { error } = await supabase
-          .from('salary_verifications')
-          .insert(payload as any);
+        const { error } = await supabase.from('salary_verifications').insert(payload as any);
         if (error) throw error;
         showToast('Verifikasi berhasil disimpan', 'success');
       }
-      
+
       router.back();
     } catch (error: any) {
       console.error(error);
@@ -197,21 +217,26 @@ export default function SalaryVerificationScreen() {
 
     try {
       const shortageAmount = Math.abs(difference);
-      const rowsHtml = entries.map((entry, index) => {
-        const mins = calculateOvertimeMinutes(entry.start_time, entry.end_time, entry.break_minutes);
-        const payInfo = calculateOvertimePay(
-          mins,
-          period.formula_type,
-          employment.basic_salary || 0,
-          calculateTotalFixedAllowance(employment.allowances_detail || null),
-          period.flat_rate_amount,
-          entry.is_holiday ?? false,
-          employment.work_system || '5_days',
-          employment.overtime_meal_allowance || 0,
-          employment.overtime_transport_allowance || 0
-        );
+      const rowsHtml = entries
+        .map((entry, index) => {
+          const mins = calculateOvertimeMinutes(
+            entry.start_time,
+            entry.end_time,
+            entry.break_minutes,
+          );
+          const payInfo = calculateOvertimePay(
+            mins,
+            period.formula_type,
+            employment.basic_salary || 0,
+            calculateTotalFixedAllowance(employment.allowances_detail || null),
+            period.flat_rate_amount,
+            entry.is_holiday ?? false,
+            employment.work_system || '5_days',
+            employment.overtime_meal_allowance || 0,
+            employment.overtime_transport_allowance || 0,
+          );
 
-        return `
+          return `
           <tr style="border-bottom: 1px solid #e2e8f0; ${index % 2 === 0 ? 'background-color: #f8fafc;' : ''}">
             <td style="padding: 10px; font-size: 11px;">${format(parseISO(entry.work_date), 'dd/MM/yyyy')}</td>
             <td style="padding: 10px; font-size: 11px;">${entry.start_time.slice(0, 5)} - ${entry.end_time.slice(0, 5)}</td>
@@ -221,7 +246,8 @@ export default function SalaryVerificationScreen() {
             <td style="padding: 10px; font-size: 11px; text-align: right; font-weight: 700;">${formatCurrency(payInfo.totalPay)}</td>
           </tr>
         `;
-      }).join('');
+        })
+        .join('');
 
       const htmlContent = `
         <!DOCTYPE html>
@@ -325,7 +351,11 @@ export default function SalaryVerificationScreen() {
 
   return (
     <ScrollView className="flex-1 bg-dark-bg" showsVerticalScrollIndicator={false}>
-      <Animated.View entering={FadeInUp.duration(600).springify()} layout={Layout.springify()} className="px-5 pt-6 pb-12">
+      <Animated.View
+        entering={FadeInUp.duration(600).springify()}
+        layout={Layout.springify()}
+        className="px-5 pt-6 pb-12"
+      >
         <Text className="text-white text-3xl font-sans-bold tracking-tight mb-2">
           Verifikasi Gaji
         </Text>
@@ -337,17 +367,25 @@ export default function SalaryVerificationScreen() {
         <View className="flex-row gap-3 mb-6">
           <View className="flex-1 bg-primary-950 border border-primary-800 rounded-3xl p-5 shadow-sm">
             <View className="flex-row items-center mb-2">
-              <SymbolView name="iphone" size={14} tintColor="#93c5fd" style={{ marginRight: 6 }} />
-              <Text className="text-primary-300 font-sans-bold text-xs uppercase tracking-wider">Aplikasi</Text>
+              <Ionicons name="phone-portrait" size={14} color="#93c5fd" />
+              <Text className="text-primary-300 font-sans-bold text-xs uppercase tracking-wider">
+                Aplikasi
+              </Text>
             </View>
-            <Text className="text-white text-xl font-sans-extrabold">{formatCurrency(estimatedAppAmount)}</Text>
+            <Text className="text-white text-xl font-sans-extrabold">
+              {formatCurrency(estimatedAppAmount)}
+            </Text>
           </View>
           <View className="flex-1 bg-dark-card border border-dark-border rounded-3xl p-5 shadow-sm">
             <View className="flex-row items-center mb-2">
-              <SymbolView name="doc.text.fill" size={14} tintColor="#94a3b8" style={{ marginRight: 6 }} />
-              <Text className="text-dark-muted font-sans-bold text-xs uppercase tracking-wider">Slip Gaji</Text>
+              <Ionicons name="document-text" size={14} color="#94a3b8" />
+              <Text className="text-dark-muted font-sans-bold text-xs uppercase tracking-wider">
+                Slip Gaji
+              </Text>
             </View>
-            <Text className="text-white text-xl font-sans-extrabold">{slipAmount > 0 ? formatCurrency(slipAmount) : 'Rp —'}</Text>
+            <Text className="text-white text-xl font-sans-extrabold">
+              {slipAmount > 0 ? formatCurrency(slipAmount) : 'Rp —'}
+            </Text>
           </View>
         </View>
 
@@ -364,7 +402,7 @@ export default function SalaryVerificationScreen() {
               placeholderTextColor="#475569"
               keyboardType="numeric"
               value={slipAmountStr}
-              onChangeText={(text) => {
+              onChangeText={text => {
                 // Keep only numbers
                 const numericValue = text.replace(/[^0-9]/g, '');
                 setSlipAmountStr(numericValue);
@@ -380,9 +418,9 @@ export default function SalaryVerificationScreen() {
           </Text>
           {slipPhotoUrl ? (
             <View className="relative">
-              <Image 
-                source={{ uri: slipPhotoUrl }} 
-                className="w-full h-44 rounded-2xl bg-dark-bg" 
+              <Image
+                source={{ uri: slipPhotoUrl }}
+                className="w-full h-44 rounded-2xl bg-dark-bg"
                 resizeMode="cover"
               />
               <View className="flex-row gap-2 absolute top-2 right-2">
@@ -390,14 +428,14 @@ export default function SalaryVerificationScreen() {
                   className="bg-primary-600 px-3 py-1.5 rounded-xl flex-row items-center gap-1 shadow-lg"
                   onPress={() => setIsModalOpen(true)}
                 >
-                  <SymbolView name="arrow.up.left.and.arrow.down.right" size={12} tintColor="#fff" />
+                  <Ionicons name="swap-vertical" size={12} color="#fff" />
                   <Text className="text-white text-xs font-bold">Perbesar</Text>
                 </Pressable>
                 <Pressable
                   className="bg-red-600 px-3 py-1.5 rounded-xl flex-row items-center gap-1 shadow-lg"
                   onPress={() => setSlipPhotoUrl(null)}
                 >
-                  <SymbolView name="trash.fill" size={12} tintColor="#fff" />
+                  <Ionicons name="trash" size={12} color="#fff" />
                   <Text className="text-white text-xs font-bold">Hapus</Text>
                 </Pressable>
               </View>
@@ -408,10 +446,12 @@ export default function SalaryVerificationScreen() {
               onPress={handlePickSlipPhoto}
             >
               <View className="w-12 h-12 bg-primary-950/40 rounded-full items-center justify-center mb-2 border border-primary-500/30">
-                <SymbolView name="camera.fill" size={22} tintColor="#60a5fa" />
+                <Ionicons name="camera" size={22} color="#60a5fa" />
               </View>
               <Text className="text-white font-bold text-sm">Ambil Foto Slip Gaji</Text>
-              <Text className="text-dark-muted text-xs mt-0.5">Untuk perbandingan visual berdampingan</Text>
+              <Text className="text-dark-muted text-xs mt-0.5">
+                Untuk perbandingan visual berdampingan
+              </Text>
             </Pressable>
           )}
         </View>
@@ -426,13 +466,18 @@ export default function SalaryVerificationScreen() {
           </View>
           <View className="flex-row justify-between items-center mb-3">
             <Text className="text-dark-muted font-medium text-sm">Selisih Nominal</Text>
-            <Text className={`text-lg font-sans-extrabold ${difference < 0 ? 'text-red-400' : difference > 0 ? 'text-emerald-400' : 'text-white'}`}>
-              {difference > 0 ? '+' : ''}{formatCurrency(difference)}
+            <Text
+              className={`text-lg font-sans-extrabold ${difference < 0 ? 'text-red-400' : difference > 0 ? 'text-emerald-400' : 'text-white'}`}
+            >
+              {difference > 0 ? '+' : ''}
+              {formatCurrency(difference)}
             </Text>
           </View>
           <View className="flex-row justify-between items-center">
             <Text className="text-dark-muted font-medium text-sm">Persentase Deviasi</Text>
-            <Text className="text-white text-lg font-sans-extrabold">{diffPercentage.toFixed(1)}%</Text>
+            <Text className="text-white text-lg font-sans-extrabold">
+              {diffPercentage.toFixed(1)}%
+            </Text>
           </View>
         </View>
 
@@ -445,8 +490,10 @@ export default function SalaryVerificationScreen() {
           >
             <View className="flex-1 mr-3">
               <View className="flex-row items-center gap-1.5 mb-0.5">
-                <SymbolView name="doc.badge.arrow.up" size={16} tintColor="#f87171" />
-                <Text className="text-red-400 font-bold text-sm">Cetak Surat Klaim Selisih (PDF)</Text>
+                <Ionicons name="document-text" size={16} color="#f87171" />
+                <Text className="text-red-400 font-bold text-sm">
+                  Cetak Surat Klaim Selisih (PDF)
+                </Text>
               </View>
               <Text className="text-red-300/70 text-xs">
                 Dokumen resmi berlandaskan Pasal 31 PP 35/2021 untuk diajukan ke HRD/Payroll
@@ -456,7 +503,7 @@ export default function SalaryVerificationScreen() {
               <ActivityIndicator color="#f87171" size="small" />
             ) : (
               <View className="w-9 h-9 bg-red-500/20 rounded-xl items-center justify-center">
-                <SymbolView name="arrow.down.doc.fill" size={16} tintColor="#f87171" />
+                <Ionicons name="download" size={16} color="#f87171" />
               </View>
             )}
           </Pressable>
@@ -464,7 +511,9 @@ export default function SalaryVerificationScreen() {
 
         {/* Notes */}
         <View className="bg-dark-card border border-dark-border rounded-3xl px-5 py-4 mb-8 shadow-sm">
-          <Text className="text-dark-muted font-sans-bold text-xs uppercase tracking-wider mb-2">Catatan (opsional)</Text>
+          <Text className="text-dark-muted font-sans-bold text-xs uppercase tracking-wider mb-2">
+            Catatan (opsional)
+          </Text>
           <TextInput
             className="text-white text-base p-0 m-0 w-full"
             style={{ minHeight: 60, maxHeight: 120 }}
@@ -486,7 +535,7 @@ export default function SalaryVerificationScreen() {
           <Text className="text-white font-sans-bold text-lg">
             {verification ? 'Perbarui Verifikasi' : 'Simpan Verifikasi'}
           </Text>
-          {!isSaving && <SymbolView name="checkmark.circle.fill" size={20} tintColor="#fff" style={{ marginLeft: 8 }} />}
+          {!isSaving && <Ionicons name="checkmark-circle" size={20} color="#fff" />}
         </Pressable>
       </Animated.View>
 
@@ -499,13 +548,13 @@ export default function SalaryVerificationScreen() {
           onRequestClose={() => setIsModalOpen(false)}
         >
           <View className="flex-1 bg-black/90 justify-center items-center p-4">
-            <Pressable 
+            <Pressable
               className="absolute top-12 right-6 z-10 bg-dark-card p-3 rounded-full border border-dark-border"
               onPress={() => setIsModalOpen(false)}
             >
-              <SymbolView name="xmark" size={20} tintColor="#fff" />
+              <Ionicons name="close" size={20} color="#fff" />
             </Pressable>
-            <Image 
+            <Image
               source={{ uri: slipPhotoUrl }}
               className="w-full h-4/5 rounded-2xl"
               resizeMode="contain"

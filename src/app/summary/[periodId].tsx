@@ -6,12 +6,16 @@ import { useDataStore } from '@/stores/data-store';
 import { useToastStore } from '@/stores/toast-store';
 import { format, parseISO } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
-import { SymbolView } from 'expo-symbols';
+import { Ionicons } from '@expo/vector-icons';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 
 import { PayPeriod, OvertimeEntry } from '@/types/database';
-import { calculateOvertimeMinutes, calculateOvertimePay, calculateTotalFixedAllowance } from '@/utils/calculator';
+import {
+  calculateOvertimeMinutes,
+  calculateOvertimePay,
+  calculateTotalFixedAllowance,
+} from '@/utils/calculator';
 import { formatCurrency, formatDuration } from '@/utils/formatting';
 import { calculatePph21Ter } from '@/utils/tax';
 import { calculateBpjsDeductions } from '@/utils/bpjs';
@@ -20,7 +24,7 @@ export default function MonthlySummaryScreen() {
   const { periodId } = useLocalSearchParams<{ periodId: string }>();
   const { employment, profile } = useDataStore();
   const { showToast } = useToastStore();
-  
+
   const [period, setPeriod] = useState<PayPeriod | null>(null);
   const [entries, setEntries] = useState<OvertimeEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,7 +39,7 @@ export default function MonthlySummaryScreen() {
           .select('*')
           .eq('id', periodId)
           .single();
-          
+
         if (periodError) throw periodError;
         setPeriod(periodData);
 
@@ -45,17 +49,16 @@ export default function MonthlySummaryScreen() {
           .select('*')
           .eq('pay_period_id', periodId)
           .order('work_date', { ascending: true });
-          
+
         if (entriesError) throw entriesError;
         setEntries(entriesData || []);
-
       } catch (error) {
         console.error('Failed to load summary data:', error);
       } finally {
         setIsLoading(false);
       }
     }
-    
+
     loadData();
   }, [periodId]);
 
@@ -71,7 +74,10 @@ export default function MonthlySummaryScreen() {
     return (
       <View className="flex-1 bg-dark-bg justify-center items-center px-5">
         <Text className="text-white text-lg">Periode tidak ditemukan.</Text>
-        <Pressable className="mt-4 bg-primary-600 px-6 py-3 rounded-xl" onPress={() => router.back()}>
+        <Pressable
+          className="mt-4 bg-primary-600 px-6 py-3 rounded-xl"
+          onPress={() => router.back()}
+        >
           <Text className="text-white font-bold">Kembali</Text>
         </Pressable>
       </View>
@@ -86,7 +92,7 @@ export default function MonthlySummaryScreen() {
   entries.forEach(entry => {
     const mins = calculateOvertimeMinutes(entry.start_time, entry.end_time, entry.break_minutes);
     totalMinutes += mins;
-    
+
     if (employment?.basic_salary) {
       const payInfo = calculateOvertimePay(
         mins,
@@ -97,7 +103,7 @@ export default function MonthlySummaryScreen() {
         entry.is_holiday ?? false,
         employment.work_system || '5_days',
         employment.overtime_meal_allowance || 0,
-        employment.overtime_transport_allowance || 0
+        employment.overtime_transport_allowance || 0,
       );
       totalPay += payInfo.totalPay;
     }
@@ -112,7 +118,7 @@ export default function MonthlySummaryScreen() {
     baseSalary,
     fixedAllowances,
     employment?.has_bpjs_tk ?? true,
-    employment?.has_bpjs_kes ?? true
+    employment?.has_bpjs_kes ?? true,
   );
   const otherDeductions = employment?.deductions_detail?.reduce((sum, d) => sum + d.amount, 0) || 0;
   const totalDeductions = taxResult.taxAmount + bpjsResult.totalBpjs + otherDeductions;
@@ -161,10 +167,14 @@ export default function MonthlySummaryScreen() {
   const exportPDF = async () => {
     try {
       setIsLoading(true);
-      
+
       let tableRows = '';
       entries.forEach(entry => {
-        const mins = calculateOvertimeMinutes(entry.start_time, entry.end_time, entry.break_minutes);
+        const mins = calculateOvertimeMinutes(
+          entry.start_time,
+          entry.end_time,
+          entry.break_minutes,
+        );
         const dateStr = format(parseISO(entry.work_date), 'dd MMM yyyy', { locale: localeId });
         tableRows += `
           <tr>
@@ -223,7 +233,6 @@ export default function MonthlySummaryScreen() {
 
       const { uri } = await Print.printToFileAsync({ html });
       await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
-      
     } catch (error) {
       console.error(error);
       Alert.alert('Gagal', 'Gagal membuat file PDF');
@@ -244,21 +253,22 @@ export default function MonthlySummaryScreen() {
               </Text>
               <Text className="text-white text-2xl font-sans-bold">{period.period_name}</Text>
               <Text className="text-dark-muted text-sm mt-1">
-                {format(parseISO(period.start_date), 'dd MMM', { locale: localeId })} — {format(parseISO(period.end_date), 'dd MMM yyyy', { locale: localeId })}
+                {format(parseISO(period.start_date), 'dd MMM', { locale: localeId })} —{' '}
+                {format(parseISO(period.end_date), 'dd MMM yyyy', { locale: localeId })}
               </Text>
             </View>
             <View className="flex-row gap-2">
-              <Pressable 
+              <Pressable
                 onPress={shareWhatsApp}
                 className="w-11 h-11 bg-emerald-600 rounded-2xl items-center justify-center active:bg-emerald-700 shadow-sm"
               >
-                <SymbolView name="bubble.left.and.bubble.right.fill" size={18} tintColor="#fff" />
+                <Ionicons name="chatbubbles" size={18} color="#fff" />
               </Pressable>
-              <Pressable 
+              <Pressable
                 onPress={exportPDF}
                 className="w-11 h-11 bg-primary-600 rounded-2xl items-center justify-center active:bg-primary-700 shadow-sm"
               >
-                <SymbolView name="square.and.arrow.up" size={18} tintColor="#fff" />
+                <Ionicons name="share" size={18} color="#fff" />
               </Pressable>
             </View>
           </View>
@@ -268,7 +278,7 @@ export default function MonthlySummaryScreen() {
             onPress={shareWhatsApp}
             className="bg-emerald-600/20 border border-emerald-500/40 rounded-2xl py-2.5 px-4 flex-row items-center justify-center active:bg-emerald-600/30"
           >
-            <SymbolView name="paperplane.fill" size={14} tintColor="#34d399" style={{ marginRight: 8 }} />
+            <Ionicons name="paper-plane" size={14} color="#34d399" />
             <Text className="text-emerald-300 font-bold text-xs">Bagikan Rekap ke WhatsApp</Text>
           </Pressable>
         </View>
@@ -276,11 +286,17 @@ export default function MonthlySummaryScreen() {
         {/* Summary Cards */}
         <View className="flex-row gap-3 mb-4">
           <View className="flex-1 bg-dark-card border border-dark-border rounded-3xl p-5">
-            <Text className="text-dark-muted text-xs font-medium uppercase tracking-wider mb-2">Total Jam</Text>
-            <Text className="text-white text-2xl font-sans-extrabold">{formatDuration(totalMinutes).replace(' jam', 'j').replace(' menit', 'm')}</Text>
+            <Text className="text-dark-muted text-xs font-medium uppercase tracking-wider mb-2">
+              Total Jam
+            </Text>
+            <Text className="text-white text-2xl font-sans-extrabold">
+              {formatDuration(totalMinutes).replace(' jam', 'j').replace(' menit', 'm')}
+            </Text>
           </View>
           <View className="flex-1 bg-dark-card border border-dark-border rounded-3xl p-5">
-            <Text className="text-dark-muted text-xs font-medium uppercase tracking-wider mb-2">Hari Lembur</Text>
+            <Text className="text-dark-muted text-xs font-medium uppercase tracking-wider mb-2">
+              Hari Lembur
+            </Text>
             <Text className="text-white text-2xl font-sans-extrabold">{daysOfOvertime}</Text>
           </View>
         </View>
@@ -290,12 +306,12 @@ export default function MonthlySummaryScreen() {
           <Text className="text-primary-300 text-xs font-bold mb-2 tracking-widest uppercase">
             TOTAL ESTIMASI UPAH LEMBUR
           </Text>
-          <Text className="text-white text-4xl font-sans-extrabold tracking-tight mb-1">{formatCurrency(totalPay)}</Text>
+          <Text className="text-white text-4xl font-sans-extrabold tracking-tight mb-1">
+            {formatCurrency(totalPay)}
+          </Text>
           <View className="flex-row items-center">
-            <SymbolView name="function" size={12} tintColor="#60a5fa" style={{ marginRight: 6 }} />
-            <Text className="text-primary-200/70 text-xs font-medium">
-              {formulaName}
-            </Text>
+            <Ionicons name="calculator" size={12} color="#60a5fa" />
+            <Text className="text-primary-200/70 text-xs font-medium">{formulaName}</Text>
           </View>
         </View>
 
@@ -304,8 +320,12 @@ export default function MonthlySummaryScreen() {
           <View className="bg-dark-card border border-dark-border rounded-3xl p-6 mb-6 shadow-sm">
             <View className="flex-row justify-between items-center mb-4 border-b border-dark-border pb-3">
               <View>
-                <Text className="text-emerald-400 text-xs font-bold uppercase tracking-wider">Estimasi Gaji Bersih</Text>
-                <Text className="text-white text-2xl font-sans-extrabold mt-0.5">{formatCurrency(takeHomePay)}</Text>
+                <Text className="text-emerald-400 text-xs font-bold uppercase tracking-wider">
+                  Estimasi Gaji Bersih
+                </Text>
+                <Text className="text-white text-2xl font-sans-extrabold mt-0.5">
+                  {formatCurrency(takeHomePay)}
+                </Text>
               </View>
               <View className="bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full">
                 <Text className="text-emerald-400 text-xs font-bold">Take Home Pay</Text>
@@ -320,22 +340,30 @@ export default function MonthlySummaryScreen() {
 
               {taxResult.taxAmount > 0 && (
                 <View className="flex-row justify-between items-center mb-2">
-                  <Text className="text-red-400 text-xs">Potongan PPh 21 TER ({taxResult.ratePercentage}%)</Text>
-                  <Text className="text-red-400 text-xs font-bold">-{formatCurrency(taxResult.taxAmount)}</Text>
+                  <Text className="text-red-400 text-xs">
+                    Potongan PPh 21 TER ({taxResult.ratePercentage}%)
+                  </Text>
+                  <Text className="text-red-400 text-xs font-bold">
+                    -{formatCurrency(taxResult.taxAmount)}
+                  </Text>
                 </View>
               )}
 
               {bpjsResult.totalBpjs > 0 && (
                 <View className="flex-row justify-between items-center mb-2">
                   <Text className="text-amber-400 text-xs">Potongan BPJS (JHT, JP, Kes)</Text>
-                  <Text className="text-amber-400 text-xs font-bold">-{formatCurrency(bpjsResult.totalBpjs)}</Text>
+                  <Text className="text-amber-400 text-xs font-bold">
+                    -{formatCurrency(bpjsResult.totalBpjs)}
+                  </Text>
                 </View>
               )}
 
               {otherDeductions > 0 && (
                 <View className="flex-row justify-between items-center mb-2">
                   <Text className="text-red-400 text-xs">Potongan Lainnya</Text>
-                  <Text className="text-red-400 text-xs font-bold">-{formatCurrency(otherDeductions)}</Text>
+                  <Text className="text-red-400 text-xs font-bold">
+                    -{formatCurrency(otherDeductions)}
+                  </Text>
                 </View>
               )}
             </View>
@@ -344,9 +372,7 @@ export default function MonthlySummaryScreen() {
 
         {/* Overtime List */}
         <View className="mb-6">
-          <Text className="text-white text-xl font-sans-bold mb-4 ml-1">
-            Daftar Lembur
-          </Text>
+          <Text className="text-white text-xl font-sans-bold mb-4 ml-1">Daftar Lembur</Text>
           {entries.length === 0 ? (
             <View className="bg-dark-card border border-dark-border rounded-3xl p-8 items-center border-dashed">
               <Text className="text-dark-muted text-sm text-center">
@@ -356,10 +382,14 @@ export default function MonthlySummaryScreen() {
           ) : (
             <View className="space-y-3">
               {entries.map(entry => {
-                const mins = calculateOvertimeMinutes(entry.start_time, entry.end_time, entry.break_minutes);
+                const mins = calculateOvertimeMinutes(
+                  entry.start_time,
+                  entry.end_time,
+                  entry.break_minutes,
+                );
                 return (
-                  <Pressable 
-                    key={entry.id} 
+                  <Pressable
+                    key={entry.id}
                     className="bg-dark-card border border-dark-border rounded-3xl p-5 flex-row justify-between items-center active:border-primary-500/50"
                     onPress={() => router.push(`/overtime/${entry.id}` as any)}
                   >
@@ -372,7 +402,9 @@ export default function MonthlySummaryScreen() {
                       </Text>
                     </View>
                     <View className="items-end">
-                      <Text className="text-primary-400 font-sans-bold text-base">+{formatDuration(mins)}</Text>
+                      <Text className="text-primary-400 font-sans-bold text-base">
+                        +{formatDuration(mins)}
+                      </Text>
                     </View>
                   </Pressable>
                 );
@@ -384,14 +416,10 @@ export default function MonthlySummaryScreen() {
         {/* Verify Button */}
         <Pressable
           className="bg-primary-600 rounded-2xl py-4 items-center mb-8 flex-row justify-center active:opacity-70 shadow-sm"
-          onPress={() =>
-            router.push(`/verification/${period.id}` as any)
-          }
+          onPress={() => router.push(`/verification/${period.id}` as any)}
         >
-          <Text className="text-white font-bold text-lg mr-2">
-            Verifikasi Slip Gaji
-          </Text>
-          <SymbolView name="checkmark.seal.fill" size={20} tintColor="#fff" />
+          <Text className="text-white font-bold text-lg mr-2">Verifikasi Slip Gaji</Text>
+          <Ionicons name="checkmark-done-circle" size={20} color="#fff" />
         </Pressable>
       </View>
     </ScrollView>

@@ -1,5 +1,5 @@
 import { Tabs, Redirect } from 'expo-router';
-import { Text, View } from 'react-native';
+import { Text, View , useColorScheme } from 'react-native';
 
 import { useAuthStore } from '@/stores/auth-store';
 import { Colors } from '@/constants/colors';
@@ -7,6 +7,14 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function TabLayout() {
   const { isAuthenticated, isLoading } = useAuthStore();
+  const scheme = useColorScheme();
+  // Ambil palet yang konsisten dengan tema aktif. App didesain dark-first,
+  // tapi tetap ikut preferensi sistem agar tidak "broken" di light mode.
+  const dark = scheme === 'dark' || scheme === 'unspecified' || !scheme;
+  const tabBg = dark ? Colors.dark.card : Colors.light.card;
+  const tabBorder = dark ? Colors.dark.border : Colors.light.border;
+  const tabMuted = dark ? Colors.dark.muted : Colors.light.muted;
+  const tabText = dark ? Colors.dark.text : Colors.light.text;
 
   if (isLoading) return null;
 
@@ -14,23 +22,26 @@ export default function TabLayout() {
     return <Redirect href="/(auth)/login" />;
   }
 
+  const tabBarStyle = {
+    backgroundColor: tabBg,
+    borderTopColor: tabBorder,
+    height: 60,
+    paddingBottom: 8,
+    paddingTop: 4,
+  };
+  const headerStyle = {
+    backgroundColor: dark ? Colors.dark.bg : Colors.light.bg,
+  };
+
   return (
     <Tabs
       screenOptions={{
         headerShown: true,
         tabBarActiveTintColor: Colors.primary[500],
-        tabBarInactiveTintColor: Colors.dark.muted,
-        tabBarStyle: {
-          backgroundColor: Colors.dark.card,
-          borderTopColor: Colors.dark.border,
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 4,
-        },
-        headerStyle: {
-          backgroundColor: Colors.dark.bg,
-        },
-        headerTintColor: Colors.dark.text,
+        tabBarInactiveTintColor: tabMuted,
+        tabBarStyle,
+        headerStyle,
+        headerTintColor: tabText,
       }}
     >
       <Tabs.Screen

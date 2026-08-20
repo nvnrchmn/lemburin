@@ -5,12 +5,14 @@
  * - BPJS Kesehatan: 1% (Batas Maksimal/Ceiling: Rp 12.000.000)
  */
 
+import { roundCurrency } from './formatting';
+
 export const BPJS_JP_CEILING = 10042300;
 export const BPJS_KES_CEILING = 12000000;
 
 export interface BpjsDeductionResult {
-  jht: number;       // 2%
-  jp: number;        // 1%
+  jht: number; // 2%
+  jp: number; // 1%
   kesehatan: number; // 1%
   totalBpjs: number;
 }
@@ -19,7 +21,7 @@ export function calculateBpjsDeductions(
   basicSalary: number,
   fixedAllowance: number = 0,
   hasBpjsTk: boolean = true,
-  hasBpjsKes: boolean = true
+  hasBpjsKes: boolean = true,
 ): BpjsDeductionResult {
   const wageBase = Math.max(0, basicSalary + fixedAllowance);
 
@@ -28,17 +30,17 @@ export function calculateBpjsDeductions(
   }
 
   // 1. BPJS Ketenagakerjaan JHT: 2%
-  const jht = hasBpjsTk ? Math.round(wageBase * 0.02) : 0;
+  const jht = hasBpjsTk ? roundCurrency(wageBase * 0.02) : 0;
 
   // 2. BPJS Ketenagakerjaan JP: 1% (dengan ceiling)
   const jpWageBase = Math.min(wageBase, BPJS_JP_CEILING);
-  const jp = hasBpjsTk ? Math.round(jpWageBase * 0.01) : 0;
+  const jp = hasBpjsTk ? roundCurrency(jpWageBase * 0.01) : 0;
 
   // 3. BPJS Kesehatan: 1% (dengan ceiling)
   const kesWageBase = Math.min(wageBase, BPJS_KES_CEILING);
-  const kesehatan = hasBpjsKes ? Math.round(kesWageBase * 0.01) : 0;
+  const kesehatan = hasBpjsKes ? roundCurrency(kesWageBase * 0.01) : 0;
 
-  const totalBpjs = jht + jp + kesehatan;
+  const totalBpjs = roundCurrency(jht + jp + kesehatan);
 
   return {
     jht,

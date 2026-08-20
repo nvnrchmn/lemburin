@@ -1,5 +1,14 @@
 import { useState } from 'react';
-import { View, Text, Pressable, TextInput, ActivityIndicator, Alert, ScrollView, Switch } from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  TextInput,
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  Switch,
+} from 'react-native';
 import { router } from 'expo-router';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,7 +16,7 @@ import * as z from 'zod';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { SymbolView } from 'expo-symbols';
+import { Ionicons } from '@expo/vector-icons';
 
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/auth-store';
@@ -60,25 +69,41 @@ export default function CompanySetupScreen() {
       employeeCode: employment?.employee_code || '',
       workSystem: (employment?.work_system as '5_days' | '6_days') || '5_days',
       basicSalary: employment?.basic_salary ? formatNumberInput(employment.basic_salary) : '',
-      overtimeMealAllowance: employment?.overtime_meal_allowance ? formatNumberInput(employment.overtime_meal_allowance) : '',
-      overtimeTransportAllowance: employment?.overtime_transport_allowance ? formatNumberInput(employment.overtime_transport_allowance) : '',
+      overtimeMealAllowance: employment?.overtime_meal_allowance
+        ? formatNumberInput(employment.overtime_meal_allowance)
+        : '',
+      overtimeTransportAllowance: employment?.overtime_transport_allowance
+        ? formatNumberInput(employment.overtime_transport_allowance)
+        : '',
       ptkpStatus: (employment?.ptkp_status as any) || 'TK/0',
       hasBpjsTk: employment?.has_bpjs_tk ?? true,
       hasBpjsKes: employment?.has_bpjs_kes ?? true,
-      allowancesDetail: employment?.allowances_detail?.map(a => ({ ...a, amount: formatNumberInput(a.amount) })) || [],
-      deductionsDetail: employment?.deductions_detail?.map(d => ({ ...d, amount: formatNumberInput(d.amount) })) || [],
+      allowancesDetail:
+        employment?.allowances_detail?.map(a => ({ ...a, amount: formatNumberInput(a.amount) })) ||
+        [],
+      deductionsDetail:
+        employment?.deductions_detail?.map(d => ({ ...d, amount: formatNumberInput(d.amount) })) ||
+        [],
       startDate: employment?.start_date ? new Date(employment.start_date) : new Date(),
     },
   });
 
-  const { fields: allowanceFields, append: appendAllowance, remove: removeAllowance } = useFieldArray({
+  const {
+    fields: allowanceFields,
+    append: appendAllowance,
+    remove: removeAllowance,
+  } = useFieldArray({
     control,
-    name: 'allowancesDetail'
+    name: 'allowancesDetail',
   });
 
-  const { fields: deductionFields, append: appendDeduction, remove: removeDeduction } = useFieldArray({
+  const {
+    fields: deductionFields,
+    append: appendDeduction,
+    remove: removeDeduction,
+  } = useFieldArray({
     control,
-    name: 'deductionsDetail'
+    name: 'deductionsDetail',
   });
 
   const onSubmit = async (data: CompanyFormValues) => {
@@ -90,16 +115,22 @@ export default function CompanySetupScreen() {
     setIsLoading(true);
 
     const salaryNumber = parseNumberInput(data.basicSalary);
-    const mealNumber = data.overtimeMealAllowance ? parseNumberInput(data.overtimeMealAllowance) : null;
-    const transportNumber = data.overtimeTransportAllowance ? parseNumberInput(data.overtimeTransportAllowance) : null;
+    const mealNumber = data.overtimeMealAllowance
+      ? parseNumberInput(data.overtimeMealAllowance)
+      : null;
+    const transportNumber = data.overtimeTransportAllowance
+      ? parseNumberInput(data.overtimeTransportAllowance)
+      : null;
 
-    const mapComponents = (list: { id?: string; name: string; amount: string; is_fixed?: boolean }[]): SalaryComponent[] => 
+    const mapComponents = (
+      list: { id?: string; name: string; amount: string; is_fixed?: boolean }[],
+    ): SalaryComponent[] =>
       list.map(c => ({
-      id: c.id || Math.random().toString(36).substring(2, 9),
-      name: c.name,
-      amount: parseNumberInput(c.amount),
-      is_fixed: c.is_fixed || false,
-    }));
+        id: c.id || Math.random().toString(36).substring(2, 9),
+        name: c.name,
+        amount: parseNumberInput(c.amount),
+        is_fixed: c.is_fixed || false,
+      }));
 
     const parsedAllowances = mapComponents(data.allowancesDetail || []);
     const parsedDeductions = mapComponents(data.deductionsDetail || []);
@@ -145,10 +176,10 @@ export default function CompanySetupScreen() {
       }
 
       if (response.error) throw response.error;
-      
+
       setEmployment(response.data);
       Alert.alert('Berhasil', 'Informasi perusahaan telah disimpan', [
-        { text: 'OK', onPress: () => router.back() }
+        { text: 'OK', onPress: () => router.back() },
       ]);
     } catch (error: any) {
       Alert.alert('Gagal Menyimpan', error.message);
@@ -165,11 +196,15 @@ export default function CompanySetupScreen() {
 
       <View className="w-full">
         {/* GROUP 1: Informasi Pekerjaan */}
-        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">Informasi Pekerjaan</Text>
+        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
+          Informasi Pekerjaan
+        </Text>
         <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
           {/* Company Name */}
-          <View className={`flex-row items-center px-5 py-4 border-b ${errors.companyName ? 'border-red-500/50' : 'border-dark-border'}`}>
-            <SymbolView name="building.2.fill" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
+          <View
+            className={`flex-row items-center px-5 py-4 border-b ${errors.companyName ? 'border-red-500/50' : 'border-dark-border'}`}
+          >
+            <Ionicons name="business" size={20} color="#64748b" />
             <View className="flex-1">
               <Controller
                 control={control}
@@ -190,7 +225,7 @@ export default function CompanySetupScreen() {
 
           {/* Job Title */}
           <View className="flex-row items-center px-5 py-4 border-b border-dark-border">
-            <SymbolView name="briefcase.fill" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
+            <Ionicons name="briefcase" size={20} color="#64748b" />
             <View className="flex-1">
               <Controller
                 control={control}
@@ -211,7 +246,7 @@ export default function CompanySetupScreen() {
 
           {/* Employee Code */}
           <View className="flex-row items-center px-5 py-4 border-b border-dark-border">
-            <SymbolView name="number.square.fill" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
+            <Ionicons name="grid" size={20} color="#64748b" />
             <View className="flex-1">
               <Controller
                 control={control}
@@ -236,17 +271,19 @@ export default function CompanySetupScreen() {
             name="startDate"
             render={({ field: { value } }) => (
               <>
-                <Pressable 
+                <Pressable
                   className="flex-row items-center px-5 py-4 active:bg-dark-border"
                   onPress={() => setShowDatePicker(true)}
                 >
-                  <SymbolView name="calendar.badge.plus" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
+                  <Ionicons name="calendar" size={20} color="#64748b" />
                   <View className="flex-1 flex-row justify-between items-center">
                     <Text className="text-white text-base">Mulai Bekerja</Text>
-                    <Text className="text-primary-400 font-medium">{format(value, 'dd MMM yyyy', { locale: id })}</Text>
+                    <Text className="text-primary-400 font-medium">
+                      {format(value, 'dd MMM yyyy', { locale: id })}
+                    </Text>
                   </View>
                 </Pressable>
-                
+
                 {showDatePicker && (
                   <DateTimePicker
                     value={value}
@@ -266,45 +303,47 @@ export default function CompanySetupScreen() {
         </View>
 
         {/* GROUP: Sistem Hari Kerja (PP 35/2021) */}
-        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4 mt-2">Sistem Hari Kerja (PP 35/2021)</Text>
+        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4 mt-2">
+          Sistem Hari Kerja (PP 35/2021)
+        </Text>
         <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
           <Controller
             control={control}
             name="workSystem"
             render={({ field: { value, onChange } }) => (
               <>
-                <Pressable 
+                <Pressable
                   className={`flex-row items-center justify-between px-5 py-4 border-b border-dark-border active:bg-dark-border ${value === '5_days' ? 'bg-primary-950/30' : ''}`}
                   onPress={() => onChange('5_days')}
                 >
                   <View className="flex-1 mr-4">
-                    <Text className={`text-base font-bold ${value === '5_days' ? 'text-primary-300' : 'text-white'}`}>
+                    <Text
+                      className={`text-base font-bold ${value === '5_days' ? 'text-primary-300' : 'text-white'}`}
+                    >
                       5 Hari Kerja (Kantor)
                     </Text>
                     <Text className="text-dark-muted text-xs mt-0.5">
                       8 jam/hari (40 jam/minggu). Tarif libur 2x untuk 8 jam pertama.
                     </Text>
                   </View>
-                  {value === '5_days' && (
-                    <SymbolView name="checkmark" size={18} tintColor="#3b82f6" weight="bold" />
-                  )}
+                  {value === '5_days' && <Ionicons name="checkmark" size={18} color="#3b82f6" />}
                 </Pressable>
 
-                <Pressable 
+                <Pressable
                   className={`flex-row items-center justify-between px-5 py-4 active:bg-dark-border ${value === '6_days' ? 'bg-primary-950/30' : ''}`}
                   onPress={() => onChange('6_days')}
                 >
                   <View className="flex-1 mr-4">
-                    <Text className={`text-base font-bold ${value === '6_days' ? 'text-primary-300' : 'text-white'}`}>
+                    <Text
+                      className={`text-base font-bold ${value === '6_days' ? 'text-primary-300' : 'text-white'}`}
+                    >
                       6 Hari Kerja (Pabrik / Shift)
                     </Text>
                     <Text className="text-dark-muted text-xs mt-0.5">
                       7 jam/hari (40 jam/minggu). Tarif libur 2x untuk 7 jam pertama.
                     </Text>
                   </View>
-                  {value === '6_days' && (
-                    <SymbolView name="checkmark" size={18} tintColor="#3b82f6" weight="bold" />
-                  )}
+                  {value === '6_days' && <Ionicons name="checkmark" size={18} color="#3b82f6" />}
                 </Pressable>
               </>
             )}
@@ -312,11 +351,15 @@ export default function CompanySetupScreen() {
         </View>
 
         {/* GROUP 2: Komponen Gaji */}
-        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4 mt-2">Komponen Upah</Text>
+        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4 mt-2">
+          Komponen Upah
+        </Text>
         <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
           {/* Basic Salary */}
-          <View className={`flex-row items-center px-5 py-4 border-b border-dark-border ${errors.basicSalary ? 'border-b-red-500/50' : ''}`}>
-            <SymbolView name="banknote.fill" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
+          <View
+            className={`flex-row items-center px-5 py-4 border-b border-dark-border ${errors.basicSalary ? 'border-b-red-500/50' : ''}`}
+          >
+            <Ionicons name="cash" size={20} color="#64748b" />
             <View className="flex-1">
               <Controller
                 control={control}
@@ -328,7 +371,7 @@ export default function CompanySetupScreen() {
                     placeholderTextColor="#64748b"
                     keyboardType="numeric"
                     onBlur={onBlur}
-                    onChangeText={(text) => onChange(formatNumberInput(text))}
+                    onChangeText={text => onChange(formatNumberInput(text))}
                     value={value}
                   />
                 )}
@@ -338,7 +381,7 @@ export default function CompanySetupScreen() {
 
           {/* Overtime Meal Allowance */}
           <View className="flex-row items-center px-5 py-4 border-b border-dark-border">
-            <SymbolView name="fork.knife" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
+            <Ionicons name="restaurant" size={20} color="#64748b" />
             <View className="flex-1">
               <Controller
                 control={control}
@@ -350,7 +393,7 @@ export default function CompanySetupScreen() {
                     placeholderTextColor="#64748b"
                     keyboardType="numeric"
                     onBlur={onBlur}
-                    onChangeText={(text) => onChange(formatNumberInput(text))}
+                    onChangeText={text => onChange(formatNumberInput(text))}
                     value={value}
                   />
                 )}
@@ -360,7 +403,7 @@ export default function CompanySetupScreen() {
 
           {/* Overtime Transport Allowance */}
           <View className="flex-row items-center px-5 py-4">
-            <SymbolView name="car.fill" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
+            <Ionicons name="car" size={20} color="#64748b" />
             <View className="flex-1">
               <Controller
                 control={control}
@@ -372,7 +415,7 @@ export default function CompanySetupScreen() {
                     placeholderTextColor="#64748b"
                     keyboardType="numeric"
                     onBlur={onBlur}
-                    onChangeText={(text) => onChange(formatNumberInput(text))}
+                    onChangeText={text => onChange(formatNumberInput(text))}
                     value={value}
                   />
                 )}
@@ -382,35 +425,49 @@ export default function CompanySetupScreen() {
         </View>
 
         {/* GROUP: Pajak PPh 21 (TER 2024) & BPJS */}
-        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">Pajak PPh 21 (TER) & Iuran BPJS</Text>
+        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
+          Pajak PPh 21 (TER) & Iuran BPJS
+        </Text>
         <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
           {/* PTKP Status Selection */}
           <View className="px-5 py-4 border-b border-dark-border">
-            <Text className="text-white font-bold text-sm mb-1">Status PTKP (Kategori TER PPh 21)</Text>
-            <Text className="text-dark-muted text-xs mb-3">Pilih status tanggungan keluarga untuk tarif pajak efektif 2024:</Text>
+            <Text className="text-white font-bold text-sm mb-1">
+              Status PTKP (Kategori TER PPh 21)
+            </Text>
+            <Text className="text-dark-muted text-xs mb-3">
+              Pilih status tanggungan keluarga untuk tarif pajak efektif 2024:
+            </Text>
             <Controller
               control={control}
               name="ptkpStatus"
               render={({ field: { value, onChange } }) => (
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row gap-2 pb-1">
-                  {(['TK/0', 'TK/1', 'TK/2', 'TK/3', 'K/0', 'K/1', 'K/2', 'K/3'] as const).map((p) => {
-                    const isSelected = value === p;
-                    return (
-                      <Pressable
-                        key={p}
-                        onPress={() => onChange(p)}
-                        className={`px-3.5 py-2 rounded-xl border mr-2 ${
-                          isSelected
-                            ? 'bg-primary-600 border-primary-500'
-                            : 'bg-dark-bg border-dark-border active:bg-dark-border'
-                        }`}
-                      >
-                        <Text className={`font-bold text-xs ${isSelected ? 'text-white' : 'text-slate-300'}`}>
-                          {p}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  className="flex-row gap-2 pb-1"
+                >
+                  {(['TK/0', 'TK/1', 'TK/2', 'TK/3', 'K/0', 'K/1', 'K/2', 'K/3'] as const).map(
+                    p => {
+                      const isSelected = value === p;
+                      return (
+                        <Pressable
+                          key={p}
+                          onPress={() => onChange(p)}
+                          className={`px-3.5 py-2 rounded-xl border mr-2 ${
+                            isSelected
+                              ? 'bg-primary-600 border-primary-500'
+                              : 'bg-dark-bg border-dark-border active:bg-dark-border'
+                          }`}
+                        >
+                          <Text
+                            className={`font-bold text-xs ${isSelected ? 'text-white' : 'text-slate-300'}`}
+                          >
+                            {p}
+                          </Text>
+                        </Pressable>
+                      );
+                    },
+                  )}
                 </ScrollView>
               )}
             />
@@ -420,7 +477,9 @@ export default function CompanySetupScreen() {
           <View className="flex-row items-center justify-between px-5 py-4 border-b border-dark-border">
             <View className="flex-1 mr-4">
               <Text className="text-white font-bold text-sm">BPJS Ketenagakerjaan</Text>
-              <Text className="text-dark-muted text-xs mt-0.5">Potongan JHT 2% & Jaminan Pensiun 1%</Text>
+              <Text className="text-dark-muted text-xs mt-0.5">
+                Potongan JHT 2% & Jaminan Pensiun 1%
+              </Text>
             </View>
             <Controller
               control={control}
@@ -458,12 +517,17 @@ export default function CompanySetupScreen() {
         </View>
 
         {/* GROUP 3: Tunjangan (Allowances) */}
-        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">Tunjangan</Text>
+        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
+          Tunjangan
+        </Text>
         <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
           {allowanceFields.map((field, index) => {
             const isLast = index === allowanceFields.length - 1;
             return (
-              <View key={field.id} className={`p-4 ${!isLast ? 'border-b border-dark-border' : ''}`}>
+              <View
+                key={field.id}
+                className={`p-4 ${!isLast ? 'border-b border-dark-border' : ''}`}
+              >
                 <View className="flex-row items-center justify-between mb-3">
                   <Controller
                     control={control}
@@ -479,13 +543,16 @@ export default function CompanySetupScreen() {
                       />
                     )}
                   />
-                  <Pressable onPress={() => removeAllowance(index)} className="w-8 h-8 items-center justify-center bg-red-500/10 rounded-full">
-                    <SymbolView name="minus" size={16} tintColor="#ef4444" weight="bold" />
+                  <Pressable
+                    onPress={() => removeAllowance(index)}
+                    className="w-8 h-8 items-center justify-center bg-red-500/10 rounded-full"
+                  >
+                    <Ionicons name="remove" size={16} color="#ef4444" />
                   </Pressable>
                 </View>
-                
+
                 <View className="flex-row items-center justify-between mb-4">
-                  <SymbolView name="dollarsign.circle.fill" size={20} tintColor="#10b981" style={{ marginRight: 12 }} />
+                  <Ionicons name="cash" size={20} color="#10b981" />
                   <Controller
                     control={control}
                     name={`allowancesDetail.${index}.amount`}
@@ -496,17 +563,19 @@ export default function CompanySetupScreen() {
                         placeholderTextColor="#64748b"
                         keyboardType="numeric"
                         onBlur={onBlur}
-                        onChangeText={(text) => onChange(formatNumberInput(text))}
+                        onChangeText={text => onChange(formatNumberInput(text))}
                         value={value}
                       />
                     )}
                   />
                 </View>
-                
+
                 <View className="flex-row items-center justify-between bg-dark-bg p-3 rounded-2xl">
                   <View>
                     <Text className="text-white text-sm font-medium">Tunjangan Tetap?</Text>
-                    <Text className="text-dark-muted text-[10px] mt-0.5 max-w-[200px]">Aktifkan agar masuk ke dalam basis perhitungan Upah Lembur Kemenaker.</Text>
+                    <Text className="text-dark-muted text-[10px] mt-0.5 max-w-[200px]">
+                      Aktifkan agar masuk ke dalam basis perhitungan Upah Lembur Kemenaker.
+                    </Text>
                   </View>
                   <Controller
                     control={control}
@@ -524,23 +593,30 @@ export default function CompanySetupScreen() {
               </View>
             );
           })}
-          
-          <Pressable 
+
+          <Pressable
             className="flex-row items-center justify-center p-4 active:bg-dark-border"
             onPress={() => appendAllowance({ id: '', name: '', amount: '', is_fixed: true })}
           >
-            <SymbolView name="plus.circle.fill" size={18} tintColor="#3b82f6" style={{ marginRight: 8 }} />
-            <Text className="text-primary-400 font-bold text-sm uppercase tracking-wider">Tambah Tunjangan</Text>
+            <Ionicons name="add-circle" size={18} color="#3b82f6" />
+            <Text className="text-primary-400 font-bold text-sm uppercase tracking-wider">
+              Tambah Tunjangan
+            </Text>
           </Pressable>
         </View>
 
         {/* GROUP 4: Potongan (Deductions) */}
-        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">Potongan Gaji</Text>
+        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
+          Potongan Gaji
+        </Text>
         <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
           {deductionFields.map((field, index) => {
             const isLast = index === deductionFields.length - 1;
             return (
-              <View key={field.id} className={`p-4 ${!isLast ? 'border-b border-dark-border' : ''}`}>
+              <View
+                key={field.id}
+                className={`p-4 ${!isLast ? 'border-b border-dark-border' : ''}`}
+              >
                 <View className="flex-row items-center justify-between mb-3">
                   <Controller
                     control={control}
@@ -556,13 +632,16 @@ export default function CompanySetupScreen() {
                       />
                     )}
                   />
-                  <Pressable onPress={() => removeDeduction(index)} className="w-8 h-8 items-center justify-center bg-red-500/10 rounded-full">
-                    <SymbolView name="minus" size={16} tintColor="#ef4444" weight="bold" />
+                  <Pressable
+                    onPress={() => removeDeduction(index)}
+                    className="w-8 h-8 items-center justify-center bg-red-500/10 rounded-full"
+                  >
+                    <Ionicons name="remove" size={16} color="#ef4444" />
                   </Pressable>
                 </View>
-                
+
                 <View className="flex-row items-center justify-between">
-                  <SymbolView name="minus.circle.fill" size={20} tintColor="#ef4444" style={{ marginRight: 12 }} />
+                  <Ionicons name="remove-circle" size={20} color="#ef4444" />
                   <Controller
                     control={control}
                     name={`deductionsDetail.${index}.amount`}
@@ -573,7 +652,7 @@ export default function CompanySetupScreen() {
                         placeholderTextColor="#64748b"
                         keyboardType="numeric"
                         onBlur={onBlur}
-                        onChangeText={(text) => onChange(formatNumberInput(text))}
+                        onChangeText={text => onChange(formatNumberInput(text))}
                         value={value}
                       />
                     )}
@@ -582,16 +661,18 @@ export default function CompanySetupScreen() {
               </View>
             );
           })}
-          
-          <Pressable 
+
+          <Pressable
             className="flex-row items-center justify-center p-4 active:bg-dark-border"
             onPress={() => appendDeduction({ id: '', name: '', amount: '', is_fixed: false })}
           >
-            <SymbolView name="plus.circle.fill" size={18} tintColor="#3b82f6" style={{ marginRight: 8 }} />
-            <Text className="text-primary-400 font-bold text-sm uppercase tracking-wider">Tambah Potongan</Text>
+            <Ionicons name="add-circle" size={18} color="#3b82f6" />
+            <Text className="text-primary-400 font-bold text-sm uppercase tracking-wider">
+              Tambah Potongan
+            </Text>
           </Pressable>
         </View>
-        
+
         {/* Error Messages */}
         <View className="min-h-[24px] px-4 mb-4">
           {(errors.companyName || errors.basicSalary) && (

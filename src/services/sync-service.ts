@@ -1,15 +1,27 @@
 import { supabase } from '@/lib/supabase';
 import { useDataStore } from '@/stores/data-store';
 import { useAuthStore } from '@/stores/auth-store';
-import { getOrCreatePayPeriodForDate, reassignMismatchedEntries } from '@/services/pay-period-service';
+import { useToastStore } from '@/stores/toast-store';
+import {
+  getOrCreatePayPeriodForDate,
+  reassignMismatchedEntries,
+} from '@/services/pay-period-service';
 import type { PayPeriod } from '@/types/database';
 
 export const syncService = async (specifiedPeriodId?: string) => {
   const { session } = useAuthStore.getState();
-  const { setProfile, setEmployment, setActivePayPeriod, setOvertimeEntries, activePayPeriod } = useDataStore.getState();
+  const {
+    setProfile,
+    setEmployment,
+    setActivePayPeriod,
+    setOvertimeEntries,
+    activePayPeriod,
+    setIsSyncing,
+  } = useDataStore.getState();
 
   if (!session?.user) return;
 
+  setIsSyncing(true);
   try {
     // 0. Fetch Profile
     const { data: profileData } = await supabase
@@ -53,7 +65,7 @@ export const syncService = async (specifiedPeriodId?: string) => {
 
       if (!targetPeriod) {
         const todayStr = new Date().toISOString().split('T')[0];
-        
+
         // Cari periode yang mencakup hari ini
         const { data: currentPeriods } = await supabase
           .from('pay_periods')
@@ -99,5 +111,13 @@ export const syncService = async (specifiedPeriodId?: string) => {
     }
   } catch (error) {
     console.error('Failed to sync data from Supabase:', error);
+    // Beri tahu user secara jelas (bukan silent) agar tidak melihat data kosong/stale
+    const message =
+      error instanceof Error && error.message
+        ? `Gagal sinkron: ${error.message}`
+        : 'Gagal sinkron data. Periksa koneksi internet Anda.';
+    useToastStore.getState().showToast(message, 'error');
+  } finally {
+    setIsSyncing(false);
   }
 };

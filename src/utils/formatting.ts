@@ -19,7 +19,7 @@ export function formatCurrency(amount: number, currency = 'IDR'): string {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   });
-  
+
   // Custom manual replacements for specific symbols if Intl doesn't do it well
   let formatted = formatter.format(amount);
   if (currency === 'IDR' && !formatted.includes('Rp')) {
@@ -35,7 +35,7 @@ export function formatNumberInput(value: string | number): string {
   if (!value) return '';
   const numStr = value.toString().replace(/[^0-9]/g, '');
   if (!numStr) return '';
-  
+
   return parseInt(numStr, 10).toLocaleString('id-ID'); // Always uses dot as separator
 }
 
@@ -69,17 +69,34 @@ export function formatTime(timeString: string): string {
 }
 
 /**
+ * Pembulatan uang ke Rupiah terdekat (integer penuh).
+ *
+ * Semua perhitungan gaji/lembur/pajak/BPJS HARUS melewati fungsi ini agar
+ * konsisten & terhindar dari artefak floating-point (mis. 1.1 + 2.2 = 3.3000000000000003).
+ *
+ * Sen Rupiah tidak ada di dunia nyata, jadi kita bulatkan ke integer penuh
+ * (sama seperti Math.round asli), tapi lebih aman karena menambahkan
+ * Number.EPSILON untuk menangani kasus seperti 0.5 yang bisa berosilasi antar
+ * engine JS, serta menangani -0.
+ */
+export function roundCurrency(amount: number): number {
+  if (!Number.isFinite(amount)) return 0;
+  const rounded = Math.round(amount + Number.EPSILON);
+  return rounded === 0 ? 0 : rounded;
+}
+
+/**
  * Calculate overtime duration in minutes
  */
 export function calculateOvertimeMinutes(
   startTime: string,
   endTime: string,
-  breakMinutes: number = 0
+  breakMinutes: number = 0,
 ): number {
   const [startH, startM] = startTime.split(':').map(Number);
   const [endH, endM] = endTime.split(':').map(Number);
 
-  let totalMinutes = (endH * 60 + endM) - (startH * 60 + startM);
+  let totalMinutes = endH * 60 + endM - (startH * 60 + startM);
 
   // Handle overnight
   if (totalMinutes < 0) {
@@ -95,7 +112,7 @@ export function calculateOvertimeMinutes(
 export function calculateOvertimeHours(
   startTime: string,
   endTime: string,
-  breakMinutes: number = 0
+  breakMinutes: number = 0,
 ): number {
   const minutes = calculateOvertimeMinutes(startTime, endTime, breakMinutes);
   return Math.round((minutes / 60) * 2) / 2;
