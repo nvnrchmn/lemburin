@@ -8,6 +8,24 @@ import {
 } from '@/services/pay-period-service';
 import type { PayPeriod } from '@/types/database';
 
+const throwSyncError = (
+  operation: string,
+  error: { message?: string; code?: string; details?: string; hint?: string } | null,
+) => {
+  if (!error) return;
+
+  const details = [
+    error.message,
+    error.code ? `code=${error.code}` : null,
+    error.details ? `details=${error.details}` : null,
+    error.hint ? `hint=${error.hint}` : null,
+  ]
+    .filter(Boolean)
+    .join(' | ');
+
+  throw new Error(`${operation}: ${details || 'Unknown Supabase error'}`);
+};
+
 export const syncService = async (specifiedPeriodId?: string) => {
   const { session } = useAuthStore.getState();
   const {
@@ -24,11 +42,13 @@ export const syncService = async (specifiedPeriodId?: string) => {
   setIsSyncing(true);
   try {
     // 0. Fetch Profile
-    const { data: profileData } = await supabase
+    const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select('*')
       .eq('user_id', session.user.id)
       .maybeSingle();
+
+    throwSyncError('profiles.select', profileError);
 
     if (profileData) {
       setProfile(profileData as any);
@@ -55,12 +75,13 @@ export const syncService = async (specifiedPeriodId?: string) => {
       let targetPeriod: PayPeriod | null = null;
 
       if (specifiedPeriodId) {
-        const { data: pData } = await supabase
+        const { data: pData, error: specifiedPeriodError } = await supabase
           .from('pay_periods')
           .select('*')
           .eq('id', specifiedPeriodId)
           .eq('employment_id', employment.id) // eksplisit filter employment_id
           .maybeSingle();
+        throwSyncError('pay_periods.select(specifiedPeriodId)', specifiedPeriodError);
         if (pData) targetPeriod = pData as PayPeriod;
       }
 
@@ -68,7 +89,7 @@ export const syncService = async (specifiedPeriodId?: string) => {
         const todayStr = new Date().toISOString().split('T')[0];
 
         // Cari periode yang mencakup hari ini - filter employment_id eksplisit
-        const { data: currentPeriods } = await supabase
+        const { data: currentPeriods, error: currentPeriodsError } = await supabase
           .from('pay_periods')
           .select('*')
           .eq('employment_id', employment.id)
@@ -77,16 +98,20 @@ export const syncService = async (specifiedPeriodId?: string) => {
           .order('start_date', { ascending: true }) // deterministik
           .limit(1);
 
+        throwSyncError('pay_periods.select(current)', currentPeriodsError);
+
         if (currentPeriods && currentPeriods.length > 0) {
           targetPeriod = currentPeriods[0] as PayPeriod;
         } else {
           // Cari periode terbaru
-          const { data: latestPeriods } = await supabase
+          const { data: latestPeriods, error: latestPeriodsError } = await supabase
             .from('pay_periods')
             .select('*')
             .eq('employment_id', employment.id)
             .order('start_date', { ascending: false })
             .limit(1);
+
+          throwSyncError('pay_periods.select(latest)', latestPeriodsError);
 
           if (latestPeriods && latestPeriods.length > 0) {
             targetPeriod = latestPeriods[0] as PayPeriod;
