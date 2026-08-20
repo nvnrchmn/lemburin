@@ -31,6 +31,7 @@ import { formatCurrency, formatDuration } from '@/utils/formatting';
 import { pickAndUploadImage } from '@/utils/upload';
 import { getOrCreatePayPeriodForDate } from '@/services/pay-period-service';
 import { checkIsHoliday } from '@/utils/holidays';
+import { SelectionSheet } from '@/components/ui/selection-sheet';
 
 const overtimeSchema = z
   .object({
@@ -62,6 +63,7 @@ export default function AddOvertimeTabScreen() {
   const { showToast } = useToastStore();
   const [isLoading, setIsLoading] = useState(false);
   const [attachmentUrl, setAttachmentUrl] = useState<string | null>(null);
+  const [showAttachmentPicker, setShowAttachmentPicker] = useState(false);
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
@@ -88,24 +90,11 @@ export default function AddOvertimeTabScreen() {
 
   const watchAllFields = watch();
 
-  const handlePickAttachment = () => {
-    Alert.alert('Lampirkan Foto Bukti SPL / Absensi', 'Pilih sumber foto:', [
-      {
-        text: 'Kamera',
-        onPress: async () => {
-          const url = await pickAndUploadImage(true, 'overtime');
-          if (url) setAttachmentUrl(url);
-        },
-      },
-      {
-        text: 'Galeri Foto',
-        onPress: async () => {
-          const url = await pickAndUploadImage(false, 'overtime');
-          if (url) setAttachmentUrl(url);
-        },
-      },
-      { text: 'Batal', style: 'cancel' },
-    ]);
+  const handlePickAttachment = () => setShowAttachmentPicker(true);
+
+  const uploadAttachment = async (source: 'camera' | 'gallery') => {
+    const url = await pickAndUploadImage(source === 'camera', 'overtime');
+    if (url) setAttachmentUrl(url);
   };
 
   // Live calculation of estimation
@@ -194,16 +183,36 @@ export default function AddOvertimeTabScreen() {
 
       router.push('/(tabs)');
     } catch (error: any) {
-      Alert.alert('Gagal Menyimpan', error.message);
+      showToast(error?.message || 'Gagal menyimpan catatan lembur.', 'error');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <ScrollView className="flex-1 bg-dark-bg px-5 pt-6">
-      <Text className="text-dark-text text-2xl font-bold mb-2">Tambah Lembur</Text>
-      <Text className="text-dark-muted text-sm mb-6">Catat aktivitas lembur hari ini</Text>
+    <ScrollView
+      className="flex-1 bg-light-bg dark:bg-dark-bg px-5 pt-6"
+      showsVerticalScrollIndicator={false}
+    >
+      <View className="flex-row items-center justify-between mb-2">
+        <Text className="text-light-text dark:text-dark-text text-2xl font-bold">
+          Tambah Lembur
+        </Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Batalkan input lembur"
+          className="flex-row items-center bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-full px-4 py-2 active:opacity-70"
+          onPress={() => router.replace('/(tabs)')}
+        >
+          <Ionicons name="close" size={17} color="#64748b" />
+          <Text className="text-light-muted dark:text-dark-muted text-sm font-sans-bold ml-1.5">
+            Batal
+          </Text>
+        </Pressable>
+      </View>
+      <Text className="text-light-muted dark:text-dark-muted text-sm mb-6">
+        Catat aktivitas lembur hari ini
+      </Text>
 
       {!activePayPeriod && (
         <View className="bg-red-500/10 border border-red-500 rounded-xl p-4 mb-4">
@@ -479,6 +488,26 @@ export default function AddOvertimeTabScreen() {
         {isLoading && <ActivityIndicator color="#fff" size="small" />}
         <Text className="text-white font-semibold text-base">Simpan Lembur</Text>
       </Pressable>
+      <SelectionSheet<'camera' | 'gallery'>
+        visible={showAttachmentPicker}
+        title="Lampirkan Foto Bukti"
+        options={[
+          {
+            value: 'camera',
+            label: 'Ambil dari Kamera',
+            description: 'Foto bukti SPL atau absensi sekarang',
+            icon: 'camera-outline',
+          },
+          {
+            value: 'gallery',
+            label: 'Pilih dari Galeri',
+            description: 'Gunakan foto yang sudah tersimpan',
+            icon: 'images-outline',
+          },
+        ]}
+        onSelect={uploadAttachment}
+        onClose={() => setShowAttachmentPicker(false)}
+      />
     </ScrollView>
   );
 }

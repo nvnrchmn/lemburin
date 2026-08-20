@@ -1,16 +1,14 @@
 import { Tabs, Redirect } from 'expo-router';
-import { Text, View , useColorScheme } from 'react-native';
+import { View } from 'react-native';
 
 import { useAuthStore } from '@/stores/auth-store';
 import { Colors } from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
+import { useAppTheme } from '@/hooks/use-app-theme';
 
 export default function TabLayout() {
   const { isAuthenticated, isLoading } = useAuthStore();
-  const scheme = useColorScheme();
-  // Ambil palet yang konsisten dengan tema aktif. App didesain dark-first,
-  // tapi tetap ikut preferensi sistem agar tidak "broken" di light mode.
-  const dark = scheme === 'dark' || scheme === 'unspecified' || !scheme;
+  const { isDark: dark } = useAppTheme();
   const tabBg = dark ? Colors.dark.card : Colors.light.card;
   const tabBorder = dark ? Colors.dark.border : Colors.light.border;
   const tabMuted = dark ? Colors.dark.muted : Colors.light.muted;

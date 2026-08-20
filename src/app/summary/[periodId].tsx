@@ -242,8 +242,8 @@ export default function MonthlySummaryScreen() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-dark-bg">
-      <View className="px-5 pt-6">
+    <ScrollView className="flex-1 bg-light-bg dark:bg-dark-bg" showsVerticalScrollIndicator={false}>
+      <View className="px-5 pt-6 pb-10">
         {/* Period Header */}
         <View className="bg-primary-950 border border-primary-800 rounded-3xl p-6 mb-4 shadow-sm">
           <View className="flex-row justify-between items-start mb-4">
@@ -372,7 +372,9 @@ export default function MonthlySummaryScreen() {
 
         {/* Overtime List */}
         <View className="mb-6">
-          <Text className="text-white text-xl font-sans-bold mb-4 ml-1">Daftar Lembur</Text>
+          <Text className="text-light-text dark:text-white text-xl font-sans-bold mb-5 ml-1">
+            Daftar Lembur
+          </Text>
           {entries.length === 0 ? (
             <View className="bg-dark-card border border-dark-border rounded-3xl p-8 items-center border-dashed">
               <Text className="text-dark-muted text-sm text-center">
@@ -380,8 +382,8 @@ export default function MonthlySummaryScreen() {
               </Text>
             </View>
           ) : (
-            <View className="space-y-3">
-              {entries.map(entry => {
+            <View>
+              {entries.map((entry, index) => {
                 const mins = calculateOvertimeMinutes(
                   entry.start_time,
                   entry.end_time,
@@ -390,7 +392,8 @@ export default function MonthlySummaryScreen() {
                 return (
                   <Pressable
                     key={entry.id}
-                    className="bg-dark-card border border-dark-border rounded-3xl p-5 flex-row justify-between items-center active:border-primary-500/50"
+                    className="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-5 flex-row justify-between items-center active:border-primary-500/50"
+                    style={{ marginBottom: index === entries.length - 1 ? 0 : 14 }}
                     onPress={() => router.push(`/overtime/${entry.id}` as any)}
                   >
                     <View>
