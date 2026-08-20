@@ -16,21 +16,42 @@ import { checkIsHoliday } from '@/utils/holidays';
 // Setup Indonesian locale for calendar
 LocaleConfig.locales['id'] = {
   monthNames: [
-    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
-    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    'Januari',
+    'Februari',
+    'Maret',
+    'April',
+    'Mei',
+    'Juni',
+    'Juli',
+    'Agustus',
+    'September',
+    'Oktober',
+    'November',
+    'Desember',
   ],
-  monthNamesShort: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+  monthNamesShort: [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'Mei',
+    'Jun',
+    'Jul',
+    'Agu',
+    'Sep',
+    'Okt',
+    'Nov',
+    'Des',
+  ],
   dayNames: ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'],
   dayNamesShort: ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'],
-  today: 'Hari ini'
+  today: 'Hari ini',
 };
 LocaleConfig.defaultLocale = 'id';
 
 export default function CalendarScreen() {
   const { employment, overtimeEntries } = useDataStore();
-  const [selectedDate, setSelectedDate] = useState<string>(
-    new Date().toISOString().split('T')[0]
-  );
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [allCalendarEntries, setAllCalendarEntries] = useState<OvertimeEntry[]>([]);
 
   useEffect(() => {
@@ -41,7 +62,7 @@ export default function CalendarScreen() {
           .from('pay_periods')
           .select('id')
           .eq('employment_id', employment.id);
-        
+
         if (pList && pList.length > 0) {
           const pIds = pList.map(p => p.id);
           const { data: entries } = await supabase
@@ -65,14 +86,14 @@ export default function CalendarScreen() {
     displayedEntries.forEach(entry => {
       marks[entry.work_date] = { marked: true, dotColor: '#3b82f6' };
     });
-    
+
     // Highlight selected date
     if (marks[selectedDate]) {
       marks[selectedDate] = { ...marks[selectedDate], selected: true, selectedColor: '#1e3a8a' };
     } else {
       marks[selectedDate] = { selected: true, selectedColor: '#2E3135' };
     }
-    
+
     return marks;
   }, [displayedEntries, selectedDate]);
 
@@ -82,9 +103,11 @@ export default function CalendarScreen() {
   }, [displayedEntries, selectedDate]);
 
   return (
-    <View className="flex-1 bg-dark-bg pt-12">
+    <View className="flex-1 bg-light-bg dark:bg-dark-bg pt-12">
       <View className="px-5 mb-4">
-        <Text className="text-dark-text text-2xl font-bold">Kalender Lembur</Text>
+        <Text className="text-light-text dark:text-dark-text text-2xl font-bold">
+          Kalender Lembur
+        </Text>
       </View>
 
       <Animated.View entering={FadeInDown.duration(600).springify()}>
@@ -111,14 +134,14 @@ export default function CalendarScreen() {
             textMonthFontWeight: 'bold',
             textDayFontSize: 16,
             textMonthFontSize: 18,
-            textDayHeaderFontSize: 13
+            textDayHeaderFontSize: 13,
           }}
         />
       </Animated.View>
 
-      <ScrollView className="flex-1 px-5 pt-6 bg-dark-bg">
+      <ScrollView className="flex-1 px-5 pt-6 bg-light-bg dark:bg-dark-bg">
         <View className="mb-4">
-          <Text className="text-dark-text text-lg font-bold">
+          <Text className="text-light-text dark:text-dark-text text-lg font-bold">
             {format(parseISO(selectedDate), 'EEEE, dd MMMM yyyy', { locale: id })}
           </Text>
           {(() => {
@@ -136,11 +159,11 @@ export default function CalendarScreen() {
 
         {selectedEntries.length === 0 ? (
           <Animated.View entering={FadeInUp.delay(200).duration(500).springify()}>
-            <View className="bg-dark-card border border-dark-border rounded-3xl p-8 items-center mt-4">
-              <Text className="text-dark-muted text-center mb-2">
+            <View className="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-8 items-center mt-4">
+              <Text className="text-light-muted dark:text-dark-muted text-center mb-2">
                 Tidak ada catatan lembur pada tanggal ini.
               </Text>
-              <Pressable 
+              <Pressable
                 className="mt-4 px-6 py-3 bg-primary-950/30 rounded-2xl border border-primary-500/30 active:bg-primary-900/50"
                 onPress={() => router.push('/(tabs)/add-overtime')}
               >
@@ -151,12 +174,22 @@ export default function CalendarScreen() {
         ) : (
           <View className="space-y-3 mt-4">
             {selectedEntries.map((entry, index) => {
-              const mins = calculateOvertimeMinutes(entry.start_time, entry.end_time, entry.break_minutes);
-              
+              const mins = calculateOvertimeMinutes(
+                entry.start_time,
+                entry.end_time,
+                entry.break_minutes,
+              );
+
               return (
-                <Animated.View key={entry.id} entering={FadeInUp.delay(100 + (index * 100)).duration(500).springify()} layout={Layout.springify()}>
+                <Animated.View
+                  key={entry.id}
+                  entering={FadeInUp.delay(100 + index * 100)
+                    .duration(500)
+                    .springify()}
+                  layout={Layout.springify()}
+                >
                   <Pressable
-                    className="bg-dark-card border border-dark-border rounded-3xl p-5 flex-row justify-between items-center active:border-primary-500/50"
+                    className="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-5 flex-row justify-between items-center active:border-primary-500/50"
                     onPress={() => router.push(`/overtime/${entry.id}` as any)}
                   >
                     <View>
@@ -171,13 +204,19 @@ export default function CalendarScreen() {
                         )}
                       </View>
                       {entry.notes && (
-                        <Text className="text-dark-muted text-xs mt-1">{entry.notes}</Text>
+                        <Text className="text-light-muted dark:text-dark-muted text-xs mt-1">
+                          {entry.notes}
+                        </Text>
                       )}
                     </View>
                     <View className="items-end">
-                      <Text className="text-primary-400 font-bold text-base">+{formatDuration(mins)}</Text>
+                      <Text className="text-primary-400 font-bold text-base">
+                        +{formatDuration(mins)}
+                      </Text>
                       {entry.break_minutes > 0 && (
-                        <Text className="text-dark-muted text-xs mt-1">Istirahat {entry.break_minutes}m</Text>
+                        <Text className="text-light-muted dark:text-dark-muted text-xs mt-1">
+                          Istirahat {entry.break_minutes}m
+                        </Text>
                       )}
                     </View>
                   </Pressable>

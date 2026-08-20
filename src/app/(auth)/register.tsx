@@ -116,21 +116,21 @@ export default function RegisterScreen() {
   };
 
   return (
-    <View className="flex-1 bg-dark-bg px-5 pt-20">
+    <View className="flex-1 bg-light-bg dark:bg-dark-bg px-5 pt-20">
       {/* Header */}
       <View className="mb-10">
         <Text className="text-white text-4xl font-bold tracking-tight mb-2">Buat Akun Baru</Text>
-        <Text className="text-dark-muted text-base font-medium">
+        <Text className="text-light-muted dark:text-dark-muted text-base font-medium">
           Daftar untuk mulai mencatat lembur
         </Text>
       </View>
 
       {/* Register Form */}
       <View className="w-full">
-        <View className="bg-dark-card rounded-3xl overflow-hidden mb-2">
+        <View className="bg-light-card dark:bg-dark-card rounded-3xl overflow-hidden mb-2">
           {/* Full Name Field */}
           <View
-            className={`flex-row items-center px-5 py-4 border-b ${errors.fullName ? 'border-red-500/50' : 'border-dark-border'}`}
+            className={`flex-row items-center px-5 py-4 border-b ${errors.fullName ? 'border-red-500/50' : 'border-light-border dark:border-dark-border'}`}
           >
             <Ionicons name="person" size={20} color="#64748b" />
             <View className="flex-1">
@@ -155,7 +155,7 @@ export default function RegisterScreen() {
 
           {/* Email Field */}
           <View
-            className={`flex-row items-center px-5 py-4 border-b ${errors.email ? 'border-red-500/50' : 'border-dark-border'}`}
+            className={`flex-row items-center px-5 py-4 border-b ${errors.email ? 'border-red-500/50' : 'border-light-border dark:border-dark-border'}`}
           >
             <Ionicons name="mail" size={20} color="#64748b" />
             <View className="flex-1">
@@ -224,7 +224,7 @@ export default function RegisterScreen() {
         </Pressable>
 
         <Pressable
-          className={`bg-dark-card rounded-2xl py-4 items-center flex-row justify-center gap-2 active:opacity-70 border border-dark-border ${isLoading ? 'opacity-50' : ''}`}
+          className={`bg-light-card dark:bg-dark-card rounded-2xl py-4 items-center flex-row justify-center gap-2 active:opacity-70 border border-light-border dark:border-dark-border ${isLoading ? 'opacity-50' : ''}`}
           onPress={onGoogleLogin}
           disabled={isLoading}
         >
@@ -235,7 +235,9 @@ export default function RegisterScreen() {
 
       {/* Footer */}
       <View className="flex-row mt-auto mb-10 justify-center">
-        <Text className="text-dark-muted text-base self-center">Sudah punya akun? </Text>
+        <Text className="text-light-muted dark:text-dark-muted text-base self-center">
+          Sudah punya akun?{' '}
+        </Text>
         <Link href="/(auth)/login" asChild>
           <Pressable className="active:opacity-50 p-2">
             <Text className="text-primary-400 text-base font-semibold">Masuk</Text>

@@ -195,7 +195,7 @@ export default function AddOvertimeTabScreen() {
       showsVerticalScrollIndicator={false}
     >
       <View className="flex-row items-center justify-between mb-2">
-        <Text className="text-light-text dark:text-dark-text text-2xl font-bold">
+        <Text className="text-light-text dark:text-light-text dark:text-dark-text text-2xl font-bold">
           Tambah Lembur
         </Text>
         <Pressable
@@ -205,12 +205,12 @@ export default function AddOvertimeTabScreen() {
           onPress={() => router.replace('/(tabs)')}
         >
           <Ionicons name="close" size={17} color="#64748b" />
-          <Text className="text-light-muted dark:text-dark-muted text-sm font-sans-bold ml-1.5">
+          <Text className="text-light-muted dark:text-light-muted dark:text-dark-muted text-sm font-sans-bold ml-1.5">
             Batal
           </Text>
         </Pressable>
       </View>
-      <Text className="text-light-muted dark:text-dark-muted text-sm mb-6">
+      <Text className="text-light-muted dark:text-light-muted dark:text-dark-muted text-sm mb-6">
         Catat aktivitas lembur hari ini
       </Text>
 
@@ -242,12 +242,14 @@ export default function AddOvertimeTabScreen() {
             render={({ field: { value } }) => (
               <>
                 <Pressable
-                  className="bg-dark-card border border-dark-border rounded-xl px-4 py-3.5 flex-row items-center"
+                  className="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl px-4 py-3.5 flex-row items-center"
                   onPress={() => setShowDatePicker(true)}
                 >
                   <View className="flex-1">
-                    <Text className="text-dark-muted text-xs mb-0.5">Tanggal</Text>
-                    <Text className="text-dark-text text-base">
+                    <Text className="text-light-muted dark:text-dark-muted text-xs mb-0.5">
+                      Tanggal
+                    </Text>
+                    <Text className="text-light-text dark:text-dark-text text-base">
                       {format(value, 'EEEE, dd MMM yyyy', { locale: id })}
                     </Text>
                   </View>
@@ -285,11 +287,13 @@ export default function AddOvertimeTabScreen() {
               render={({ field: { value } }) => (
                 <>
                   <Pressable
-                    className="bg-dark-card border border-dark-border rounded-xl px-4 py-3.5"
+                    className="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl px-4 py-3.5"
                     onPress={() => setShowStartTimePicker(true)}
                   >
-                    <Text className="text-dark-muted text-xs mb-0.5">Jam Mulai</Text>
-                    <Text className="text-dark-text text-base font-bold">
+                    <Text className="text-light-muted dark:text-dark-muted text-xs mb-0.5">
+                      Jam Mulai
+                    </Text>
+                    <Text className="text-light-text dark:text-dark-text text-base font-bold">
                       {format(value, 'HH:mm')}
                     </Text>
                   </Pressable>
@@ -319,13 +323,15 @@ export default function AddOvertimeTabScreen() {
               render={({ field: { value }, fieldState: { error } }) => (
                 <>
                   <Pressable
-                    className={`bg-dark-card border rounded-xl px-4 py-3.5 ${
-                      error ? 'border-red-500' : 'border-dark-border'
+                    className={`bg-light-card dark:bg-dark-card border rounded-xl px-4 py-3.5 ${
+                      error ? 'border-red-500' : 'border-light-border dark:border-dark-border'
                     }`}
                     onPress={() => setShowEndTimePicker(true)}
                   >
-                    <Text className="text-dark-muted text-xs mb-0.5">Jam Selesai</Text>
-                    <Text className="text-dark-text text-base font-bold">
+                    <Text className="text-light-muted dark:text-dark-muted text-xs mb-0.5">
+                      Jam Selesai
+                    </Text>
+                    <Text className="text-light-text dark:text-dark-text text-base font-bold">
                       {format(value, 'HH:mm')}
                     </Text>
                   </Pressable>
@@ -350,15 +356,17 @@ export default function AddOvertimeTabScreen() {
 
         {/* Break Minutes */}
         <View className="mt-3">
-          <View className="bg-dark-card border border-dark-border rounded-xl px-4 py-1 flex-row items-center">
+          <View className="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl px-4 py-1 flex-row items-center">
             <View className="flex-1 py-1.5">
-              <Text className="text-dark-muted text-xs mb-0.5">Istirahat (menit)</Text>
+              <Text className="text-light-muted dark:text-dark-muted text-xs mb-0.5">
+                Istirahat (menit)
+              </Text>
               <Controller
                 control={control}
                 name="breakMinutes"
                 render={({ field: { onChange, onBlur, value } }) => (
                   <TextInput
-                    className="text-dark-text text-base p-0 m-0"
+                    className="text-light-text dark:text-dark-text text-base p-0 m-0"
                     placeholder="0"
                     placeholderTextColor="#60646C"
                     keyboardType="numeric"
@@ -373,9 +381,11 @@ export default function AddOvertimeTabScreen() {
         </View>
 
         {/* Holiday Toggle */}
-        <View className="mt-3 bg-dark-card border border-dark-border rounded-xl px-4 py-3.5 flex-row items-center justify-between">
+        <View className="mt-3 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl px-4 py-3.5 flex-row items-center justify-between">
           <View className="flex-1 mr-3">
-            <Text className="text-dark-text text-base">Hari Libur / Tanggal Merah</Text>
+            <Text className="text-light-text dark:text-dark-text text-base">
+              Hari Libur / Tanggal Merah
+            </Text>
             {(() => {
               const hol = checkIsHoliday(
                 watchAllFields.workDate,
@@ -389,7 +399,7 @@ export default function AddOvertimeTabScreen() {
                 );
               }
               return (
-                <Text className="text-dark-muted text-xs">
+                <Text className="text-light-muted dark:text-dark-muted text-xs">
                   Perhitungan formula otomatis menyesuaikan
                 </Text>
               );
@@ -411,15 +421,17 @@ export default function AddOvertimeTabScreen() {
 
         {/* Notes */}
         <View className="mt-3">
-          <View className="bg-dark-card border border-dark-border rounded-xl px-4 py-1 flex-row items-center">
+          <View className="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl px-4 py-1 flex-row items-center">
             <View className="flex-1 py-1.5">
-              <Text className="text-dark-muted text-xs mb-0.5">Catatan (opsional)</Text>
+              <Text className="text-light-muted dark:text-dark-muted text-xs mb-0.5">
+                Catatan (opsional)
+              </Text>
               <Controller
                 control={control}
                 name="notes"
                 render={({ field: { onChange, onBlur, value } }) => (
                   <TextInput
-                    className="text-dark-text text-base p-0 m-0"
+                    className="text-light-text dark:text-dark-text text-base p-0 m-0"
                     placeholder="Tambahkan catatan..."
                     placeholderTextColor="#60646C"
                     onBlur={onBlur}
@@ -435,15 +447,15 @@ export default function AddOvertimeTabScreen() {
 
         {/* Bukti SPL / Absensi */}
         <View className="mt-3">
-          <Text className="text-dark-muted text-xs mb-1.5 ml-1">
+          <Text className="text-light-muted dark:text-dark-muted text-xs mb-1.5 ml-1">
             Foto Bukti SPL / Absensi (opsional)
           </Text>
-          <View className="bg-dark-card border border-dark-border rounded-2xl p-3">
+          <View className="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-3">
             {attachmentUrl ? (
               <View className="relative">
                 <Image
                   source={{ uri: attachmentUrl }}
-                  className="w-full h-40 rounded-xl bg-dark-bg"
+                  className="w-full h-40 rounded-xl bg-light-bg dark:bg-dark-bg"
                   resizeMode="cover"
                 />
                 <Pressable
@@ -456,7 +468,7 @@ export default function AddOvertimeTabScreen() {
               </View>
             ) : (
               <Pressable
-                className="border border-dashed border-dark-border rounded-xl py-5 items-center justify-center active:bg-dark-border/30"
+                className="border border-dashed border-light-border dark:border-dark-border rounded-xl py-5 items-center justify-center active:bg-light-border dark:active:bg-dark-border/30"
                 onPress={handlePickAttachment}
               >
                 <Ionicons name="camera" size={20} color="#60a5fa" style={{ marginBottom: 4 }} />
@@ -470,8 +482,10 @@ export default function AddOvertimeTabScreen() {
       {/* Estimation Preview */}
       <View className="bg-primary-950 border border-primary-800 rounded-xl p-4 mt-6">
         <Text className="text-primary-300 text-xs mb-1">ESTIMASI UPAH (Live)</Text>
-        <Text className="text-dark-text text-2xl font-bold">{formatCurrency(estimation.pay)}</Text>
-        <Text className="text-dark-muted text-xs mt-1">
+        <Text className="text-light-text dark:text-dark-text text-2xl font-bold">
+          {formatCurrency(estimation.pay)}
+        </Text>
+        <Text className="text-light-muted dark:text-dark-muted text-xs mt-1">
           {estimation.hoursStr} × Formula{' '}
           {activePayPeriod?.formula_type === 'indonesia' ? 'Indonesia' : 'Flat'}
           {watchAllFields.isHoliday ? ' (Libur)' : ''}

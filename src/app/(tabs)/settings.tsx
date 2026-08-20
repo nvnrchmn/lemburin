@@ -136,7 +136,9 @@ export default function SettingsScreen() {
             <Text className="text-light-text dark:text-white text-xl font-bold mb-1">
               {profile?.full_name || 'User'}
             </Text>
-            <Text className="text-light-muted dark:text-dark-muted text-sm">{user?.email}</Text>
+            <Text className="text-light-muted dark:text-light-muted dark:text-dark-muted text-sm">
+              {user?.email}
+            </Text>
           </View>
           <Ionicons name="chevron-forward" size={24} color="#64748b" />
         </Pressable>
@@ -146,7 +148,7 @@ export default function SettingsScreen() {
       <View className="space-y-8 mb-10">
         {/* Company Settings */}
         <View className="mb-4">
-          <Text className="text-light-muted dark:text-dark-muted text-xs font-bold mb-3 uppercase tracking-widest ml-5">
+          <Text className="text-light-muted dark:text-light-muted dark:text-dark-muted text-xs font-bold mb-3 uppercase tracking-widest ml-5">
             {t('companySettings', language)}
           </Text>
           <View className="bg-light-card dark:bg-dark-card rounded-3xl overflow-hidden shadow-sm">
@@ -197,7 +199,7 @@ export default function SettingsScreen() {
 
         {/* App Preferences */}
         <View className="mb-4">
-          <Text className="text-light-muted dark:text-dark-muted text-xs font-bold mb-3 uppercase tracking-widest ml-5">
+          <Text className="text-light-muted dark:text-light-muted dark:text-dark-muted text-xs font-bold mb-3 uppercase tracking-widest ml-5">
             {t('appPreferences', language)}
           </Text>
           <View className="bg-light-card dark:bg-dark-card rounded-3xl overflow-hidden shadow-sm">
@@ -214,7 +216,7 @@ export default function SettingsScreen() {
                 </Text>
               </View>
               <View className="flex-row items-center">
-                <Text className="text-light-muted dark:text-dark-muted mr-3">
+                <Text className="text-light-muted dark:text-light-muted dark:text-dark-muted mr-3">
                   {language === 'id' ? 'Indonesia' : 'English'}
                 </Text>
                 <Ionicons name="chevron-down" size={18} color={colors.muted} />
@@ -234,7 +236,9 @@ export default function SettingsScreen() {
                 </Text>
               </View>
               <View className="flex-row items-center">
-                <Text className="text-light-muted dark:text-dark-muted mr-3">{currency}</Text>
+                <Text className="text-light-muted dark:text-light-muted dark:text-dark-muted mr-3">
+                  {currency}
+                </Text>
                 <Ionicons name="chevron-down" size={18} color={colors.muted} />
               </View>
             </Pressable>
@@ -252,7 +256,7 @@ export default function SettingsScreen() {
                 </Text>
               </View>
               <View className="flex-row items-center">
-                <Text className="text-light-muted dark:text-dark-muted mr-3">
+                <Text className="text-light-muted dark:text-light-muted dark:text-dark-muted mr-3">
                   {theme === 'system' ? 'Ikuti sistem' : theme === 'dark' ? 'Gelap' : 'Terang'}
                 </Text>
                 <Ionicons name="chevron-down" size={18} color={colors.muted} />
@@ -263,7 +267,7 @@ export default function SettingsScreen() {
 
         {/* Keamanan & Notifikasi */}
         <View className="mb-4">
-          <Text className="text-light-muted dark:text-dark-muted text-xs font-bold mb-3 uppercase tracking-widest ml-5">
+          <Text className="text-light-muted dark:text-light-muted dark:text-dark-muted text-xs font-bold mb-3 uppercase tracking-widest ml-5">
             Keamanan & Pengingat
           </Text>
           <View className="bg-light-card dark:bg-dark-card rounded-3xl overflow-hidden shadow-sm">
@@ -317,7 +321,7 @@ export default function SettingsScreen() {
         </View>
 
         <View className="items-center mt-6 mb-12">
-          <Text className="text-light-muted dark:text-dark-muted text-xs font-medium tracking-widest uppercase">
+          <Text className="text-light-muted dark:text-light-muted dark:text-dark-muted text-xs font-medium tracking-widest uppercase">
             Lemburin App v1.1.0
           </Text>
         </View>

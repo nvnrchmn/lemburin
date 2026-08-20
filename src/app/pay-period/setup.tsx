@@ -155,20 +155,23 @@ export default function PayPeriodSetupScreen() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-dark-bg px-5 pt-6" showsVerticalScrollIndicator={false}>
-      <Text className="text-dark-muted text-sm mb-6 ml-1 font-medium">
+    <ScrollView
+      className="flex-1 bg-light-bg dark:bg-dark-bg px-5 pt-6"
+      showsVerticalScrollIndicator={false}
+    >
+      <Text className="text-light-muted dark:text-dark-muted text-sm mb-6 ml-1 font-medium">
         Pilih periode gaji sesuai siklus pembayaran perusahaan Anda.
       </Text>
 
       {/* Preset Options (iOS Grouped List) */}
-      <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
+      <View className="bg-light-card dark:bg-dark-card rounded-3xl overflow-hidden mb-6">
         {PAY_PERIOD_PRESETS.map(preset => {
           const isSelected = selectedDay === preset.startDay;
           return (
             <Pressable
               key={preset.startDay}
               onPress={() => setSelectedDay(preset.startDay)}
-              className={`flex-row items-center justify-between px-5 py-4 border-b border-dark-border active:bg-dark-border ${
+              className={`flex-row items-center justify-between px-5 py-4 border-b border-light-border dark:border-dark-border active:bg-light-border dark:active:bg-dark-border ${
                 isSelected ? 'bg-primary-950/30' : ''
               }`}
             >
@@ -179,7 +182,7 @@ export default function PayPeriodSetupScreen() {
                   {preset.label}
                 </Text>
                 <Text
-                  className={`text-xs mt-1 ${isSelected ? 'text-primary-400/80 font-medium' : 'text-dark-muted'}`}
+                  className={`text-xs mt-1 ${isSelected ? 'text-primary-400/80 font-medium' : 'text-light-muted dark:text-dark-muted'}`}
                 >
                   Tanggal {preset.startDay} setiap bulan
                 </Text>
@@ -192,7 +195,7 @@ export default function PayPeriodSetupScreen() {
         {/* Custom Option */}
         <Pressable
           onPress={() => setSelectedDay('custom')}
-          className={`flex-row items-center justify-between px-5 py-4 active:bg-dark-border ${
+          className={`flex-row items-center justify-between px-5 py-4 active:bg-light-border dark:active:bg-dark-border ${
             selectedDay === 'custom' ? 'bg-primary-950/30' : ''
           }`}
         >
@@ -203,7 +206,7 @@ export default function PayPeriodSetupScreen() {
               Kustom
             </Text>
             <Text
-              className={`text-xs mt-1 ${selectedDay === 'custom' ? 'text-primary-400/80 font-medium' : 'text-dark-muted'}`}
+              className={`text-xs mt-1 ${selectedDay === 'custom' ? 'text-primary-400/80 font-medium' : 'text-light-muted dark:text-dark-muted'}`}
             >
               Pilih tanggal mulai & selesai spesifik
             </Text>
@@ -214,9 +217,9 @@ export default function PayPeriodSetupScreen() {
 
       {/* Custom Date Pickers */}
       {selectedDay === 'custom' && (
-        <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
+        <View className="bg-light-card dark:bg-dark-card rounded-3xl overflow-hidden mb-6">
           <Pressable
-            className="flex-row items-center px-5 py-4 border-b border-dark-border active:bg-dark-border"
+            className="flex-row items-center px-5 py-4 border-b border-light-border dark:border-dark-border active:bg-light-border dark:active:bg-dark-border"
             onPress={() => setShowStartPicker(true)}
           >
             <Ionicons name="calendar" size={20} color="#64748b" />
@@ -241,7 +244,7 @@ export default function PayPeriodSetupScreen() {
           )}
 
           <Pressable
-            className="flex-row items-center px-5 py-4 active:bg-dark-border"
+            className="flex-row items-center px-5 py-4 active:bg-light-border dark:active:bg-dark-border"
             onPress={() => setShowEndPicker(true)}
           >
             <Ionicons name="calendar" size={20} color="#64748b" />
@@ -268,14 +271,14 @@ export default function PayPeriodSetupScreen() {
       )}
 
       {/* Formula Selection */}
-      <Text className="text-dark-muted text-sm mb-6 ml-1 font-medium mt-4">
+      <Text className="text-light-muted dark:text-dark-muted text-sm mb-6 ml-1 font-medium mt-4">
         Pilih metode perhitungan upah lembur.
       </Text>
 
-      <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
+      <View className="bg-light-card dark:bg-dark-card rounded-3xl overflow-hidden mb-6">
         <Pressable
           onPress={() => setFormulaType('indonesia')}
-          className={`flex-row items-center justify-between px-5 py-4 border-b border-dark-border active:bg-dark-border ${
+          className={`flex-row items-center justify-between px-5 py-4 border-b border-light-border dark:border-dark-border active:bg-light-border dark:active:bg-dark-border ${
             formulaType === 'indonesia' ? 'bg-primary-950/30' : ''
           }`}
         >
@@ -286,7 +289,7 @@ export default function PayPeriodSetupScreen() {
               Formula Kemenaker
             </Text>
             <Text
-              className={`text-xs mt-1 ${formulaType === 'indonesia' ? 'text-primary-400/80 font-medium' : 'text-dark-muted'}`}
+              className={`text-xs mt-1 ${formulaType === 'indonesia' ? 'text-primary-400/80 font-medium' : 'text-light-muted dark:text-dark-muted'}`}
             >
               Standar pemerintah Indonesia
             </Text>
@@ -296,7 +299,7 @@ export default function PayPeriodSetupScreen() {
 
         <Pressable
           onPress={() => setFormulaType('flat_rate')}
-          className={`flex-row items-center justify-between px-5 py-4 active:bg-dark-border ${
+          className={`flex-row items-center justify-between px-5 py-4 active:bg-light-border dark:active:bg-dark-border ${
             formulaType === 'flat_rate' ? 'bg-primary-950/30' : ''
           }`}
         >
@@ -307,7 +310,7 @@ export default function PayPeriodSetupScreen() {
               Tarif Tetap (Flat Rate)
             </Text>
             <Text
-              className={`text-xs mt-1 ${formulaType === 'flat_rate' ? 'text-primary-400/80 font-medium' : 'text-dark-muted'}`}
+              className={`text-xs mt-1 ${formulaType === 'flat_rate' ? 'text-primary-400/80 font-medium' : 'text-light-muted dark:text-dark-muted'}`}
             >
               Tarif tetap per jam lembur
             </Text>
@@ -318,7 +321,7 @@ export default function PayPeriodSetupScreen() {
 
       {/* Flat Rate Amount Input */}
       {formulaType === 'flat_rate' && (
-        <View className="bg-dark-card rounded-3xl overflow-hidden mb-6 flex-row items-center px-5 py-4">
+        <View className="bg-light-card dark:bg-dark-card rounded-3xl overflow-hidden mb-6 flex-row items-center px-5 py-4">
           <Ionicons name="cash" size={20} color="#10b981" />
           <TextInput
             className="text-white text-base flex-1 p-0 m-0"

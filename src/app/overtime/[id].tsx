@@ -30,7 +30,7 @@ export default function OvertimeDetailScreen() {
 
   if (!entry) {
     return (
-      <View className="flex-1 bg-dark-bg justify-center items-center">
+      <View className="flex-1 bg-light-bg dark:bg-dark-bg justify-center items-center">
         <Text className="text-white">Data lembur tidak ditemukan</Text>
       </View>
     );
@@ -115,7 +115,7 @@ export default function OvertimeDetailScreen() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-dark-bg">
+    <ScrollView className="flex-1 bg-light-bg dark:bg-dark-bg">
       <View className="px-5 pt-6">
         {/* Date Header */}
         <View className="bg-primary-950 border border-primary-800 rounded-2xl p-5 mb-4">
@@ -129,22 +129,22 @@ export default function OvertimeDetailScreen() {
               </View>
             )}
           </View>
-          <Text className="text-dark-text text-xl font-bold">
+          <Text className="text-light-text dark:text-dark-text text-xl font-bold">
             {format(new Date(entry.work_date), 'EEEE, d MMMM yyyy', { locale: localeId })}
           </Text>
         </View>
 
         {/* Time Info */}
         <View className="flex-row gap-3 mb-4">
-          <View className="flex-1 bg-dark-card border border-dark-border rounded-xl p-4">
-            <Text className="text-dark-muted text-xs">Jam Mulai</Text>
-            <Text className="text-dark-text text-lg font-bold mt-1">
+          <View className="flex-1 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl p-4">
+            <Text className="text-light-muted dark:text-dark-muted text-xs">Jam Mulai</Text>
+            <Text className="text-light-text dark:text-dark-text text-lg font-bold mt-1">
               {entry.start_time.substring(0, 5)}
             </Text>
           </View>
-          <View className="flex-1 bg-dark-card border border-dark-border rounded-xl p-4">
-            <Text className="text-dark-muted text-xs">Jam Selesai</Text>
-            <Text className="text-dark-text text-lg font-bold mt-1">
+          <View className="flex-1 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl p-4">
+            <Text className="text-light-muted dark:text-dark-muted text-xs">Jam Selesai</Text>
+            <Text className="text-light-text dark:text-dark-text text-lg font-bold mt-1">
               {entry.end_time.substring(0, 5)}
             </Text>
           </View>
@@ -152,35 +152,39 @@ export default function OvertimeDetailScreen() {
 
         {/* Duration & Break */}
         <View className="flex-row gap-3 mb-4">
-          <View className="flex-1 bg-dark-card border border-dark-border rounded-xl p-4">
-            <Text className="text-dark-muted text-xs">Durasi Bersih</Text>
-            <Text className="text-dark-text text-lg font-bold mt-1">{durationHours} jam</Text>
+          <View className="flex-1 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl p-4">
+            <Text className="text-light-muted dark:text-dark-muted text-xs">Durasi Bersih</Text>
+            <Text className="text-light-text dark:text-dark-text text-lg font-bold mt-1">
+              {durationHours} jam
+            </Text>
           </View>
-          <View className="flex-1 bg-dark-card border border-dark-border rounded-xl p-4">
-            <Text className="text-dark-muted text-xs">Istirahat</Text>
-            <Text className="text-dark-text text-lg font-bold mt-1">{entry.break_minutes} mnt</Text>
+          <View className="flex-1 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl p-4">
+            <Text className="text-light-muted dark:text-dark-muted text-xs">Istirahat</Text>
+            <Text className="text-light-text dark:text-dark-text text-lg font-bold mt-1">
+              {entry.break_minutes} mnt
+            </Text>
           </View>
         </View>
 
         {/* Estimation */}
-        <View className="bg-dark-card border border-dark-border rounded-xl p-4 mb-4">
-          <Text className="text-dark-muted text-xs">Estimasi Upah</Text>
+        <View className="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl p-4 mb-4">
+          <Text className="text-light-muted dark:text-dark-muted text-xs">Estimasi Upah</Text>
           <Text className="text-secondary-400 text-2xl font-bold mt-1">
             Rp {estimatedWage.toLocaleString('id-ID')}
           </Text>
-          <Text className="text-dark-muted text-xs mt-1">{formulaName}</Text>
+          <Text className="text-light-muted dark:text-dark-muted text-xs mt-1">{formulaName}</Text>
         </View>
 
         {/* Photo Attachment View */}
         {entry.attachment_url && (
-          <View className="bg-dark-card border border-dark-border rounded-2xl p-4 mb-4">
-            <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2">
+          <View className="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-4 mb-4">
+            <Text className="text-light-muted dark:text-dark-muted text-xs font-bold uppercase tracking-wider mb-2">
               Bukti Foto SPL / Absensi
             </Text>
             <Pressable onPress={() => setIsImageModalVisible(true)} className="relative">
               <Image
                 source={{ uri: entry.attachment_url }}
-                className="w-full h-48 rounded-xl bg-dark-bg"
+                className="w-full h-48 rounded-xl bg-light-bg dark:bg-dark-bg"
                 resizeMode="cover"
               />
               <View className="absolute bottom-2 right-2 bg-black/70 px-3 py-1 rounded-lg flex-row items-center gap-1">
@@ -193,9 +197,9 @@ export default function OvertimeDetailScreen() {
 
         {/* Notes */}
         {entry.notes && (
-          <View className="bg-dark-card border border-dark-border rounded-xl p-4 mb-6">
-            <Text className="text-dark-muted text-xs mb-1">Catatan</Text>
-            <Text className="text-dark-text text-sm">{entry.notes}</Text>
+          <View className="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl p-4 mb-6">
+            <Text className="text-light-muted dark:text-dark-muted text-xs mb-1">Catatan</Text>
+            <Text className="text-light-text dark:text-dark-text text-sm">{entry.notes}</Text>
           </View>
         )}
 
@@ -211,7 +215,7 @@ export default function OvertimeDetailScreen() {
           <Pressable
             onPress={handleDelete}
             disabled={isDeleting}
-            className={`flex-1 bg-dark-card border border-red-500/30 rounded-xl py-3.5 items-center flex-row justify-center gap-2 active:opacity-70 ${isDeleting ? 'opacity-50' : ''}`}
+            className={`flex-1 bg-light-card dark:bg-dark-card border border-red-500/30 rounded-xl py-3.5 items-center flex-row justify-center gap-2 active:opacity-70 ${isDeleting ? 'opacity-50' : ''}`}
           >
             {isDeleting && <ActivityIndicator size="small" color="#ef4444" />}
             <Text className="text-red-400 font-semibold">Hapus</Text>
@@ -229,7 +233,7 @@ export default function OvertimeDetailScreen() {
         >
           <View className="flex-1 bg-black/90 justify-center items-center p-4">
             <Pressable
-              className="absolute top-12 right-6 z-10 bg-dark-card p-3 rounded-full border border-dark-border"
+              className="absolute top-12 right-6 z-10 bg-light-card dark:bg-dark-card p-3 rounded-full border border-light-border dark:border-dark-border"
               onPress={() => setIsImageModalVisible(false)}
             >
               <Ionicons name="close" size={20} color="#fff" />

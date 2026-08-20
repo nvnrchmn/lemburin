@@ -64,7 +64,7 @@ export default function MonthlySummaryScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 bg-dark-bg justify-center items-center">
+      <View className="flex-1 bg-light-bg dark:bg-dark-bg justify-center items-center">
         <ActivityIndicator color="#3b82f6" size="large" />
       </View>
     );
@@ -72,7 +72,7 @@ export default function MonthlySummaryScreen() {
 
   if (!period) {
     return (
-      <View className="flex-1 bg-dark-bg justify-center items-center px-5">
+      <View className="flex-1 bg-light-bg dark:bg-dark-bg justify-center items-center px-5">
         <Text className="text-white text-lg">Periode tidak ditemukan.</Text>
         <Pressable
           className="mt-4 bg-primary-600 px-6 py-3 rounded-xl"
@@ -252,7 +252,7 @@ export default function MonthlySummaryScreen() {
                 RINGKASAN PERIODE
               </Text>
               <Text className="text-white text-2xl font-sans-bold">{period.period_name}</Text>
-              <Text className="text-dark-muted text-sm mt-1">
+              <Text className="text-light-muted dark:text-dark-muted text-sm mt-1">
                 {format(parseISO(period.start_date), 'dd MMM', { locale: localeId })} —{' '}
                 {format(parseISO(period.end_date), 'dd MMM yyyy', { locale: localeId })}
               </Text>
@@ -285,16 +285,16 @@ export default function MonthlySummaryScreen() {
 
         {/* Summary Cards */}
         <View className="flex-row gap-3 mb-4">
-          <View className="flex-1 bg-dark-card border border-dark-border rounded-3xl p-5">
-            <Text className="text-dark-muted text-xs font-medium uppercase tracking-wider mb-2">
+          <View className="flex-1 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-5">
+            <Text className="text-light-muted dark:text-dark-muted text-xs font-medium uppercase tracking-wider mb-2">
               Total Jam
             </Text>
             <Text className="text-white text-2xl font-sans-extrabold">
               {formatDuration(totalMinutes).replace(' jam', 'j').replace(' menit', 'm')}
             </Text>
           </View>
-          <View className="flex-1 bg-dark-card border border-dark-border rounded-3xl p-5">
-            <Text className="text-dark-muted text-xs font-medium uppercase tracking-wider mb-2">
+          <View className="flex-1 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-5">
+            <Text className="text-light-muted dark:text-dark-muted text-xs font-medium uppercase tracking-wider mb-2">
               Hari Lembur
             </Text>
             <Text className="text-white text-2xl font-sans-extrabold">{daysOfOvertime}</Text>
@@ -317,8 +317,8 @@ export default function MonthlySummaryScreen() {
 
         {/* Take-Home Pay & Tax Breakdown Card */}
         {employment?.basic_salary && (
-          <View className="bg-dark-card border border-dark-border rounded-3xl p-6 mb-6 shadow-sm">
-            <View className="flex-row justify-between items-center mb-4 border-b border-dark-border pb-3">
+          <View className="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-6 mb-6 shadow-sm">
+            <View className="flex-row justify-between items-center mb-4 border-b border-light-border dark:border-dark-border pb-3">
               <View>
                 <Text className="text-emerald-400 text-xs font-bold uppercase tracking-wider">
                   Estimasi Gaji Bersih
@@ -334,7 +334,9 @@ export default function MonthlySummaryScreen() {
 
             <View className="space-y-2.5">
               <View className="flex-row justify-between items-center mb-2">
-                <Text className="text-dark-muted text-xs">Penghasilan Bruto (Gaji + Lembur)</Text>
+                <Text className="text-light-muted dark:text-dark-muted text-xs">
+                  Penghasilan Bruto (Gaji + Lembur)
+                </Text>
                 <Text className="text-white text-xs font-bold">{formatCurrency(grossIncome)}</Text>
               </View>
 
@@ -376,8 +378,8 @@ export default function MonthlySummaryScreen() {
             Daftar Lembur
           </Text>
           {entries.length === 0 ? (
-            <View className="bg-dark-card border border-dark-border rounded-3xl p-8 items-center border-dashed">
-              <Text className="text-dark-muted text-sm text-center">
+            <View className="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-8 items-center border-dashed">
+              <Text className="text-light-muted dark:text-dark-muted text-sm text-center">
                 Belum ada catatan lembur pada periode ini.
               </Text>
             </View>
@@ -400,7 +402,7 @@ export default function MonthlySummaryScreen() {
                       <Text className="text-white font-sans-bold text-base mb-1">
                         {format(parseISO(entry.work_date), 'dd MMM yyyy', { locale: localeId })}
                       </Text>
-                      <Text className="text-dark-muted text-xs">
+                      <Text className="text-light-muted dark:text-dark-muted text-xs">
                         {entry.start_time.slice(0, 5)} - {entry.end_time.slice(0, 5)}
                       </Text>
                     </View>

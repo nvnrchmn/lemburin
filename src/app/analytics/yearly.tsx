@@ -9,7 +9,20 @@ import Animated, { FadeInUp, Layout } from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
 
-const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+const MONTH_LABELS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'Mei',
+  'Jun',
+  'Jul',
+  'Agu',
+  'Sep',
+  'Okt',
+  'Nov',
+  'Des',
+];
 
 export default function YearlyAnalyticsScreen() {
   const { employment } = useDataStore();
@@ -20,26 +33,32 @@ export default function YearlyAnalyticsScreen() {
   useEffect(() => {
     async function fetchYearlyData() {
       if (!employment?.id) return;
-      
+
       try {
         const { data, error } = await supabase
           .from('overtime_entries')
-          .select('work_date, start_time, end_time, break_minutes, pay_periods!inner(employment_id)')
+          .select(
+            'work_date, start_time, end_time, break_minutes, pay_periods!inner(employment_id)',
+          )
           .eq('pay_periods.employment_id', employment.id)
           .gte('work_date', `${currentYear}-01-01`)
           .lte('work_date', `${currentYear}-12-31`);
-          
+
         if (error) throw error;
-        
+
         const monthTotals = Array(12).fill(0);
-        
-        (data as { work_date: string; start_time: string; end_time: string; break_minutes: number }[] | null)?.forEach((entry) => {
+
+        (
+          data as
+            | { work_date: string; start_time: string; end_time: string; break_minutes: number }[]
+            | null
+        )?.forEach(entry => {
           const date = new Date(entry.work_date);
           const monthIndex = date.getMonth(); // 0-11
           const hours = calculateDuration(entry.start_time, entry.end_time, entry.break_minutes);
           monthTotals[monthIndex] += hours;
         });
-        
+
         setMonthlyData(monthTotals);
       } catch (error) {
         console.error('Error fetching yearly data:', error);
@@ -47,7 +66,7 @@ export default function YearlyAnalyticsScreen() {
         setIsLoading(false);
       }
     }
-    
+
     fetchYearlyData();
   }, [employment?.id, currentYear]);
 
@@ -69,14 +88,15 @@ export default function YearlyAnalyticsScreen() {
   }, [monthlyData]);
 
   return (
-    <ScrollView className="flex-1 bg-dark-bg px-5 pt-6" showsVerticalScrollIndicator={false}>
+    <ScrollView
+      className="flex-1 bg-light-bg dark:bg-dark-bg px-5 pt-6"
+      showsVerticalScrollIndicator={false}
+    >
       <View className="mb-8">
-        <Text className="text-dark-muted font-medium text-sm uppercase tracking-wider mb-1">
+        <Text className="text-light-muted dark:text-dark-muted font-medium text-sm uppercase tracking-wider mb-1">
           Laporan Tahunan
         </Text>
-        <Text className="text-white text-3xl font-bold tracking-tight">
-          Analitik {currentYear}
-        </Text>
+        <Text className="text-white text-3xl font-bold tracking-tight">Analitik {currentYear}</Text>
       </View>
 
       {isLoading ? (
@@ -84,32 +104,41 @@ export default function YearlyAnalyticsScreen() {
           <ActivityIndicator color="#3b82f6" size="large" />
         </View>
       ) : (
-        <Animated.View entering={FadeInUp.delay(200).duration(500).springify()} layout={Layout.springify()}>
+        <Animated.View
+          entering={FadeInUp.delay(200).duration(500).springify()}
+          layout={Layout.springify()}
+        >
           {/* Summary Cards */}
           <View className="flex-row gap-4 mb-8">
-            <View className="flex-1 bg-dark-card border border-dark-border rounded-3xl p-5 shadow-lg shadow-black/20">
+            <View className="flex-1 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-5 shadow-lg shadow-black/20">
               <View className="w-10 h-10 bg-primary-900/30 rounded-full items-center justify-center mb-3">
                 <Ionicons name="time" size={20} color="#60a5fa" />
               </View>
-              <Text className="text-dark-muted text-xs font-medium uppercase tracking-wider mb-1">Total Jam</Text>
+              <Text className="text-light-muted dark:text-dark-muted text-xs font-medium uppercase tracking-wider mb-1">
+                Total Jam
+              </Text>
               <Text className="text-white text-2xl font-bold">{totalYearlyHours.toFixed(1)}h</Text>
             </View>
-            <View className="flex-1 bg-dark-card border border-dark-border rounded-3xl p-5 shadow-lg shadow-black/20">
+            <View className="flex-1 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-5 shadow-lg shadow-black/20">
               <View className="w-10 h-10 bg-emerald-900/30 rounded-full items-center justify-center mb-3">
                 <Ionicons name="stats-chart" size={20} color="#34d399" />
               </View>
-              <Text className="text-dark-muted text-xs font-medium uppercase tracking-wider mb-1">Bulan Tersibuk</Text>
-              <Text className="text-white text-2xl font-bold">{MONTH_LABELS[monthlyData.indexOf(maxMonthHours)]}</Text>
+              <Text className="text-light-muted dark:text-dark-muted text-xs font-medium uppercase tracking-wider mb-1">
+                Bulan Tersibuk
+              </Text>
+              <Text className="text-white text-2xl font-bold">
+                {MONTH_LABELS[monthlyData.indexOf(maxMonthHours)]}
+              </Text>
             </View>
           </View>
 
           {/* Chart Section */}
-          <View className="bg-dark-card border border-dark-border rounded-3xl p-5 pb-8 shadow-lg shadow-black/20 mb-8">
+          <View className="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-5 pb-8 shadow-lg shadow-black/20 mb-8">
             <View className="flex-row justify-between items-center mb-8">
               <Text className="text-white text-lg font-bold tracking-tight">Tren Jam Lembur</Text>
               <Ionicons name="analytics" size={20} color="#64748b" />
             </View>
-            
+
             <View className="items-center -ml-4">
               <LineChart
                 data={chartData}
@@ -153,9 +182,16 @@ export default function YearlyAnalyticsScreen() {
           </View>
 
           <View className="bg-blue-500/10 rounded-2xl p-5 mb-12 flex-row items-start border border-blue-500/20">
-            <Ionicons name="information-circle" size={24} color="#60a5fa" style={{ marginRight: 12, marginTop: -2 }} />
+            <Ionicons
+              name="information-circle"
+              size={24}
+              color="#60a5fa"
+              style={{ marginRight: 12, marginTop: -2 }}
+            />
             <Text className="flex-1 text-blue-200/80 leading-relaxed text-sm">
-              Grafik ini merekap seluruh jam lembur yang pernah Anda catat sepanjang tahun {currentYear}. Gunakan informasi ini untuk memantau beban kerja dan kesehatan kerja Anda.
+              Grafik ini merekap seluruh jam lembur yang pernah Anda catat sepanjang tahun{' '}
+              {currentYear}. Gunakan informasi ini untuk memantau beban kerja dan kesehatan kerja
+              Anda.
             </Text>
           </View>
         </Animated.View>

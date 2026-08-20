@@ -189,20 +189,23 @@ export default function CompanySetupScreen() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-dark-bg px-5 pt-6" showsVerticalScrollIndicator={false}>
-      <Text className="text-dark-muted text-sm mb-6 ml-1 font-medium">
+    <ScrollView
+      className="flex-1 bg-light-bg dark:bg-dark-bg px-5 pt-6"
+      showsVerticalScrollIndicator={false}
+    >
+      <Text className="text-light-muted dark:text-dark-muted text-sm mb-6 ml-1 font-medium">
         Informasi pekerjaan Anda, termasuk Gaji Pokok untuk keperluan perhitungan lembur.
       </Text>
 
       <View className="w-full">
         {/* GROUP 1: Informasi Pekerjaan */}
-        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
+        <Text className="text-light-muted dark:text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
           Informasi Pekerjaan
         </Text>
-        <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
+        <View className="bg-light-card dark:bg-dark-card rounded-3xl overflow-hidden mb-6">
           {/* Company Name */}
           <View
-            className={`flex-row items-center px-5 py-4 border-b ${errors.companyName ? 'border-red-500/50' : 'border-dark-border'}`}
+            className={`flex-row items-center px-5 py-4 border-b ${errors.companyName ? 'border-red-500/50' : 'border-light-border dark:border-dark-border'}`}
           >
             <Ionicons name="business" size={20} color="#64748b" />
             <View className="flex-1">
@@ -224,7 +227,7 @@ export default function CompanySetupScreen() {
           </View>
 
           {/* Job Title */}
-          <View className="flex-row items-center px-5 py-4 border-b border-dark-border">
+          <View className="flex-row items-center px-5 py-4 border-b border-light-border dark:border-dark-border">
             <Ionicons name="briefcase" size={20} color="#64748b" />
             <View className="flex-1">
               <Controller
@@ -245,7 +248,7 @@ export default function CompanySetupScreen() {
           </View>
 
           {/* Employee Code */}
-          <View className="flex-row items-center px-5 py-4 border-b border-dark-border">
+          <View className="flex-row items-center px-5 py-4 border-b border-light-border dark:border-dark-border">
             <Ionicons name="grid" size={20} color="#64748b" />
             <View className="flex-1">
               <Controller
@@ -272,7 +275,7 @@ export default function CompanySetupScreen() {
             render={({ field: { value } }) => (
               <>
                 <Pressable
-                  className="flex-row items-center px-5 py-4 active:bg-dark-border"
+                  className="flex-row items-center px-5 py-4 active:bg-light-border dark:active:bg-dark-border"
                   onPress={() => setShowDatePicker(true)}
                 >
                   <Ionicons name="calendar" size={20} color="#64748b" />
@@ -303,17 +306,17 @@ export default function CompanySetupScreen() {
         </View>
 
         {/* GROUP: Sistem Hari Kerja (PP 35/2021) */}
-        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4 mt-2">
+        <Text className="text-light-muted dark:text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4 mt-2">
           Sistem Hari Kerja (PP 35/2021)
         </Text>
-        <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
+        <View className="bg-light-card dark:bg-dark-card rounded-3xl overflow-hidden mb-6">
           <Controller
             control={control}
             name="workSystem"
             render={({ field: { value, onChange } }) => (
               <>
                 <Pressable
-                  className={`flex-row items-center justify-between px-5 py-4 border-b border-dark-border active:bg-dark-border ${value === '5_days' ? 'bg-primary-950/30' : ''}`}
+                  className={`flex-row items-center justify-between px-5 py-4 border-b border-light-border dark:border-dark-border active:bg-light-border dark:active:bg-dark-border ${value === '5_days' ? 'bg-primary-950/30' : ''}`}
                   onPress={() => onChange('5_days')}
                 >
                   <View className="flex-1 mr-4">
@@ -322,7 +325,7 @@ export default function CompanySetupScreen() {
                     >
                       5 Hari Kerja (Kantor)
                     </Text>
-                    <Text className="text-dark-muted text-xs mt-0.5">
+                    <Text className="text-light-muted dark:text-dark-muted text-xs mt-0.5">
                       8 jam/hari (40 jam/minggu). Tarif libur 2x untuk 8 jam pertama.
                     </Text>
                   </View>
@@ -330,7 +333,7 @@ export default function CompanySetupScreen() {
                 </Pressable>
 
                 <Pressable
-                  className={`flex-row items-center justify-between px-5 py-4 active:bg-dark-border ${value === '6_days' ? 'bg-primary-950/30' : ''}`}
+                  className={`flex-row items-center justify-between px-5 py-4 active:bg-light-border dark:active:bg-dark-border ${value === '6_days' ? 'bg-primary-950/30' : ''}`}
                   onPress={() => onChange('6_days')}
                 >
                   <View className="flex-1 mr-4">
@@ -339,7 +342,7 @@ export default function CompanySetupScreen() {
                     >
                       6 Hari Kerja (Pabrik / Shift)
                     </Text>
-                    <Text className="text-dark-muted text-xs mt-0.5">
+                    <Text className="text-light-muted dark:text-dark-muted text-xs mt-0.5">
                       7 jam/hari (40 jam/minggu). Tarif libur 2x untuk 7 jam pertama.
                     </Text>
                   </View>
@@ -351,13 +354,13 @@ export default function CompanySetupScreen() {
         </View>
 
         {/* GROUP 2: Komponen Gaji */}
-        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4 mt-2">
+        <Text className="text-light-muted dark:text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4 mt-2">
           Komponen Upah
         </Text>
-        <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
+        <View className="bg-light-card dark:bg-dark-card rounded-3xl overflow-hidden mb-6">
           {/* Basic Salary */}
           <View
-            className={`flex-row items-center px-5 py-4 border-b border-dark-border ${errors.basicSalary ? 'border-b-red-500/50' : ''}`}
+            className={`flex-row items-center px-5 py-4 border-b border-light-border dark:border-dark-border ${errors.basicSalary ? 'border-b-red-500/50' : ''}`}
           >
             <Ionicons name="cash" size={20} color="#64748b" />
             <View className="flex-1">
@@ -380,7 +383,7 @@ export default function CompanySetupScreen() {
           </View>
 
           {/* Overtime Meal Allowance */}
-          <View className="flex-row items-center px-5 py-4 border-b border-dark-border">
+          <View className="flex-row items-center px-5 py-4 border-b border-light-border dark:border-dark-border">
             <Ionicons name="restaurant" size={20} color="#64748b" />
             <View className="flex-1">
               <Controller
@@ -425,16 +428,16 @@ export default function CompanySetupScreen() {
         </View>
 
         {/* GROUP: Pajak PPh 21 (TER 2024) & BPJS */}
-        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
+        <Text className="text-light-muted dark:text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
           Pajak PPh 21 (TER) & Iuran BPJS
         </Text>
-        <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
+        <View className="bg-light-card dark:bg-dark-card rounded-3xl overflow-hidden mb-6">
           {/* PTKP Status Selection */}
-          <View className="px-5 py-4 border-b border-dark-border">
+          <View className="px-5 py-4 border-b border-light-border dark:border-dark-border">
             <Text className="text-white font-bold text-sm mb-1">
               Status PTKP (Kategori TER PPh 21)
             </Text>
-            <Text className="text-dark-muted text-xs mb-3">
+            <Text className="text-light-muted dark:text-dark-muted text-xs mb-3">
               Pilih status tanggungan keluarga untuk tarif pajak efektif 2024:
             </Text>
             <Controller
@@ -456,7 +459,7 @@ export default function CompanySetupScreen() {
                           className={`px-3.5 py-2 rounded-xl border mr-2 ${
                             isSelected
                               ? 'bg-primary-600 border-primary-500'
-                              : 'bg-dark-bg border-dark-border active:bg-dark-border'
+                              : 'bg-light-bg dark:bg-dark-bg border-light-border dark:border-dark-border active:bg-light-border dark:active:bg-dark-border'
                           }`}
                         >
                           <Text
@@ -474,10 +477,10 @@ export default function CompanySetupScreen() {
           </View>
 
           {/* BPJS Ketenagakerjaan Switch */}
-          <View className="flex-row items-center justify-between px-5 py-4 border-b border-dark-border">
+          <View className="flex-row items-center justify-between px-5 py-4 border-b border-light-border dark:border-dark-border">
             <View className="flex-1 mr-4">
               <Text className="text-white font-bold text-sm">BPJS Ketenagakerjaan</Text>
-              <Text className="text-dark-muted text-xs mt-0.5">
+              <Text className="text-light-muted dark:text-dark-muted text-xs mt-0.5">
                 Potongan JHT 2% & Jaminan Pensiun 1%
               </Text>
             </View>
@@ -499,7 +502,9 @@ export default function CompanySetupScreen() {
           <View className="flex-row items-center justify-between px-5 py-4">
             <View className="flex-1 mr-4">
               <Text className="text-white font-bold text-sm">BPJS Kesehatan</Text>
-              <Text className="text-dark-muted text-xs mt-0.5">Potongan iuran 1% karyawan</Text>
+              <Text className="text-light-muted dark:text-dark-muted text-xs mt-0.5">
+                Potongan iuran 1% karyawan
+              </Text>
             </View>
             <Controller
               control={control}
@@ -517,16 +522,16 @@ export default function CompanySetupScreen() {
         </View>
 
         {/* GROUP 3: Tunjangan (Allowances) */}
-        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
+        <Text className="text-light-muted dark:text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
           Tunjangan
         </Text>
-        <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
+        <View className="bg-light-card dark:bg-dark-card rounded-3xl overflow-hidden mb-6">
           {allowanceFields.map((field, index) => {
             const isLast = index === allowanceFields.length - 1;
             return (
               <View
                 key={field.id}
-                className={`p-4 ${!isLast ? 'border-b border-dark-border' : ''}`}
+                className={`p-4 ${!isLast ? 'border-b border-light-border dark:border-dark-border' : ''}`}
               >
                 <View className="flex-row items-center justify-between mb-3">
                   <Controller
@@ -570,10 +575,10 @@ export default function CompanySetupScreen() {
                   />
                 </View>
 
-                <View className="flex-row items-center justify-between bg-dark-bg p-3 rounded-2xl">
+                <View className="flex-row items-center justify-between bg-light-bg dark:bg-dark-bg p-3 rounded-2xl">
                   <View>
                     <Text className="text-white text-sm font-medium">Tunjangan Tetap?</Text>
-                    <Text className="text-dark-muted text-[10px] mt-0.5 max-w-[200px]">
+                    <Text className="text-light-muted dark:text-dark-muted text-[10px] mt-0.5 max-w-[200px]">
                       Aktifkan agar masuk ke dalam basis perhitungan Upah Lembur Kemenaker.
                     </Text>
                   </View>
@@ -595,7 +600,7 @@ export default function CompanySetupScreen() {
           })}
 
           <Pressable
-            className="flex-row items-center justify-center p-4 active:bg-dark-border"
+            className="flex-row items-center justify-center p-4 active:bg-light-border dark:active:bg-dark-border"
             onPress={() => appendAllowance({ id: '', name: '', amount: '', is_fixed: true })}
           >
             <Ionicons name="add-circle" size={18} color="#3b82f6" />
@@ -606,16 +611,16 @@ export default function CompanySetupScreen() {
         </View>
 
         {/* GROUP 4: Potongan (Deductions) */}
-        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
+        <Text className="text-light-muted dark:text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
           Potongan Gaji
         </Text>
-        <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
+        <View className="bg-light-card dark:bg-dark-card rounded-3xl overflow-hidden mb-6">
           {deductionFields.map((field, index) => {
             const isLast = index === deductionFields.length - 1;
             return (
               <View
                 key={field.id}
-                className={`p-4 ${!isLast ? 'border-b border-dark-border' : ''}`}
+                className={`p-4 ${!isLast ? 'border-b border-light-border dark:border-dark-border' : ''}`}
               >
                 <View className="flex-row items-center justify-between mb-3">
                   <Controller
@@ -663,7 +668,7 @@ export default function CompanySetupScreen() {
           })}
 
           <Pressable
-            className="flex-row items-center justify-center p-4 active:bg-dark-border"
+            className="flex-row items-center justify-center p-4 active:bg-light-border dark:active:bg-dark-border"
             onPress={() => appendDeduction({ id: '', name: '', amount: '', is_fixed: false })}
           >
             <Ionicons name="add-circle" size={18} color="#3b82f6" />

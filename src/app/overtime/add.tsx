@@ -6,7 +6,6 @@ import {
   ScrollView,
   TextInput,
   ActivityIndicator,
-  Alert,
   Switch,
   Image,
 } from 'react-native';
@@ -31,6 +30,7 @@ import { pickAndUploadImage } from '@/utils/upload';
 import { useToastStore } from '@/stores/toast-store';
 import { getOrCreatePayPeriodForDate } from '@/services/pay-period-service';
 import { checkIsHoliday } from '@/utils/holidays';
+import { SelectionSheet } from '@/components/ui/selection-sheet';
 
 const overtimeSchema = z.object({
   workDate: z.date(),
@@ -47,6 +47,7 @@ export default function AddOvertimeScreen() {
   const { activePayPeriod, employment, addOvertimeEntry } = useDataStore();
   const [isLoading, setIsLoading] = useState(false);
   const [attachmentUrl, setAttachmentUrl] = useState<string | null>(null);
+  const [showAttachmentPicker, setShowAttachmentPicker] = useState(false);
   const { showToast } = useToastStore();
 
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -76,24 +77,11 @@ export default function AddOvertimeScreen() {
 
   const watchAllFields = watch();
 
-  const handlePickAttachment = () => {
-    Alert.alert('Lampirkan Foto Bukti SPL / Absensi', 'Pilih sumber foto:', [
-      {
-        text: 'Kamera',
-        onPress: async () => {
-          const url = await pickAndUploadImage(true, 'overtime');
-          if (url) setAttachmentUrl(url);
-        },
-      },
-      {
-        text: 'Galeri Foto',
-        onPress: async () => {
-          const url = await pickAndUploadImage(false, 'overtime');
-          if (url) setAttachmentUrl(url);
-        },
-      },
-      { text: 'Batal', style: 'cancel' },
-    ]);
+  const handlePickAttachment = () => setShowAttachmentPicker(true);
+
+  const uploadAttachment = async (source: 'camera' | 'gallery') => {
+    const url = await pickAndUploadImage(source === 'camera', 'overtime');
+    if (url) setAttachmentUrl(url);
   };
 
   // Live calculation of estimation
@@ -126,9 +114,8 @@ export default function AddOvertimeScreen() {
 
   const onSubmit = async (data: OvertimeFormValues) => {
     if (!employment?.id) {
-      Alert.alert('Perhatian', 'Harap atur Profil Perusahaan terlebih dahulu di Pengaturan.', [
-        { text: 'OK', onPress: () => router.back() },
-      ]);
+      showToast('Harap atur Profil Perusahaan terlebih dahulu di Pengaturan.', 'error');
+      router.back();
       return;
     }
 
@@ -174,14 +161,17 @@ export default function AddOvertimeScreen() {
       showToast(`Lembur tersimpan di Periode ${targetPeriod.period_name}`, 'success');
       router.back();
     } catch (error: any) {
-      Alert.alert('Gagal Menyimpan', error.message || 'Terjadi kesalahan sistem');
+      showToast(error.message || 'Gagal menyimpan catatan lembur.', 'error');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <ScrollView className="flex-1 bg-dark-bg px-5 pt-6" showsVerticalScrollIndicator={false}>
+    <ScrollView
+      className="flex-1 bg-light-bg dark:bg-dark-bg px-5 pt-6"
+      showsVerticalScrollIndicator={false}
+    >
       {!activePayPeriod && (
         <View className="bg-red-500/10 border border-red-500/50 rounded-2xl p-4 mb-6 flex-row items-center">
           <Ionicons name="warning" size={24} color="#f87171" />
@@ -194,10 +184,10 @@ export default function AddOvertimeScreen() {
 
       {/* GROUP 1: Waktu Lembur */}
       <View className="w-full">
-        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
+        <Text className="text-light-muted dark:text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
           Waktu Pelaksanaan
         </Text>
-        <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
+        <View className="bg-light-card dark:bg-dark-card rounded-3xl overflow-hidden mb-6">
           {/* Date Field */}
           <Controller
             control={control}
@@ -205,7 +195,7 @@ export default function AddOvertimeScreen() {
             render={({ field: { value } }) => (
               <>
                 <Pressable
-                  className="flex-row items-center px-5 py-4 border-b border-dark-border active:bg-dark-border"
+                  className="flex-row items-center px-5 py-4 border-b border-light-border dark:border-dark-border active:bg-light-border dark:active:bg-dark-border"
                   onPress={() => setShowDatePicker(true)}
                 >
                   <Ionicons name="calendar" size={20} color="#64748b" />
@@ -245,7 +235,7 @@ export default function AddOvertimeScreen() {
             render={({ field: { value } }) => (
               <>
                 <Pressable
-                  className="flex-row items-center px-5 py-4 border-b border-dark-border active:bg-dark-border"
+                  className="flex-row items-center px-5 py-4 border-b border-light-border dark:border-dark-border active:bg-light-border dark:active:bg-dark-border"
                   onPress={() => setShowStartTimePicker(true)}
                 >
                   <Ionicons name="time" size={20} color="#64748b" />
@@ -277,7 +267,7 @@ export default function AddOvertimeScreen() {
             render={({ field: { value } }) => (
               <>
                 <Pressable
-                  className="flex-row items-center px-5 py-4 border-b border-dark-border active:bg-dark-border"
+                  className="flex-row items-center px-5 py-4 border-b border-light-border dark:border-dark-border active:bg-light-border dark:active:bg-dark-border"
                   onPress={() => setShowEndTimePicker(true)}
                 >
                   <Ionicons name="time" size={20} color="#64748b" />
@@ -304,17 +294,19 @@ export default function AddOvertimeScreen() {
         </View>
 
         {/* GROUP 2: Pengaturan Tambahan */}
-        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
+        <Text className="text-light-muted dark:text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
           Pengaturan Tambahan
         </Text>
-        <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
+        <View className="bg-light-card dark:bg-dark-card rounded-3xl overflow-hidden mb-6">
           {/* Break Minutes */}
-          <View className="flex-row items-center justify-between px-5 py-4 border-b border-dark-border">
+          <View className="flex-row items-center justify-between px-5 py-4 border-b border-light-border dark:border-dark-border">
             <View className="flex-row items-center flex-1">
               <Ionicons name="cafe" size={20} color="#64748b" />
               <View>
                 <Text className="text-white text-base">Istirahat</Text>
-                <Text className="text-dark-muted text-xs">Menit potongan</Text>
+                <Text className="text-light-muted dark:text-dark-muted text-xs">
+                  Menit potongan
+                </Text>
               </View>
             </View>
             <View className="flex-row items-center">
@@ -355,7 +347,7 @@ export default function AddOvertimeScreen() {
                     );
                   }
                   return (
-                    <Text className="text-dark-muted text-xs mt-0.5">
+                    <Text className="text-light-muted dark:text-dark-muted text-xs mt-0.5">
                       Tarif libur PP 35/2021 (2x-4x)
                     </Text>
                   );
@@ -378,10 +370,10 @@ export default function AddOvertimeScreen() {
         </View>
 
         {/* GROUP 3: Catatan */}
-        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
+        <Text className="text-light-muted dark:text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
           Informasi Tambahan
         </Text>
-        <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
+        <View className="bg-light-card dark:bg-dark-card rounded-3xl overflow-hidden mb-6">
           <View className="flex-row px-5 py-4 min-h-[100px]">
             <Ionicons name="document-text" size={20} color="#64748b" />
             <View className="flex-1">
@@ -407,15 +399,15 @@ export default function AddOvertimeScreen() {
         </View>
 
         {/* GROUP 4: Bukti SPL / Absensi */}
-        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
+        <Text className="text-light-muted dark:text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
           Bukti SPL / Absensi (Opsional)
         </Text>
-        <View className="bg-dark-card rounded-3xl overflow-hidden p-4 mb-6">
+        <View className="bg-light-card dark:bg-dark-card rounded-3xl overflow-hidden p-4 mb-6">
           {attachmentUrl ? (
             <View className="relative">
               <Image
                 source={{ uri: attachmentUrl }}
-                className="w-full h-44 rounded-2xl bg-dark-bg"
+                className="w-full h-44 rounded-2xl bg-light-bg dark:bg-dark-bg"
                 resizeMode="cover"
               />
               <Pressable
@@ -428,14 +420,14 @@ export default function AddOvertimeScreen() {
             </View>
           ) : (
             <Pressable
-              className="border border-dashed border-dark-border rounded-2xl py-6 items-center justify-center active:bg-dark-border/40"
+              className="border border-dashed border-light-border dark:border-dark-border rounded-2xl py-6 items-center justify-center active:bg-light-border dark:active:bg-dark-border/40"
               onPress={handlePickAttachment}
             >
               <View className="w-12 h-12 bg-primary-950/40 rounded-full items-center justify-center mb-2 border border-primary-500/30">
                 <Ionicons name="camera" size={22} color="#60a5fa" />
               </View>
               <Text className="text-white font-bold text-sm">Lampirkan Foto Bukti SPL</Text>
-              <Text className="text-dark-muted text-xs mt-0.5">
+              <Text className="text-light-muted dark:text-dark-muted text-xs mt-0.5">
                 Ambil foto atau pilih dari galeri
               </Text>
             </Pressable>
@@ -457,10 +449,11 @@ export default function AddOvertimeScreen() {
           </Text>
         </View>
 
+        <View className="h-24" />
+      </View>
+      <View className="absolute bottom-0 left-0 right-0 px-5 py-4 bg-light-bg/95 dark:bg-dark-bg/95 border-t border-light-border dark:border-dark-border">
         <Pressable
-          className={`bg-primary-600 rounded-2xl py-4 items-center mb-10 flex-row justify-center gap-2 active:opacity-70 ${
-            isLoading ? 'opacity-50' : ''
-          }`}
+          className={`bg-primary-600 rounded-2xl py-4 items-center flex-row justify-center gap-2 active:opacity-70 ${isLoading ? 'opacity-50' : ''}`}
           onPress={handleSubmit(onSubmit)}
           disabled={isLoading}
         >
@@ -468,6 +461,26 @@ export default function AddOvertimeScreen() {
           <Text className="text-white font-bold text-lg">Simpan Lembur</Text>
         </Pressable>
       </View>
+      <SelectionSheet<'camera' | 'gallery'>
+        visible={showAttachmentPicker}
+        title="Lampirkan Foto Bukti"
+        options={[
+          {
+            value: 'camera',
+            label: 'Ambil dari Kamera',
+            description: 'Foto bukti sekarang',
+            icon: 'camera-outline',
+          },
+          {
+            value: 'gallery',
+            label: 'Pilih dari Galeri',
+            description: 'Gunakan foto tersimpan',
+            icon: 'images-outline',
+          },
+        ]}
+        onSelect={uploadAttachment}
+        onClose={() => setShowAttachmentPicker(false)}
+      />
     </ScrollView>
   );
 }

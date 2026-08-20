@@ -43,17 +43,19 @@ export default function HistoryScreen() {
         <Text className="text-light-text dark:text-white text-3xl font-sans-extrabold mb-1">
           Riwayat Periode
         </Text>
-        <Text className="text-light-muted dark:text-dark-muted font-medium text-sm mb-8">
+        <Text className="text-light-muted dark:text-light-muted dark:text-dark-muted font-medium text-sm mb-8">
           Seluruh periode gaji yang pernah dicatat
         </Text>
 
         {isLoading ? (
           <ActivityIndicator color="#3b82f6" size="large" className="mt-10" />
         ) : history.length === 0 ? (
-          <View className="bg-dark-card border border-dark-border rounded-xl p-8 items-center mt-2 border-dashed">
+          <View className="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl p-8 items-center mt-2 border-dashed">
             <Ionicons name="document-text" size={48} color="#475569" style={{ marginBottom: 12 }} />
-            <Text className="text-dark-text text-base font-semibold mb-1">Belum Ada Riwayat</Text>
-            <Text className="text-dark-muted text-sm text-center">
+            <Text className="text-light-text dark:text-dark-text text-base font-semibold mb-1">
+              Belum Ada Riwayat
+            </Text>
+            <Text className="text-light-muted dark:text-dark-muted text-sm text-center">
               Riwayat periode gaji akan muncul di sini setelah Anda mulai mencatat lembur.
             </Text>
           </View>
@@ -97,13 +99,13 @@ export default function HistoryScreen() {
                       color="#64748b"
                       style={{ marginRight: 6 }}
                     />
-                    <Text className="text-dark-muted font-medium text-sm">
+                    <Text className="text-light-muted dark:text-dark-muted font-medium text-sm">
                       {format(parseISO(period.start_date), 'dd MMM yyyy', { locale: id })} -{' '}
                       {format(parseISO(period.end_date), 'dd MMM yyyy', { locale: id })}
                     </Text>
                   </View>
-                  <View className="mt-2 flex-row justify-between border-t border-dark-border pt-4">
-                    <Text className="text-dark-muted font-medium text-sm">
+                  <View className="mt-2 flex-row justify-between border-t border-light-border dark:border-dark-border pt-4">
+                    <Text className="text-light-muted dark:text-dark-muted font-medium text-sm">
                       Formula: {period.formula_type === 'indonesia' ? 'Depnaker' : 'Flat Rate'}
                     </Text>
                     <View className="flex-row items-center">
