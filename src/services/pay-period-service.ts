@@ -9,17 +9,20 @@ import { parseISO } from 'date-fns';
 export async function getOrCreatePayPeriodForDate(
   employmentId: string,
   workDate: Date | string,
-  fallbackPeriod?: PayPeriod | null
+  fallbackPeriod?: PayPeriod | null,
 ): Promise<PayPeriod> {
-  const dateStr = typeof workDate === 'string' ? workDate.split('T')[0] : workDate.toISOString().split('T')[0];
+  const dateStr =
+    typeof workDate === 'string' ? workDate.split('T')[0] : workDate.toISOString().split('T')[0];
 
   // 1. Cek apakah sudah ada periode yang mencakup tanggal ini
+  //    (diurutkan agar deterministik saat ada banyak hasil)
   const { data: existingPeriods, error: searchError } = await supabase
     .from('pay_periods')
     .select('*')
     .eq('employment_id', employmentId)
     .lte('start_date', dateStr)
     .gte('end_date', dateStr)
+    .order('start_date', { ascending: true })
     .limit(1);
 
   if (!searchError && existingPeriods && existingPeriods.length > 0) {
@@ -71,7 +74,28 @@ export async function getOrCreatePayPeriodForDate(
     .single();
 
   if (insertError) {
-    console.error('Failed to auto-create pay period:', insertError);
+    // DB constraint (uq_pay_periods_employment_range / chk_pay_periods_no_overlap)
+    // menolak duplikat/overlap — ini biasanya karena race condition: request lain
+    // sudah membuat periode yang sama di antara cek dan insert kita.
+    // Solusi: ambil periode yang sudah ada (jika cocok) alih-alih gagal.
+    console.warn(
+      'Pay period insert rejected (likely race/duplicate), refetching:',
+      insertError.message,
+    );
+
+    const { data: racedPeriod } = await supabase
+      .from('pay_periods')
+      .select('*')
+      .eq('employment_id', employmentId)
+      .eq('start_date', calculated.startDate)
+      .eq('end_date', calculated.endDate)
+      .maybeSingle();
+
+    if (racedPeriod) {
+      return racedPeriod as PayPeriod;
+    }
+
+    // Bukan duplikat — error asli
     throw insertError;
   }
 
@@ -82,7 +106,10 @@ export async function getOrCreatePayPeriodForDate(
  * Otomatis memperbaiki dan memisahkan entri lembur yang tercatat di pay_period_id yang salah.
  * (Contoh: lembur Juli yang sempat tersimpan di pay_period Agustus akan dipindahkan ke pay_period Juli).
  */
-export async function reassignMismatchedEntries(employmentId: string, fallbackPeriod?: PayPeriod | null): Promise<void> {
+export async function reassignMismatchedEntries(
+  employmentId: string,
+  fallbackPeriod?: PayPeriod | null,
+): Promise<void> {
   try {
     // Ambil semua periode milik employment ini
     const { data: periods } = await supabase
@@ -107,13 +134,18 @@ export async function reassignMismatchedEntries(employmentId: string, fallbackPe
 
     for (const entry of entries as OvertimeEntry[]) {
       const assignedPeriod = periodMap.get(entry.pay_period_id);
-      const isMismatched = !assignedPeriod || 
-        entry.work_date < assignedPeriod.start_date || 
+      const isMismatched =
+        !assignedPeriod ||
+        entry.work_date < assignedPeriod.start_date ||
         entry.work_date > assignedPeriod.end_date;
 
       if (isMismatched) {
         // Cari atau buatkan periode yang tepat untuk work_date entri ini
-        const correctPeriod = await getOrCreatePayPeriodForDate(employmentId, entry.work_date, fallbackPeriod || assignedPeriod);
+        const correctPeriod = await getOrCreatePayPeriodForDate(
+          employmentId,
+          entry.work_date,
+          fallbackPeriod || assignedPeriod,
+        );
         if (correctPeriod && correctPeriod.id !== entry.pay_period_id) {
           await supabase
             .from('overtime_entries')
