@@ -9,10 +9,13 @@ interface DataState {
   activePayPeriod: PayPeriod | null;
   overtimeEntries: OvertimeEntry[];
 
+  isSyncing: boolean;
+
   setProfile: (profile: Profile | null) => void;
   setEmployment: (employment: Employment | null) => void;
   setActivePayPeriod: (period: PayPeriod | null) => void;
   setOvertimeEntries: (entries: OvertimeEntry[]) => void;
+  setIsSyncing: (value: boolean) => void;
   addOvertimeEntry: (entry: OvertimeEntry) => void;
   updateOvertimeEntry: (entry: OvertimeEntry) => void;
   removeOvertimeEntry: (id: string) => void;
@@ -27,11 +30,13 @@ export const useDataStore = create<DataState>()(
       employment: null,
       activePayPeriod: null,
       overtimeEntries: [],
+      isSyncing: false,
 
       setProfile: profile => set({ profile }),
       setEmployment: employment => set({ employment }),
       setActivePayPeriod: activePayPeriod => set({ activePayPeriod }),
       setOvertimeEntries: overtimeEntries => set({ overtimeEntries }),
+      setIsSyncing: value => set({ isSyncing: value }),
 
       addOvertimeEntry: entry =>
         set(state => ({

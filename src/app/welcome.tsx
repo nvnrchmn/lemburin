@@ -14,23 +14,24 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import { SymbolView } from 'expo-symbols';
+import { Ionicons } from '@expo/vector-icons';
 
 const ONBOARDING_DATA = [
   {
     title: 'Catat Lembur',
-    description: 'Catat setiap aktivitas lembur Anda dengan cepat dan mudah, tanpa ada yang terlewat.',
-    icon: 'calendar.badge.plus',
+    description:
+      'Catat setiap aktivitas lembur Anda dengan cepat dan mudah, tanpa ada yang terlewat.',
+    icon: 'calendar',
   },
   {
     title: 'Hitung Otomatis',
     description: 'Kalkulasi estimasi upah lembur secara instan sesuai formula standar perusahaan.',
-    icon: 'function',
+    icon: 'calculator',
   },
   {
     title: 'Verifikasi Gaji',
     description: 'Bandingkan hasil hitung dengan slip gaji Anda untuk transparansi maksimal.',
-    icon: 'checkmark.shield.fill',
+    icon: 'checkmark-done',
   },
 ];
 
@@ -48,17 +49,22 @@ export default function WelcomeScreen() {
   useEffect(() => {
     // Pulse animation for the button
     pulse.value = withRepeat(
-      withSequence(
-        withTiming(1.05, { duration: 1000 }),
-        withTiming(1, { duration: 1000 })
-      ),
+      withSequence(withTiming(1.05, { duration: 1000 }), withTiming(1, { duration: 1000 })),
       -1,
-      true
+      true,
     );
 
     // Floating blobs
-    floatY1.value = withRepeat(withTiming(-20, { duration: 3000, easing: Easing.inOut(Easing.ease) }), -1, true);
-    floatY2.value = withRepeat(withTiming(20, { duration: 2500, easing: Easing.inOut(Easing.ease) }), -1, true);
+    floatY1.value = withRepeat(
+      withTiming(-20, { duration: 3000, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true,
+    );
+    floatY2.value = withRepeat(
+      withTiming(20, { duration: 2500, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true,
+    );
   }, [floatY1, floatY2, pulse]);
 
   const handleNext = async () => {
@@ -75,19 +81,19 @@ export default function WelcomeScreen() {
       progress.value,
       [currentIndex - 1, currentIndex, currentIndex + 1],
       [0.6, 1, 0.6],
-      Extrapolation.CLAMP
+      Extrapolation.CLAMP,
     );
     const opacity = interpolate(
       progress.value,
       [currentIndex - 1, currentIndex, currentIndex + 1],
       [0, 1, 0],
-      Extrapolation.CLAMP
+      Extrapolation.CLAMP,
     );
     const translateY = interpolate(
       progress.value,
       [currentIndex - 1, currentIndex, currentIndex + 1],
       [20, 0, -20],
-      Extrapolation.CLAMP
+      Extrapolation.CLAMP,
     );
     return {
       transform: [{ scale }, { translateY }],
@@ -100,13 +106,13 @@ export default function WelcomeScreen() {
       progress.value,
       [currentIndex - 1, currentIndex, currentIndex + 1],
       [0, 1, 0],
-      Extrapolation.CLAMP
+      Extrapolation.CLAMP,
     );
     const translateY = interpolate(
       progress.value,
       [currentIndex - 1, currentIndex, currentIndex + 1],
       [15, 0, -15],
-      Extrapolation.CLAMP
+      Extrapolation.CLAMP,
     );
     return {
       transform: [{ translateY }],
@@ -131,23 +137,20 @@ export default function WelcomeScreen() {
   return (
     <View className="flex-1 bg-[#020617]">
       <StatusBar style="light" />
-      
+
       {/* Background Gradient */}
-      <LinearGradient
-        colors={['#0f172a', '#020617', '#020617']}
-        className="absolute inset-0"
-      />
+      <LinearGradient colors={['#0f172a', '#020617', '#020617']} className="absolute inset-0" />
 
       {/* Decorative Blobs */}
-      <Animated.View 
+      <Animated.View
         className="absolute -top-32 -left-20 w-96 h-96 rounded-full bg-primary-600/15 blur-[80px]"
         style={blob1Style}
       />
-      <Animated.View 
+      <Animated.View
         className="absolute top-1/3 -right-32 w-80 h-80 rounded-full bg-blue-500/10 blur-[80px]"
         style={blob2Style}
       />
-      <Animated.View 
+      <Animated.View
         className="absolute -bottom-20 left-10 w-64 h-64 rounded-full bg-primary-500/15 blur-[60px]"
         style={blob1Style}
       />
@@ -155,8 +158,8 @@ export default function WelcomeScreen() {
       <View className="flex-1 px-6 pt-20 pb-12">
         {/* Top Logo Area */}
         <View className="items-center mb-8">
-          <Image 
-            source={require('../../assets/images/lemburin-logo.png')} 
+          <Image
+            source={require('../../assets/images/lemburin-logo.png')}
             style={{ width: 48, height: 48 }}
             resizeMode="contain"
           />
@@ -165,7 +168,7 @@ export default function WelcomeScreen() {
         {/* Center Content */}
         <View className="flex-1 justify-center items-center mt-[-40px]">
           {/* Icon Container with Glassmorphism */}
-          <Animated.View 
+          <Animated.View
             className="w-48 h-48 rounded-full items-center justify-center mb-10"
             style={animatedIconStyle}
           >
@@ -173,10 +176,10 @@ export default function WelcomeScreen() {
             <View className="absolute inset-0 bg-primary-500/20 rounded-full blur-xl" />
             {/* Glass Card */}
             <View className="w-40 h-40 rounded-full bg-slate-800/40 border border-slate-700/50 items-center justify-center shadow-2xl backdrop-blur-md">
-              <SymbolView 
-                name={ONBOARDING_DATA[currentIndex].icon as any} 
-                size={72} 
-                tintColor="#60a5fa" 
+              <Ionicons
+                name={ONBOARDING_DATA[currentIndex].icon as any}
+                size={72}
+                color="#60a5fa"
               />
             </View>
           </Animated.View>
@@ -210,7 +213,9 @@ export default function WelcomeScreen() {
           </View>
 
           {/* Action Button */}
-          <Animated.View style={currentIndex === ONBOARDING_DATA.length - 1 ? animatedButtonScale : {}}>
+          <Animated.View
+            style={currentIndex === ONBOARDING_DATA.length - 1 ? animatedButtonScale : {}}
+          >
             <Pressable
               className="w-full overflow-hidden rounded-2xl active:opacity-80"
               onPress={handleNext}
@@ -224,11 +229,15 @@ export default function WelcomeScreen() {
                 <Text className="text-white font-bold text-lg tracking-wide">
                   {currentIndex === ONBOARDING_DATA.length - 1 ? 'Mulai Sekarang' : 'Selanjutnya'}
                 </Text>
-                <SymbolView 
-                  name={currentIndex === ONBOARDING_DATA.length - 1 ? 'arrow.right.circle.fill' : 'chevron.right'} 
-                  size={20} 
-                  tintColor="#fff" 
-                  style={{ marginLeft: 8 }} 
+                <Ionicons
+                  name={
+                    currentIndex === ONBOARDING_DATA.length - 1
+                      ? 'arrow-forward-circle'
+                      : 'chevron-forward'
+                  }
+                  size={20}
+                  color="#fff"
+                  style={{ marginLeft: 8 }}
                 />
               </LinearGradient>
             </Pressable>

@@ -8,14 +8,14 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SymbolView } from 'expo-symbols';
+import { Ionicons } from '@expo/vector-icons';
 
 import { useToastStore } from '@/stores/toast-store';
 
 export function Toast() {
   const { message, type, isVisible, hideToast } = useToastStore();
   const insets = useSafeAreaInsets();
-  
+
   const translateY = useSharedValue(-100);
   const opacity = useSharedValue(0);
 
@@ -44,10 +44,12 @@ export function Toast() {
     info: 'bg-blue-500',
   };
 
+  // Ionicons bersifat cross-platform (iOS, Android, Web) — menggantikan
+  // SymbolView (SF Symbols) yang TIDAK RENDER di Android & Web.
   const icons = {
-    success: 'checkmark.circle.fill',
-    error: 'exclamationmark.circle.fill',
-    info: 'info.circle.fill',
+    success: 'checkmark-circle' as const,
+    error: 'alert-circle' as const,
+    info: 'information-circle' as const,
   };
 
   return (
@@ -56,8 +58,10 @@ export function Toast() {
       className="absolute top-0 left-0 right-0 z-50 items-center px-4"
       pointerEvents="none"
     >
-      <View className={`flex-row items-center px-4 py-3 rounded-2xl shadow-lg ${bgColors[type]} max-w-sm w-full`}>
-        <SymbolView name={icons[type] as any} size={24} tintColor="#fff" style={{ marginRight: 12 }} />
+      <View
+        className={`flex-row items-center px-4 py-3 rounded-2xl shadow-lg ${bgColors[type]} max-w-sm w-full`}
+      >
+        <Ionicons name={icons[type]} size={24} color="#fff" style={{ marginRight: 12 }} />
         <Text className="text-white font-medium text-base flex-1">{message}</Text>
       </View>
     </Animated.View>

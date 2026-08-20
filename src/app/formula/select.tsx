@@ -7,26 +7,26 @@ import { FormulaType } from '@/types/database';
 import { useAuthStore } from '@/stores/auth-store';
 import { useDataStore } from '@/stores/data-store';
 import { supabase } from '@/lib/supabase';
-import { SymbolView } from 'expo-symbols';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function FormulaSelectScreen() {
   const formulas = Object.values(FORMULA_TYPES);
-  
+
   const { user } = useAuthStore();
   const { activePayPeriod, setActivePayPeriod } = useDataStore();
-  
+
   const [selectedFormula, setSelectedFormula] = useState<FormulaType>(
-    activePayPeriod?.formula_type || 'indonesia'
+    activePayPeriod?.formula_type || 'indonesia',
   );
   const [isLoading, setIsLoading] = useState(false);
 
   const onSave = async () => {
     if (!user) return;
-    
+
     if (!activePayPeriod?.id) {
       Alert.alert('Perhatian', 'Harap atur Periode Gaji terlebih dahulu sebelum memilih formula.', [
         { text: 'Atur Periode', onPress: () => router.push('/pay-period/setup') },
-        { text: 'Batal', style: 'cancel' }
+        { text: 'Batal', style: 'cancel' },
       ]);
       return;
     }
@@ -43,10 +43,10 @@ export default function FormulaSelectScreen() {
         .single();
 
       if (error) throw error;
-      
+
       setActivePayPeriod(data);
       Alert.alert('Berhasil', 'Formula perhitungan telah disimpan', [
-        { text: 'OK', onPress: () => router.back() }
+        { text: 'OK', onPress: () => router.back() },
       ]);
     } catch (error: any) {
       Alert.alert('Gagal Menyimpan', error.message);
@@ -62,12 +62,14 @@ export default function FormulaSelectScreen() {
       </Text>
 
       <View className="w-full">
-        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">Formula Lembur</Text>
+        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
+          Formula Lembur
+        </Text>
         <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
           {formulas.map((formula, index) => {
             const isSelected = selectedFormula === formula.id;
             const isLast = index === formulas.length - 1;
-            
+
             return (
               <Pressable
                 key={formula.id}
@@ -75,22 +77,22 @@ export default function FormulaSelectScreen() {
                 className={`px-5 py-4 flex-row justify-between items-center active:bg-dark-border ${!isLast ? 'border-b border-dark-border' : ''}`}
               >
                 <View className="flex-1">
-                  <Text className={`text-base font-medium mb-1 ${isSelected ? 'text-primary-400' : 'text-white'}`}>
+                  <Text
+                    className={`text-base font-medium mb-1 ${isSelected ? 'text-primary-400' : 'text-white'}`}
+                  >
                     {formula.label}
                   </Text>
-                  <Text className="text-dark-muted text-xs mr-4">
-                    {formula.description}
-                  </Text>
+                  <Text className="text-dark-muted text-xs mr-4">{formula.description}</Text>
                 </View>
-                {isSelected && (
-                  <SymbolView name="checkmark" size={20} tintColor="#3b82f6" weight="bold" />
-                )}
+                {isSelected && <Ionicons name="checkmark" size={20} color="#3b82f6" />}
               </Pressable>
             );
           })}
         </View>
 
-        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">Dasar Perhitungan (Simulasi)</Text>
+        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
+          Dasar Perhitungan (Simulasi)
+        </Text>
         <View className="bg-dark-card rounded-3xl overflow-hidden mb-6 p-5">
           {selectedFormula === 'indonesia' && (
             <View>
@@ -101,9 +103,8 @@ export default function FormulaSelectScreen() {
                 </Text>
               </View>
               <Text className="text-dark-muted text-sm leading-5">
-                • Jam ke-1: Upah Sejam × 1.5{'\n'}
-                • Jam ke-2 dst: Upah Sejam × 2{'\n'}
-                • Hari Libur: Berbeda (2x, 3x, 4x)
+                • Jam ke-1: Upah Sejam × 1.5{'\n'}• Jam ke-2 dst: Upah Sejam × 2{'\n'}• Hari Libur:
+                Berbeda (2x, 3x, 4x)
               </Text>
             </View>
           )}
@@ -117,16 +118,18 @@ export default function FormulaSelectScreen() {
                 </Text>
               </View>
               <Text className="text-dark-muted text-sm leading-5">
-                Nilai tarif per jam ditetapkan sendiri pada menu pengaturan periode tanpa mengikuti standar Kemenaker.
+                Nilai tarif per jam ditetapkan sendiri pada menu pengaturan periode tanpa mengikuti
+                standar Kemenaker.
               </Text>
             </View>
           )}
-          
+
           {selectedFormula === 'custom' && (
             <View>
               <Text className="text-white text-base font-bold mb-2">Kustomisasi</Text>
               <Text className="text-dark-muted text-sm leading-5">
-                Formula ini akan disesuaikan secara khusus sesuai dengan kontrak perusahaan Anda (segera hadir).
+                Formula ini akan disesuaikan secara khusus sesuai dengan kontrak perusahaan Anda
+                (segera hadir).
               </Text>
             </View>
           )}

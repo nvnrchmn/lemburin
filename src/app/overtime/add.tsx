@@ -17,7 +17,7 @@ import * as z from 'zod';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { SymbolView } from 'expo-symbols';
+import { Ionicons } from '@expo/vector-icons';
 
 import { useDataStore } from '@/stores/data-store';
 import { supabase } from '@/lib/supabase';
@@ -184,12 +184,7 @@ export default function AddOvertimeScreen() {
     <ScrollView className="flex-1 bg-dark-bg px-5 pt-6" showsVerticalScrollIndicator={false}>
       {!activePayPeriod && (
         <View className="bg-red-500/10 border border-red-500/50 rounded-2xl p-4 mb-6 flex-row items-center">
-          <SymbolView
-            name="exclamationmark.triangle.fill"
-            size={24}
-            tintColor="#f87171"
-            style={{ marginRight: 12 }}
-          />
+          <Ionicons name="warning" size={24} color="#f87171" />
           <Text className="text-red-400 text-sm flex-1">
             Periode gaji belum diatur. Estimasi upah tidak dapat dihitung. Silakan atur di menu
             Pengaturan.
@@ -213,12 +208,7 @@ export default function AddOvertimeScreen() {
                   className="flex-row items-center px-5 py-4 border-b border-dark-border active:bg-dark-border"
                   onPress={() => setShowDatePicker(true)}
                 >
-                  <SymbolView
-                    name="calendar"
-                    size={20}
-                    tintColor="#64748b"
-                    style={{ marginRight: 16 }}
-                  />
+                  <Ionicons name="calendar" size={20} color="#64748b" />
                   <View className="flex-1 flex-row justify-between items-center">
                     <Text className="text-white text-base">Tanggal</Text>
                     <Text className="text-primary-400 font-medium">
@@ -258,12 +248,7 @@ export default function AddOvertimeScreen() {
                   className="flex-row items-center px-5 py-4 border-b border-dark-border active:bg-dark-border"
                   onPress={() => setShowStartTimePicker(true)}
                 >
-                  <SymbolView
-                    name="clock.fill"
-                    size={20}
-                    tintColor="#64748b"
-                    style={{ marginRight: 16 }}
-                  />
+                  <Ionicons name="time" size={20} color="#64748b" />
                   <View className="flex-1 flex-row justify-between items-center">
                     <Text className="text-white text-base">Jam Mulai</Text>
                     <Text className="text-primary-400 font-medium">{format(value, 'HH:mm')}</Text>
@@ -295,12 +280,7 @@ export default function AddOvertimeScreen() {
                   className="flex-row items-center px-5 py-4 border-b border-dark-border active:bg-dark-border"
                   onPress={() => setShowEndTimePicker(true)}
                 >
-                  <SymbolView
-                    name="clock.badge.checkmark.fill"
-                    size={20}
-                    tintColor="#64748b"
-                    style={{ marginRight: 16 }}
-                  />
+                  <Ionicons name="time" size={20} color="#64748b" />
                   <View className="flex-1 flex-row justify-between items-center">
                     <Text className="text-white text-base">Jam Selesai</Text>
                     <Text className="text-primary-400 font-medium">{format(value, 'HH:mm')}</Text>
@@ -331,12 +311,7 @@ export default function AddOvertimeScreen() {
           {/* Break Minutes */}
           <View className="flex-row items-center justify-between px-5 py-4 border-b border-dark-border">
             <View className="flex-row items-center flex-1">
-              <SymbolView
-                name="cup.and.saucer.fill"
-                size={20}
-                tintColor="#64748b"
-                style={{ marginRight: 16 }}
-              />
+              <Ionicons name="cafe" size={20} color="#64748b" />
               <View>
                 <Text className="text-white text-base">Istirahat</Text>
                 <Text className="text-dark-muted text-xs">Menit potongan</Text>
@@ -364,12 +339,7 @@ export default function AddOvertimeScreen() {
           {/* Holiday Toggle */}
           <View className="flex-row items-center justify-between px-5 py-4">
             <View className="flex-row items-center flex-1 mr-3">
-              <SymbolView
-                name="sparkles"
-                size={20}
-                tintColor="#64748b"
-                style={{ marginRight: 16 }}
-              />
+              <Ionicons name="sparkles" size={20} color="#64748b" />
               <View className="flex-1">
                 <Text className="text-white text-base">Hari Libur / Merah</Text>
                 {(() => {
@@ -413,12 +383,7 @@ export default function AddOvertimeScreen() {
         </Text>
         <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
           <View className="flex-row px-5 py-4 min-h-[100px]">
-            <SymbolView
-              name="note.text"
-              size={20}
-              tintColor="#64748b"
-              style={{ marginRight: 16, marginTop: 2 }}
-            />
+            <Ionicons name="document-text" size={20} color="#64748b" />
             <View className="flex-1">
               <Controller
                 control={control}
@@ -457,7 +422,7 @@ export default function AddOvertimeScreen() {
                 className="absolute top-2 right-2 bg-red-600 px-3 py-1.5 rounded-xl flex-row items-center gap-1 shadow-lg"
                 onPress={() => setAttachmentUrl(null)}
               >
-                <SymbolView name="trash.fill" size={14} tintColor="#fff" />
+                <Ionicons name="trash" size={14} color="#fff" />
                 <Text className="text-white text-xs font-bold">Hapus</Text>
               </Pressable>
             </View>
@@ -467,7 +432,7 @@ export default function AddOvertimeScreen() {
               onPress={handlePickAttachment}
             >
               <View className="w-12 h-12 bg-primary-950/40 rounded-full items-center justify-center mb-2 border border-primary-500/30">
-                <SymbolView name="camera.fill" size={22} tintColor="#60a5fa" />
+                <Ionicons name="camera" size={22} color="#60a5fa" />
               </View>
               <Text className="text-white font-bold text-sm">Lampirkan Foto Bukti SPL</Text>
               <Text className="text-dark-muted text-xs mt-0.5">

@@ -13,7 +13,7 @@ import {
 import { useLocalSearchParams, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useDataStore } from '@/stores/data-store';
-import { SymbolView } from 'expo-symbols';
+import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInUp, Layout } from 'react-native-reanimated';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
@@ -367,7 +367,7 @@ export default function SalaryVerificationScreen() {
         <View className="flex-row gap-3 mb-6">
           <View className="flex-1 bg-primary-950 border border-primary-800 rounded-3xl p-5 shadow-sm">
             <View className="flex-row items-center mb-2">
-              <SymbolView name="iphone" size={14} tintColor="#93c5fd" style={{ marginRight: 6 }} />
+              <Ionicons name="phone-portrait" size={14} color="#93c5fd" />
               <Text className="text-primary-300 font-sans-bold text-xs uppercase tracking-wider">
                 Aplikasi
               </Text>
@@ -378,12 +378,7 @@ export default function SalaryVerificationScreen() {
           </View>
           <View className="flex-1 bg-dark-card border border-dark-border rounded-3xl p-5 shadow-sm">
             <View className="flex-row items-center mb-2">
-              <SymbolView
-                name="doc.text.fill"
-                size={14}
-                tintColor="#94a3b8"
-                style={{ marginRight: 6 }}
-              />
+              <Ionicons name="document-text" size={14} color="#94a3b8" />
               <Text className="text-dark-muted font-sans-bold text-xs uppercase tracking-wider">
                 Slip Gaji
               </Text>
@@ -433,18 +428,14 @@ export default function SalaryVerificationScreen() {
                   className="bg-primary-600 px-3 py-1.5 rounded-xl flex-row items-center gap-1 shadow-lg"
                   onPress={() => setIsModalOpen(true)}
                 >
-                  <SymbolView
-                    name="arrow.up.left.and.arrow.down.right"
-                    size={12}
-                    tintColor="#fff"
-                  />
+                  <Ionicons name="swap-vertical" size={12} color="#fff" />
                   <Text className="text-white text-xs font-bold">Perbesar</Text>
                 </Pressable>
                 <Pressable
                   className="bg-red-600 px-3 py-1.5 rounded-xl flex-row items-center gap-1 shadow-lg"
                   onPress={() => setSlipPhotoUrl(null)}
                 >
-                  <SymbolView name="trash.fill" size={12} tintColor="#fff" />
+                  <Ionicons name="trash" size={12} color="#fff" />
                   <Text className="text-white text-xs font-bold">Hapus</Text>
                 </Pressable>
               </View>
@@ -455,7 +446,7 @@ export default function SalaryVerificationScreen() {
               onPress={handlePickSlipPhoto}
             >
               <View className="w-12 h-12 bg-primary-950/40 rounded-full items-center justify-center mb-2 border border-primary-500/30">
-                <SymbolView name="camera.fill" size={22} tintColor="#60a5fa" />
+                <Ionicons name="camera" size={22} color="#60a5fa" />
               </View>
               <Text className="text-white font-bold text-sm">Ambil Foto Slip Gaji</Text>
               <Text className="text-dark-muted text-xs mt-0.5">
@@ -499,7 +490,7 @@ export default function SalaryVerificationScreen() {
           >
             <View className="flex-1 mr-3">
               <View className="flex-row items-center gap-1.5 mb-0.5">
-                <SymbolView name="doc.badge.arrow.up" size={16} tintColor="#f87171" />
+                <Ionicons name="document-text" size={16} color="#f87171" />
                 <Text className="text-red-400 font-bold text-sm">
                   Cetak Surat Klaim Selisih (PDF)
                 </Text>
@@ -512,7 +503,7 @@ export default function SalaryVerificationScreen() {
               <ActivityIndicator color="#f87171" size="small" />
             ) : (
               <View className="w-9 h-9 bg-red-500/20 rounded-xl items-center justify-center">
-                <SymbolView name="arrow.down.doc.fill" size={16} tintColor="#f87171" />
+                <Ionicons name="download" size={16} color="#f87171" />
               </View>
             )}
           </Pressable>
@@ -544,14 +535,7 @@ export default function SalaryVerificationScreen() {
           <Text className="text-white font-sans-bold text-lg">
             {verification ? 'Perbarui Verifikasi' : 'Simpan Verifikasi'}
           </Text>
-          {!isSaving && (
-            <SymbolView
-              name="checkmark.circle.fill"
-              size={20}
-              tintColor="#fff"
-              style={{ marginLeft: 8 }}
-            />
-          )}
+          {!isSaving && <Ionicons name="checkmark-circle" size={20} color="#fff" />}
         </Pressable>
       </Animated.View>
 
@@ -568,7 +552,7 @@ export default function SalaryVerificationScreen() {
               className="absolute top-12 right-6 z-10 bg-dark-card p-3 rounded-full border border-dark-border"
               onPress={() => setIsModalOpen(false)}
             >
-              <SymbolView name="xmark" size={20} tintColor="#fff" />
+              <Ionicons name="close" size={20} color="#fff" />
             </Pressable>
             <Image
               source={{ uri: slipPhotoUrl }}

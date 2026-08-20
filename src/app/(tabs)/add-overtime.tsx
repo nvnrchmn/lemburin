@@ -17,9 +17,10 @@ import * as z from 'zod';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { SymbolView } from 'expo-symbols';
+import { Ionicons } from '@expo/vector-icons';
 
 import { useDataStore } from '@/stores/data-store';
+import { useToastStore } from '@/stores/toast-store';
 import { supabase } from '@/lib/supabase';
 import {
   calculateOvertimeMinutes,
@@ -31,19 +32,34 @@ import { pickAndUploadImage } from '@/utils/upload';
 import { getOrCreatePayPeriodForDate } from '@/services/pay-period-service';
 import { checkIsHoliday } from '@/utils/holidays';
 
-const overtimeSchema = z.object({
-  workDate: z.date(),
-  startTime: z.date(),
-  endTime: z.date(),
-  breakMinutes: z.string().optional(),
-  notes: z.string().optional(),
-  isHoliday: z.boolean(),
-});
+const overtimeSchema = z
+  .object({
+    workDate: z.date(),
+    startTime: z.date(),
+    endTime: z.date(),
+    breakMinutes: z.string().optional(),
+    notes: z.string().optional(),
+    isHoliday: z.boolean(),
+  })
+  .refine(
+    data => {
+      // Error prevention: jam selesai harus setelah jam mulai (dalam hari yang sama).
+      // Lembur lintas tengah malam tetap valid (ditangani di calculateOvertimeMinutes).
+      const startMin = data.startTime.getHours() * 60 + data.startTime.getMinutes();
+      const endMin = data.endTime.getHours() * 60 + data.endTime.getMinutes();
+      return endMin > startMin;
+    },
+    {
+      message: 'Jam selesai harus lebih lambat dari jam mulai',
+      path: ['endTime'],
+    },
+  );
 
 type OvertimeFormValues = z.infer<typeof overtimeSchema>;
 
 export default function AddOvertimeTabScreen() {
   const { activePayPeriod, employment, addOvertimeEntry } = useDataStore();
+  const { showToast } = useToastStore();
   const [isLoading, setIsLoading] = useState(false);
   const [attachmentUrl, setAttachmentUrl] = useState<string | null>(null);
 
@@ -167,21 +183,16 @@ export default function AddOvertimeTabScreen() {
         addOvertimeEntry(resultData);
       }
 
-      Alert.alert('Berhasil', `Catatan lembur tersimpan di Periode ${targetPeriod.period_name}`, [
-        {
-          text: 'OK',
-          onPress: () => {
-            // Reset slightly but keep date if they want to add another for same day
-            setValue('startTime', defaultStartTime);
-            setValue('endTime', defaultEndTime);
-            setValue('breakMinutes', '0');
-            setValue('notes', '');
-            setAttachmentUrl(null);
+      // Feedback sukses via toast (bukan Alert) agar lebih halus & tidak memblokir
+      showToast(`Catatan lembur tersimpan di Periode ${targetPeriod.period_name}`, 'success');
+      // Reset slightly but keep date if they want to add another for same day
+      setValue('startTime', defaultStartTime);
+      setValue('endTime', defaultEndTime);
+      setValue('breakMinutes', '0');
+      setValue('notes', '');
+      setAttachmentUrl(null);
 
-            router.push('/(tabs)');
-          },
-        },
-      ]);
+      router.push('/(tabs)');
     } catch (error: any) {
       Alert.alert('Gagal Menyimpan', error.message);
     } finally {
@@ -296,10 +307,12 @@ export default function AddOvertimeTabScreen() {
             <Controller
               control={control}
               name="endTime"
-              render={({ field: { value } }) => (
+              render={({ field: { value }, fieldState: { error } }) => (
                 <>
                   <Pressable
-                    className="bg-dark-card border border-dark-border rounded-xl px-4 py-3.5"
+                    className={`bg-dark-card border rounded-xl px-4 py-3.5 ${
+                      error ? 'border-red-500' : 'border-dark-border'
+                    }`}
                     onPress={() => setShowEndTimePicker(true)}
                   >
                     <Text className="text-dark-muted text-xs mb-0.5">Jam Selesai</Text>
@@ -307,6 +320,7 @@ export default function AddOvertimeTabScreen() {
                       {format(value, 'HH:mm')}
                     </Text>
                   </Pressable>
+                  {error && <Text className="text-red-400 text-xs mt-1 ml-1">{error.message}</Text>}
                   {showEndTimePicker && (
                     <DateTimePicker
                       value={value}
@@ -427,7 +441,7 @@ export default function AddOvertimeTabScreen() {
                   className="absolute top-2 right-2 bg-red-600 px-3 py-1 rounded-lg flex-row items-center gap-1"
                   onPress={() => setAttachmentUrl(null)}
                 >
-                  <SymbolView name="trash.fill" size={12} tintColor="#fff" />
+                  <Ionicons name="trash" size={12} color="#fff" />
                   <Text className="text-white text-xs font-bold">Hapus</Text>
                 </Pressable>
               </View>
@@ -436,12 +450,7 @@ export default function AddOvertimeTabScreen() {
                 className="border border-dashed border-dark-border rounded-xl py-5 items-center justify-center active:bg-dark-border/30"
                 onPress={handlePickAttachment}
               >
-                <SymbolView
-                  name="camera.fill"
-                  size={20}
-                  tintColor="#60a5fa"
-                  style={{ marginBottom: 4 }}
-                />
+                <Ionicons name="camera" size={20} color="#60a5fa" style={{ marginBottom: 4 }} />
                 <Text className="text-white font-medium text-xs">Lampirkan Foto Bukti SPL</Text>
               </Pressable>
             )}

@@ -1,10 +1,19 @@
 import { useState } from 'react';
-import { View, Text, Pressable, TextInput, ActivityIndicator, Alert, ScrollView, Image } from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  TextInput,
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  Image,
+} from 'react-native';
 import { router } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { SymbolView } from 'expo-symbols';
+import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { decode } from 'base64-arraybuffer';
 
@@ -24,7 +33,11 @@ export default function ProfileEditScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || null);
 
-  const { control, handleSubmit, formState: { errors } } = useForm<ProfileFormValues>({
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       fullName: profile?.full_name || user?.user_metadata?.full_name || '',
@@ -52,19 +65,21 @@ export default function ProfileEditScreen() {
           .from('avatars')
           .upload(fileName, decode(result.assets[0].base64), {
             contentType: mimeType,
-            upsert: true
+            upsert: true,
           });
 
         if (uploadError) {
           if (uploadError.message.includes('bucket')) {
-            throw new Error('Bucket "avatars" belum dibuat di Supabase Storage Anda. Harap buat terlebih dahulu.');
+            throw new Error(
+              'Bucket "avatars" belum dibuat di Supabase Storage Anda. Harap buat terlebih dahulu.',
+            );
           }
           throw uploadError;
         }
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('avatars')
-          .getPublicUrl(fileName);
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from('avatars').getPublicUrl(fileName);
 
         setAvatarUrl(publicUrl);
         Alert.alert('Berhasil', 'Foto berhasil diunggah. Jangan lupa klik Simpan Profil.');
@@ -86,7 +101,7 @@ export default function ProfileEditScreen() {
         user_id: user.id,
         full_name: data.fullName,
         avatar_url: avatarUrl,
-        ...(profile?.id ? { id: profile.id } : {}) // opsional: tambahkan id jika ada
+        ...(profile?.id ? { id: profile.id } : {}), // opsional: tambahkan id jika ada
       };
 
       // Hapus id dari payload jika ternyata data di DB tidak punya id tersebut (conflict resolution fallback)
@@ -101,7 +116,7 @@ export default function ProfileEditScreen() {
 
       setProfile(updatedProfile);
       Alert.alert('Berhasil', 'Profil telah diperbarui', [
-        { text: 'OK', onPress: () => router.back() }
+        { text: 'OK', onPress: () => router.back() },
       ]);
     } catch (error: any) {
       Alert.alert('Gagal Memperbarui', error.message);
@@ -118,25 +133,29 @@ export default function ProfileEditScreen() {
 
       {/* Avatar Section */}
       <View className="items-center mb-8">
-        <Pressable 
+        <Pressable
           onPress={pickImage}
           className="w-28 h-28 bg-dark-card border-2 border-primary-500/50 rounded-full items-center justify-center overflow-hidden mb-3 active:opacity-70"
         >
           {avatarUrl ? (
             <Image source={{ uri: avatarUrl }} className="w-full h-full" />
           ) : (
-            <SymbolView name="camera.fill" size={32} tintColor="#3b82f6" />
+            <Ionicons name="camera" size={32} color="#3b82f6" />
           )}
         </Pressable>
         <Text className="text-primary-400 font-medium text-sm">Ubah Foto</Text>
       </View>
 
       <View className="w-full">
-        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">Informasi Dasar</Text>
+        <Text className="text-dark-muted text-xs font-bold uppercase tracking-wider mb-2 ml-4">
+          Informasi Dasar
+        </Text>
         <View className="bg-dark-card rounded-3xl overflow-hidden mb-6">
           {/* Full Name Field */}
-          <View className={`flex-row items-center px-5 py-4 border-b ${errors.fullName ? 'border-red-500/50' : 'border-dark-border'}`}>
-            <SymbolView name="person.fill" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
+          <View
+            className={`flex-row items-center px-5 py-4 border-b ${errors.fullName ? 'border-red-500/50' : 'border-dark-border'}`}
+          >
+            <Ionicons name="person" size={20} color="#64748b" />
             <View className="flex-1">
               <Controller
                 control={control}
@@ -158,7 +177,7 @@ export default function ProfileEditScreen() {
 
           {/* Read-only timezone */}
           <View className="flex-row items-center px-5 py-4 opacity-50">
-            <SymbolView name="globe.asia.australia.fill" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
+            <Ionicons name="globe" size={20} color="#64748b" />
             <View className="flex-1 flex-row justify-between items-center">
               <Text className="text-white text-base">Zona Waktu</Text>
               <Text className="text-dark-muted">{profile?.timezone || 'Asia/Jakarta'}</Text>

@@ -8,7 +8,6 @@ import * as z from 'zod';
 import { supabase } from '@/lib/supabase';
 import * as WebBrowser from 'expo-web-browser';
 import { makeRedirectUri } from 'expo-auth-session';
-import { SymbolView } from 'expo-symbols';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useToastStore } from '@/stores/toast-store';
@@ -40,7 +39,7 @@ export default function LoginScreen() {
 
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
-    
+
     const { error } = await supabase.auth.signInWithPassword({
       email: data.email,
       password: data.password,
@@ -56,7 +55,7 @@ export default function LoginScreen() {
   const onGoogleLogin = async () => {
     try {
       setIsLoading(true);
-      
+
       // Secara eksplisit menggunakan scheme URL
       const redirectUrl = 'lemburin://';
       console.log('Redirect URL:', redirectUrl);
@@ -76,7 +75,7 @@ export default function LoginScreen() {
 
       if (result.type === 'success') {
         const { url } = result;
-        
+
         // Parse access_token and refresh_token from the hash
         const params: Record<string, string> = {};
         const queryString = url.split('#')[1] || url.split('?')[1];
@@ -92,18 +91,21 @@ export default function LoginScreen() {
             access_token: params.access_token,
             refresh_token: params.refresh_token,
           });
-          
+
           if (sessionError) throw sessionError;
         } else if (params.error_description) {
           throw new Error(params.error_description);
         }
       }
     } catch (error: any) {
-      if (error.message?.includes('provider is not enabled') || error.message?.includes('redirect_uri_mismatch')) {
+      if (
+        error.message?.includes('provider is not enabled') ||
+        error.message?.includes('redirect_uri_mismatch')
+      ) {
         Alert.alert(
           'Konfigurasi Belum Selesai',
           `Google Login belum diaktifkan di Supabase.\n\n1. Buka Supabase Dashboard > Authentication > Providers > Google\n2. Masukkan Client ID & Secret dari Google Cloud.\n3. Tambahkan URL ini ke Redirect URLs:\n\nlemburin://**`,
-          [{ text: 'Mengerti' }]
+          [{ text: 'Mengerti' }],
         );
       } else {
         showToast(error.message || 'Gagal Masuk Google', 'error');
@@ -117,9 +119,7 @@ export default function LoginScreen() {
     <View className="flex-1 bg-dark-bg px-5 pt-20">
       {/* Header */}
       <View className="mb-12">
-        <Text className="text-white text-5xl font-bold tracking-tight mb-2">
-          Masuk
-        </Text>
+        <Text className="text-white text-5xl font-bold tracking-tight mb-2">Masuk</Text>
         <Text className="text-dark-muted text-base font-medium">
           Silakan masuk untuk melanjutkan ke Lemburin.
         </Text>
@@ -129,8 +129,10 @@ export default function LoginScreen() {
       <View className="w-full">
         <View className="bg-dark-card rounded-3xl overflow-hidden mb-2">
           {/* Email Field */}
-          <View className={`flex-row items-center px-5 py-4 border-b ${errors.email ? 'border-red-500/50' : 'border-dark-border'}`}>
-            <SymbolView name="envelope.fill" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
+          <View
+            className={`flex-row items-center px-5 py-4 border-b ${errors.email ? 'border-red-500/50' : 'border-dark-border'}`}
+          >
+            <Ionicons name="mail" size={20} color="#64748b" />
             <View className="flex-1">
               <Controller
                 control={control}
@@ -153,8 +155,10 @@ export default function LoginScreen() {
           </View>
 
           {/* Password Field */}
-          <View className={`flex-row items-center px-5 py-4 ${errors.password ? 'border-b border-red-500/50' : ''}`}>
-            <SymbolView name="lock.fill" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
+          <View
+            className={`flex-row items-center px-5 py-4 ${errors.password ? 'border-b border-red-500/50' : ''}`}
+          >
+            <Ionicons name="lock-closed" size={20} color="#64748b" />
             <View className="flex-1">
               <Controller
                 control={control}
@@ -175,7 +179,7 @@ export default function LoginScreen() {
             </View>
           </View>
         </View>
-        
+
         {/* Error Messages */}
         <View className="min-h-[24px] px-5 mb-4">
           {(errors.email || errors.password) && (
@@ -194,15 +198,13 @@ export default function LoginScreen() {
           <Text className="text-white font-bold text-lg">Masuk</Text>
         </Pressable>
 
-        <Pressable 
+        <Pressable
           className={`bg-dark-card rounded-2xl py-4 items-center flex-row justify-center gap-2 active:opacity-70 border border-dark-border ${isLoading ? 'opacity-50' : ''}`}
           onPress={onGoogleLogin}
           disabled={isLoading}
         >
           <Ionicons name="logo-google" size={20} color="#fff" />
-          <Text className="text-white font-bold text-lg">
-            Lanjutkan dengan Google
-          </Text>
+          <Text className="text-white font-bold text-lg">Lanjutkan dengan Google</Text>
         </Pressable>
       </View>
 

@@ -10,11 +10,18 @@ import type { PayPeriod } from '@/types/database';
 
 export const syncService = async (specifiedPeriodId?: string) => {
   const { session } = useAuthStore.getState();
-  const { setProfile, setEmployment, setActivePayPeriod, setOvertimeEntries, activePayPeriod } =
-    useDataStore.getState();
+  const {
+    setProfile,
+    setEmployment,
+    setActivePayPeriod,
+    setOvertimeEntries,
+    activePayPeriod,
+    setIsSyncing,
+  } = useDataStore.getState();
 
   if (!session?.user) return;
 
+  setIsSyncing(true);
   try {
     // 0. Fetch Profile
     const { data: profileData } = await supabase
@@ -110,5 +117,7 @@ export const syncService = async (specifiedPeriodId?: string) => {
         ? `Gagal sinkron: ${error.message}`
         : 'Gagal sinkron data. Periksa koneksi internet Anda.';
     useToastStore.getState().showToast(message, 'error');
+  } finally {
+    setIsSyncing(false);
   }
 };

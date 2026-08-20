@@ -8,7 +8,6 @@ import * as z from 'zod';
 import { supabase } from '@/lib/supabase';
 import * as WebBrowser from 'expo-web-browser';
 import { makeRedirectUri } from 'expo-auth-session';
-import { SymbolView } from 'expo-symbols';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useToastStore } from '@/stores/toast-store';
@@ -60,14 +59,17 @@ export default function RegisterScreen() {
     if (error) {
       showToast(error.message, 'error');
     } else {
-      showToast('Pendaftaran Berhasil. Jika email konfirmasi diaktifkan, silakan cek email Anda.', 'success');
+      showToast(
+        'Pendaftaran Berhasil. Jika email konfirmasi diaktifkan, silakan cek email Anda.',
+        'success',
+      );
     }
   };
 
   const onGoogleLogin = async () => {
     try {
       setIsLoading(true);
-      
+
       const redirectUrl = makeRedirectUri();
 
       const { data, error } = await supabase.auth.signInWithOAuth({
@@ -85,7 +87,7 @@ export default function RegisterScreen() {
 
       if (result.type === 'success') {
         const { url } = result;
-        
+
         const params: Record<string, string> = {};
         const queryString = url.split('#')[1] || url.split('?')[1];
         if (queryString) {
@@ -100,7 +102,7 @@ export default function RegisterScreen() {
             access_token: params.access_token,
             refresh_token: params.refresh_token,
           });
-          
+
           if (sessionError) throw sessionError;
         } else if (params.error_description) {
           throw new Error(params.error_description);
@@ -117,9 +119,7 @@ export default function RegisterScreen() {
     <View className="flex-1 bg-dark-bg px-5 pt-20">
       {/* Header */}
       <View className="mb-10">
-        <Text className="text-white text-4xl font-bold tracking-tight mb-2">
-          Buat Akun Baru
-        </Text>
+        <Text className="text-white text-4xl font-bold tracking-tight mb-2">Buat Akun Baru</Text>
         <Text className="text-dark-muted text-base font-medium">
           Daftar untuk mulai mencatat lembur
         </Text>
@@ -129,8 +129,10 @@ export default function RegisterScreen() {
       <View className="w-full">
         <View className="bg-dark-card rounded-3xl overflow-hidden mb-2">
           {/* Full Name Field */}
-          <View className={`flex-row items-center px-5 py-4 border-b ${errors.fullName ? 'border-red-500/50' : 'border-dark-border'}`}>
-            <SymbolView name="person.fill" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
+          <View
+            className={`flex-row items-center px-5 py-4 border-b ${errors.fullName ? 'border-red-500/50' : 'border-dark-border'}`}
+          >
+            <Ionicons name="person" size={20} color="#64748b" />
             <View className="flex-1">
               <Controller
                 control={control}
@@ -152,8 +154,10 @@ export default function RegisterScreen() {
           </View>
 
           {/* Email Field */}
-          <View className={`flex-row items-center px-5 py-4 border-b ${errors.email ? 'border-red-500/50' : 'border-dark-border'}`}>
-            <SymbolView name="envelope.fill" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
+          <View
+            className={`flex-row items-center px-5 py-4 border-b ${errors.email ? 'border-red-500/50' : 'border-dark-border'}`}
+          >
+            <Ionicons name="mail" size={20} color="#64748b" />
             <View className="flex-1">
               <Controller
                 control={control}
@@ -176,8 +180,10 @@ export default function RegisterScreen() {
           </View>
 
           {/* Password Field */}
-          <View className={`flex-row items-center px-5 py-4 ${errors.password ? 'border-b border-red-500/50' : ''}`}>
-            <SymbolView name="lock.fill" size={20} tintColor="#64748b" style={{ marginRight: 16 }} />
+          <View
+            className={`flex-row items-center px-5 py-4 ${errors.password ? 'border-b border-red-500/50' : ''}`}
+          >
+            <Ionicons name="lock-closed" size={20} color="#64748b" />
             <View className="flex-1">
               <Controller
                 control={control}
@@ -217,15 +223,13 @@ export default function RegisterScreen() {
           <Text className="text-white font-bold text-lg">Daftar</Text>
         </Pressable>
 
-        <Pressable 
+        <Pressable
           className={`bg-dark-card rounded-2xl py-4 items-center flex-row justify-center gap-2 active:opacity-70 border border-dark-border ${isLoading ? 'opacity-50' : ''}`}
           onPress={onGoogleLogin}
           disabled={isLoading}
         >
           <Ionicons name="logo-google" size={20} color="#fff" />
-          <Text className="text-white font-bold text-lg">
-            Daftar dengan Google
-          </Text>
+          <Text className="text-white font-bold text-lg">Daftar dengan Google</Text>
         </Pressable>
       </View>
 
@@ -234,9 +238,7 @@ export default function RegisterScreen() {
         <Text className="text-dark-muted text-base self-center">Sudah punya akun? </Text>
         <Link href="/(auth)/login" asChild>
           <Pressable className="active:opacity-50 p-2">
-            <Text className="text-primary-400 text-base font-semibold">
-              Masuk
-            </Text>
+            <Text className="text-primary-400 text-base font-semibold">Masuk</Text>
           </Pressable>
         </Link>
       </View>
