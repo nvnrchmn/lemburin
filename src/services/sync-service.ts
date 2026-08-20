@@ -34,7 +34,7 @@ export const syncService = async (specifiedPeriodId?: string) => {
       setProfile(profileData as any);
     }
 
-    // 1. Fetch Employment
+    // 1. Fetch Employment - pakai user_id eksplisit supaya RLS pass
     const { data: employments, error: empError } = await supabase
       .from('employments')
       .select('*')
@@ -59,6 +59,7 @@ export const syncService = async (specifiedPeriodId?: string) => {
           .from('pay_periods')
           .select('*')
           .eq('id', specifiedPeriodId)
+          .eq('employment_id', employment.id) // eksplisit filter employment_id
           .maybeSingle();
         if (pData) targetPeriod = pData as PayPeriod;
       }
@@ -66,13 +67,14 @@ export const syncService = async (specifiedPeriodId?: string) => {
       if (!targetPeriod) {
         const todayStr = new Date().toISOString().split('T')[0];
 
-        // Cari periode yang mencakup hari ini
+        // Cari periode yang mencakup hari ini - filter employment_id eksplisit
         const { data: currentPeriods } = await supabase
           .from('pay_periods')
           .select('*')
           .eq('employment_id', employment.id)
           .lte('start_date', todayStr)
           .gte('end_date', todayStr)
+          .order('start_date', { ascending: true }) // deterministik
           .limit(1);
 
         if (currentPeriods && currentPeriods.length > 0) {
