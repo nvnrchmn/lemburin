@@ -62,6 +62,12 @@ CREATE POLICY "Users can delete own employments"
 -- ============ 3. PAY_PERIODS (via employment owner) ============
 ALTER TABLE public.pay_periods ENABLE ROW LEVEL SECURITY;
 
+-- Bersihkan policy lama ber-nama tanpa underscore (jika ada dari versi sebelumnya)
+DROP POLICY IF EXISTS "Users can view own pay periods" ON public.pay_periods;
+DROP POLICY IF EXISTS "Users can insert own pay periods" ON public.pay_periods;
+DROP POLICY IF EXISTS "Users can update own pay periods" ON public.pay_periods;
+DROP POLICY IF EXISTS "Users can delete own pay periods" ON public.pay_periods;
+
 -- Helper: cek kepemilikan pay_period melalui employment milik user
 CREATE OR REPLACE FUNCTION public.pay_period_belongs_to_user(p_pay_period_id uuid)
 RETURNS boolean
@@ -112,6 +118,12 @@ CREATE POLICY "Users can delete own pay_periods"
 
 -- ============ 4. OVERTIME_ENTRIES (via pay_period) ============
 ALTER TABLE public.overtime_entries ENABLE ROW LEVEL SECURITY;
+
+-- Bersihkan policy lama ber-nama tanpa underscore (jika ada dari versi sebelumnya)
+DROP POLICY IF EXISTS "Users can view own overtime entries" ON public.overtime_entries;
+DROP POLICY IF EXISTS "Users can insert own overtime entries" ON public.overtime_entries;
+DROP POLICY IF EXISTS "Users can update own overtime entries" ON public.overtime_entries;
+DROP POLICY IF EXISTS "Users can delete own overtime entries" ON public.overtime_entries;
 
 -- Helper: cek kepemilikan overtime entry melalui pay_period -> employment
 CREATE OR REPLACE FUNCTION public.overtime_entry_belongs_to_user(p_entry_id uuid)
