@@ -1,56 +1,85 @@
-# Welcome to your Expo app 👋
+# 📱 Lemburin
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+> **Catat Lembur. Hitung Hakmu.** Personal Overtime Tracker & Salary Verification App untuk pekerja Indonesia.
 
-## Get started
+Lemburin adalah aplikasi mobile pribadi yang membantu pekerja di Indonesia mencatat aktivitas lembur, menghitung estimasi upah lembur berdasarkan ketentuan **PP 35/2021**, dan memverifikasi apakah nominal lembur pada slip gaji sudah sesuai.
 
-1. Install dependencies
+Aplikasi ini **tidak terhubung dengan sistem perusahaan** — tidak butuh akses HR, atasan, atau administrator. Seluruh data dimiliki dan dikelola sepenuhnya oleh pengguna.
 
-   ```bash
-   npm install
-   ```
+---
 
-2. Start the app
+## ✨ Fitur Utama
 
-   ```bash
-   npx expo start
-   ```
+- 📝 **Pencatatan Lembur Harian** — catat jam lembur dengan cepat, lengkap dengan flag hari libur (`is_holiday`)
+- 🧮 **Kalkulasi Upah Otomatis** — perhitungan sesuai PP 35/2021 (jam pertama 1.5x, jam berikutnya 2x, hari libur 2x/3x/4x)
+- 🏢 **Profil Perusahaan** — sistem kerja 5/6 hari, tunjangan makan & transport, status PTKP PPh 21 TER, opsi BPJS TK/Kesehatan
+- 🗓️ **Periode Gaji** — kelola periode pembayaran, deteksi otomatis periode kadaluarsa, riwayat periode terkunci (*locked*)
+- 📊 **Dashboard & Analytics** — ringkasan bulanan, grafik tahunan, badge peringatan 18 jam/minggu (batas regulasi)
+- 🧾 **Verifikasi Slip Gaji** — bandingkan estimasi dengan nominal slip, upload foto slip & bukti SPL
+- 📤 **Share via WhatsApp** — format laporan otomatis + opsi salin ke clipboard
+- 🔐 **Autentikasi** — Email & Google OAuth
+- 🔄 **Offline First** — data tersimpan lokal, sinkronisasi cloud otomatis saat online
 
-In the output, you'll find options to open the app in a
+---
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## 🛠️ Tech Stack
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+| Layer | Teknologi |
+|---|---|
+| **Frontend** | React Native (Expo SDK 57), TypeScript, Expo Router |
+| **Styling** | NativeWind (Tailwind CSS v3) |
+| **State** | Zustand + React Hook Form + Zod |
+| **Backend** | Supabase (PostgreSQL) |
+| **Auth** | Email & Google OAuth |
+| **Charts** | react-native-gifted-charts, react-native-calendars |
+| **CI/CD** | GitHub Actions (Android APK build otomatis) |
 
-## Get a fresh project
+---
 
-When you're ready, run:
+## 🚀 Menjalankan Proyek
 
 ```bash
-npm run reset-project
+# 1. Install dependencies
+npm install
+
+# 2. Siapkan environment
+cp .env.example .env
+# Isi EXPO_PUBLIC_SUPABASE_URL dan EXPO_PUBLIC_SUPABASE_ANON_KEY
+
+# 3. Jalankan app
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Buka di:
+- **Expo Go** (mode development)
+- **Android emulator** / **iOS simulator**
+- **Development build** (`npx expo run:android`)
 
-### Other setup steps
+---
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+## 📚 Dokumentasi
 
-## Learn more
+Dokumentasi lengkap tersedia di folder [`docs/`](docs/):
 
-To learn more about developing your project with Expo, look at the following resources:
+| Dokumen | Isi |
+|---|---|
+| [`00_PROJECT_OVERVIEW.md`](docs/00_PROJECT_OVERVIEW.md) | Ringkasan & visi produk |
+| [`01_PRD.md`](docs/01_PRD.md) | Product Requirements Document |
+| [`02_APP_FLOW.md`](docs/02_APP_FLOW.md) | Alur aplikasi |
+| [`03_USER_STORIES.md`](docs/03_USER_STORIES.md) | User stories |
+| [`04_FEATURE_LIST.md`](docs/04_FEATURE_LIST.md) | Daftar fitur |
+| [`05_DATABASE.md`](docs/05_DATABASE.md) | Dokumentasi database |
+| [`06_ERD.md`](docs/06_ERD.md) | Entity Relationship Diagram |
+| [`07_DATABASE_SCHEMA.md`](docs/07_DATABASE_SCHEMA.md) | Skema database |
+| [`08_API_SPEC.md`](docs/08_API_SPEC.md) | Spesifikasi API |
+| [`09_SPRINT_BACKLOG.md`](docs/09_SPRINT_BACKLOG.md) | Sprint backlog & status |
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+---
 
-## Join the community
+## 🤝 Lisensi
 
-Join our community of developers creating universal apps.
+Distribusi di bawah lisensi [MIT](LICENSE).
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+---
+
+*Dibangun dengan ❤️ untuk pekerja Indonesia.*
