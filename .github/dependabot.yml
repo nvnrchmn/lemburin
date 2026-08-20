@@ -1,0 +1,57 @@
+# Dependabot — auto-update dependencies
+# Dokumentasi: https://docs.github.com/code-security/dependabot
+
+version: 2
+updates:
+  # npm (dependencies aplikasi)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "08:00"
+      timezone: "Asia/Jakarta"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+    labels:
+      - "dependencies"
+    versioning-strategy: "auto"
+    groups:
+      # Kelompokkan update minor/patch biar PR tidak terlalu banyak
+      expo:
+        patterns:
+          - "expo"
+          - "expo-*"
+          - "@expo/*"
+          - "react-native"
+          - "react"
+          - "react-dom"
+      supabase:
+        patterns:
+          - "@supabase/*"
+      dev-tooling:
+        patterns:
+          - "typescript"
+          - "eslint"
+          - "eslint-*"
+          - "vitest"
+          - "@vitest/*"
+          - "tailwindcss"
+          - "nativewind"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "08:00"
+      timezone: "Asia/Jakarta"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci(deps)"
+    labels:
+      - "ci"
+      - "dependencies"
