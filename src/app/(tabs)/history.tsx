@@ -55,9 +55,18 @@ export default function HistoryScreen() {
             <Text className="text-light-text dark:text-dark-text text-base font-semibold mb-1">
               Belum Ada Riwayat
             </Text>
-            <Text className="text-light-muted dark:text-dark-muted text-sm text-center">
+            <Text className="text-light-muted dark:text-dark-muted text-sm text-center mb-5">
               Riwayat periode gaji akan muncul di sini setelah Anda mulai mencatat lembur.
             </Text>
+            <Pressable
+              className="bg-primary-600 px-5 py-3 rounded-xl active:bg-primary-700"
+              onPress={() => router.push('/company/setup')}
+            >
+              <View className="flex-row items-center gap-2">
+                <Ionicons name="add-circle-outline" size={18} color="#fff" />
+                <Text className="text-white font-bold text-sm">Atur Profil Perusahaan</Text>
+              </View>
+            </Pressable>
           </View>
         ) : (
           <View>
@@ -108,12 +117,7 @@ export default function HistoryScreen() {
                     <Text className="text-light-muted dark:text-dark-muted font-medium text-sm">
                       Formula: {period.formula_type === 'indonesia' ? 'Depnaker' : 'Flat Rate'}
                     </Text>
-                    <View className="flex-row items-center">
-                      <Text className="text-primary-400 font-sans-bold text-sm mr-1">
-                        Lihat Detail
-                      </Text>
-                      <Ionicons name="arrow-forward" size={14} color="#60a5fa" />
-                    </View>
+                    <Ionicons name="chevron-forward" size={16} color="#64748b" />
                   </View>
                 </Pressable>
               </Animated.View>

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Profile, Employment, PayPeriod, OvertimeEntry } from '@/types/database';
 import { secureStorage } from '@/lib/secure-storage';
+import NetInfo from '@react-native-community/netinfo';
 
 export type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error' | 'offline';
 
@@ -15,6 +16,7 @@ interface DataState {
   syncStatus: SyncStatus;
   lastSyncedAt: string | null;
   syncError: string | null;
+  isOffline: boolean;
 
   setProfile: (profile: Profile | null) => void;
   setEmployment: (employment: Employment | null) => void;
@@ -22,7 +24,7 @@ interface DataState {
   setOvertimeEntries: (entries: OvertimeEntry[]) => void;
   setIsSyncing: (value: boolean) => void;
   setSyncState: (
-    state: Partial<Pick<DataState, 'syncStatus' | 'lastSyncedAt' | 'syncError'>>,
+    state: Partial<Pick<DataState, 'syncStatus' | 'lastSyncedAt' | 'syncError' | 'isOffline'>>,
   ) => void;
   addOvertimeEntry: (entry: OvertimeEntry) => void;
   updateOvertimeEntry: (entry: OvertimeEntry) => void;
@@ -42,6 +44,7 @@ export const useDataStore = create<DataState>()(
       syncStatus: 'idle',
       lastSyncedAt: null,
       syncError: null,
+      isOffline: false,
 
       setProfile: profile => set({ profile }),
       setEmployment: employment => set({ employment }),
@@ -75,6 +78,7 @@ export const useDataStore = create<DataState>()(
           syncStatus: 'idle',
           lastSyncedAt: null,
           syncError: null,
+          isOffline: false,
         }),
     }),
     {
@@ -89,5 +93,24 @@ export const useDataStore = create<DataState>()(
     },
   ),
 );
+
+// Initialize network listener
+let unsubscribeNetInfo: (() => void) | null = null;
+
+export function initNetworkListener() {
+  if (unsubscribeNetInfo) return;
+  unsubscribeNetInfo = NetInfo.addEventListener(state => {
+    const offline = !(state.isConnected && state.isInternetReachable);
+    useDataStore.getState().setSyncState({ isOffline: offline });
+    if (offline) {
+      useDataStore.getState().setSyncState({ syncStatus: 'offline' });
+    }
+  });
+}
+
+export function stopNetworkListener() {
+  unsubscribeNetInfo?.();
+  unsubscribeNetInfo = null;
+}
 
 export type { DataState };

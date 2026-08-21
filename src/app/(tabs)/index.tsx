@@ -8,7 +8,6 @@ import {
   Image,
   Modal,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -43,6 +42,7 @@ export default function DashboardScreen() {
     isSyncing,
     syncStatus,
     lastSyncedAt,
+    isOffline,
   } = useDataStore();
   const { language, currency } = useSettingsStore();
   const { colors } = useAppTheme();
@@ -57,16 +57,18 @@ export default function DashboardScreen() {
   }, []);
 
   const firstName = profile?.full_name?.split(' ')[0] || 'User';
-  const syncLabel =
-    syncStatus === 'syncing'
+  const syncLabel = isOffline
+    ? 'Offline'
+    : syncStatus === 'syncing'
       ? 'Menyinkronkan'
       : syncStatus === 'synced'
         ? 'Tersinkron'
         : syncStatus === 'error'
           ? 'Gagal sinkron'
           : 'Belum sinkron';
-  const syncColor =
-    syncStatus === 'synced'
+  const syncColor = isOffline
+    ? '#f59e0b'
+    : syncStatus === 'synced'
       ? '#22c55e'
       : syncStatus === 'error'
         ? '#ef4444'
@@ -594,23 +596,8 @@ export default function DashboardScreen() {
                       key={p.id}
                       onPress={async () => {
                         setIsPeriodModalVisible(false);
-                        // User control & freedom: konfirmasi sebelum beralih periode
-                        // agar tidak kehilangan konteks tampilan secara tak terduga.
-                        Alert.alert(
-                          'Ganti Periode Aktif?',
-                          `Beralih ke periode "${p.period_name}"? Data lembur yang tampil akan berubah.`,
-                          [
-                            { text: 'Batal', style: 'cancel' },
-                            {
-                              text: 'Ya, Ganti',
-                              style: 'default',
-                              onPress: async () => {
-                                setActivePayPeriod(p);
-                                await syncService(p.id);
-                              },
-                            },
-                          ],
-                        );
+                        setActivePayPeriod(p);
+                        await syncService(p.id);
                       }}
                       className={`p-4 rounded-2xl mb-2 flex-row justify-between items-center border ${
                         isSelected

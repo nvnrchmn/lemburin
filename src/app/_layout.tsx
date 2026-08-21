@@ -13,6 +13,7 @@ import { useSettingsStore } from '@/stores/settings-store';
 import { Toast } from '@/components/ui/toast';
 import { Ionicons } from '@expo/vector-icons';
 import { syncService } from '@/services/sync-service';
+import { initNetworkListener } from '@/stores/data-store';
 import { useAppTheme } from '@/hooks/use-app-theme';
 import {
   useFonts,
@@ -62,7 +63,11 @@ export default function RootLayout() {
       }
     });
 
-    return () => subscription.unsubscribe();
+    initNetworkListener();
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [setSession, setLoading]);
 
   useEffect(() => {
