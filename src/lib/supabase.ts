@@ -1,29 +1,59 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 import { Platform } from 'react-native';
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
 
-// Custom storage to handle SSR (Server-Side Rendering) safely on web
+const webLocalStorage = {
+  getItem: (key: string): string | null => {
+    if (typeof window === 'undefined') return null;
+    return window.localStorage.getItem(key);
+  },
+  setItem: (key: string, value: string): void => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(key, value);
+  },
+  removeItem: (key: string): void => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.removeItem(key);
+  },
+};
+
 const customStorage = {
-  getItem: (key: string) => {
-    if (Platform.OS === 'web' && typeof window === 'undefined') {
-      return Promise.resolve(null);
+  getItem: async (key: string): Promise<string | null> => {
+    if (Platform.OS === 'web') {
+      return webLocalStorage.getItem(key);
     }
-    return AsyncStorage.getItem(key);
+    try {
+      const { default: AsyncStorage } = await import('@react-native-async-storage/async-storage');
+      return AsyncStorage.getItem(key);
+    } catch {
+      return null;
+    }
   },
-  setItem: (key: string, value: string) => {
-    if (Platform.OS === 'web' && typeof window === 'undefined') {
-      return Promise.resolve();
+  setItem: async (key: string, value: string): Promise<void> => {
+    if (Platform.OS === 'web') {
+      webLocalStorage.setItem(key, value);
+      return;
     }
-    return AsyncStorage.setItem(key, value);
+    try {
+      const { default: AsyncStorage } = await import('@react-native-async-storage/async-storage');
+      await AsyncStorage.setItem(key, value);
+    } catch {
+      /* ignore */
+    }
   },
-  removeItem: (key: string) => {
-    if (Platform.OS === 'web' && typeof window === 'undefined') {
-      return Promise.resolve();
+  removeItem: async (key: string): Promise<void> => {
+    if (Platform.OS === 'web') {
+      webLocalStorage.removeItem(key);
+      return;
     }
-    return AsyncStorage.removeItem(key);
+    try {
+      const { default: AsyncStorage } = await import('@react-native-async-storage/async-storage');
+      await AsyncStorage.removeItem(key);
+    } catch {
+      /* ignore */
+    }
   },
 };
 

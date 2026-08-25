@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Profile, Employment, PayPeriod, OvertimeEntry } from '@/types/database';
 import { secureStorage } from '@/lib/secure-storage';
-import NetInfo, { type NetInfoState } from '@react-native-community/netinfo';
+import { Platform } from 'react-native';
 
 export type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error' | 'offline';
 
@@ -98,13 +98,16 @@ export const useDataStore = create<DataState>()(
 let unsubscribeNetInfo: (() => void) | null = null;
 
 export function initNetworkListener() {
+  if (Platform.OS === 'web') return;
   if (unsubscribeNetInfo) return;
-  unsubscribeNetInfo = NetInfo.addEventListener((state: NetInfoState) => {
-    const offline = !(state.isConnected && state.isInternetReachable);
-    useDataStore.getState().setSyncState({ isOffline: offline });
-    if (offline) {
-      useDataStore.getState().setSyncState({ syncStatus: 'offline' });
-    }
+  import('@react-native-community/netinfo').then(({ default: NetInfo }) => {
+    unsubscribeNetInfo = NetInfo.addEventListener(state => {
+      const offline = !(state.isConnected && state.isInternetReachable);
+      useDataStore.getState().setSyncState({ isOffline: offline });
+      if (offline) {
+        useDataStore.getState().setSyncState({ syncStatus: 'offline' });
+      }
+    });
   });
 }
 
