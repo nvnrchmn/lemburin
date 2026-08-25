@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 
 const STATE_KEY = 'lemburin-data-store';
 
-const isWeb = Platform.OS === 'web';
+const isWeb = Platform.OS === 'web' || process.env.EXPO_OS === 'web';
 
 const webStorage = {
   getItem: (key: string): string | null => {

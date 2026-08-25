@@ -98,7 +98,7 @@ export const useDataStore = create<DataState>()(
 let unsubscribeNetInfo: (() => void) | null = null;
 
 export function initNetworkListener() {
-  if (Platform.OS === 'web') return;
+  if (Platform.OS === 'web' || process.env.EXPO_OS === 'web') return;
   if (unsubscribeNetInfo) return;
   import('@react-native-community/netinfo').then(({ default: NetInfo }) => {
     unsubscribeNetInfo = NetInfo.addEventListener(state => {

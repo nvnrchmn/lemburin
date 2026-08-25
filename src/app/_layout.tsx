@@ -22,7 +22,7 @@ import {
   PlusJakartaSans_800ExtraBold,
 } from '@expo-google-fonts/plus-jakarta-sans';
 
-const webFontsLoaded = Platform.OS === 'web';
+const isWeb = Platform.OS === 'web' || process.env.EXPO_OS === 'web';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -31,7 +31,7 @@ export default function RootLayout() {
   const { setColorScheme } = useNativeWindColorScheme();
   const { setSession, setLoading } = useAuthStore();
   const { biometricEnabled } = useSettingsStore();
-  const [isUnlocked, setIsUnlocked] = useState(!biometricEnabled || Platform.OS === 'web');
+  const [isUnlocked, setIsUnlocked] = useState(!biometricEnabled || isWeb);
   const appState = useRef(AppState.currentState);
 
   const [fontsLoadedNative] = useFonts({
@@ -41,7 +41,7 @@ export default function RootLayout() {
     'PlusJakartaSans-ExtraBold': PlusJakartaSans_800ExtraBold,
   });
 
-  const fontsLoaded = Platform.OS === 'web' ? true : fontsLoadedNative;
+  const fontsLoaded = isWeb ? true : fontsLoadedNative;
 
   useEffect(() => {
     setColorScheme(resolvedTheme);
@@ -74,16 +74,16 @@ export default function RootLayout() {
   }, [setSession, setLoading]);
 
   useEffect(() => {
-    if (fontsLoaded && Platform.OS !== 'web') {
+    if (fontsLoaded && !isWeb) {
       SplashScreen.hideAsync();
-    } else if (fontsLoaded && Platform.OS === 'web') {
+    } else if (fontsLoaded && isWeb) {
       const style = document.getElementById('expo-reset');
       if (style) style.remove();
     }
   }, [fontsLoaded]);
 
   useEffect(() => {
-    if (biometricEnabled && !isUnlocked && Platform.OS !== 'web') {
+    if (biometricEnabled && !isUnlocked && !isWeb) {
       const timer = setTimeout(() => {
         (async () => {
           const { default: LocalAuthentication } = await import('expo-local-authentication');
@@ -105,7 +105,7 @@ export default function RootLayout() {
   }, [biometricEnabled, isUnlocked]);
 
   useEffect(() => {
-    if (Platform.OS === 'web') return;
+    if (isWeb) return;
     const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
       if (
         appState.current.match(/inactive|background/) &&
