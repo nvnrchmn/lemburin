@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Redirect } from 'expo-router';
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useAuthStore } from '@/stores/auth-store';
 
 export default function Index() {
   const { isAuthenticated, isLoading } = useAuthStore();
-  const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | null>(null);
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | null>(
+    Platform.OS === 'web' ? false : null,
+  );
 
   useEffect(() => {
+    if (Platform.OS === 'web') return;
     async function checkOnboarding() {
       try {
         const value = await AsyncStorage.getItem('hasSeenOnboarding');

@@ -3,8 +3,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { ThemeProvider, DarkTheme, DefaultTheme, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { AppState, AppStateStatus, View, Text, Pressable } from 'react-native';
-import * as LocalAuthentication from 'expo-local-authentication';
+import { AppState, AppStateStatus, View, Text, Pressable, Platform } from 'react-native';
 import { useColorScheme as useNativeWindColorScheme } from 'nativewind';
 
 import { supabase } from '@/lib/supabase';
@@ -30,7 +29,7 @@ export default function RootLayout() {
   const { setColorScheme } = useNativeWindColorScheme();
   const { setSession, setLoading } = useAuthStore();
   const { biometricEnabled } = useSettingsStore();
-  const [isUnlocked, setIsUnlocked] = useState(!biometricEnabled);
+  const [isUnlocked, setIsUnlocked] = useState(!biometricEnabled || Platform.OS === 'web');
   const appState = useRef(AppState.currentState);
 
   const [fontsLoaded] = useFonts({
@@ -77,7 +76,7 @@ export default function RootLayout() {
   }, [fontsLoaded]);
 
   const handleAuthentication = useCallback(async () => {
-    if (!biometricEnabled) return;
+    if (!biometricEnabled || Platform.OS === 'web') return;
 
     const hasHardware = await LocalAuthentication.hasHardwareAsync();
     const isEnrolled = await LocalAuthentication.isEnrolledAsync();
@@ -94,7 +93,7 @@ export default function RootLayout() {
   }, [biometricEnabled]);
 
   useEffect(() => {
-    if (biometricEnabled && !isUnlocked) {
+    if (biometricEnabled && !isUnlocked && Platform.OS !== 'web') {
       const timer = setTimeout(() => {
         handleAuthentication();
       }, 50);
@@ -103,6 +102,7 @@ export default function RootLayout() {
   }, [biometricEnabled, isUnlocked, handleAuthentication]);
 
   useEffect(() => {
+    if (Platform.OS === 'web') return;
     const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
       if (
         appState.current.match(/inactive|background/) &&
