@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Profile, Employment, PayPeriod, OvertimeEntry } from '@/types/database';
 import { secureStorage } from '@/lib/secure-storage';
-import NetInfo from '@react-native-community/netinfo';
+import NetInfo, { type NetInfoState } from '@react-native-community/netinfo';
 
 export type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error' | 'offline';
 
@@ -99,7 +99,7 @@ let unsubscribeNetInfo: (() => void) | null = null;
 
 export function initNetworkListener() {
   if (unsubscribeNetInfo) return;
-  unsubscribeNetInfo = NetInfo.addEventListener(state => {
+  unsubscribeNetInfo = NetInfo.addEventListener((state: NetInfoState) => {
     const offline = !(state.isConnected && state.isInternetReachable);
     useDataStore.getState().setSyncState({ isOffline: offline });
     if (offline) {
