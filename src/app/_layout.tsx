@@ -22,6 +22,8 @@ import {
   PlusJakartaSans_800ExtraBold,
 } from '@expo-google-fonts/plus-jakarta-sans';
 
+const webFontsLoaded = Platform.OS === 'web';
+
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -32,12 +34,14 @@ export default function RootLayout() {
   const [isUnlocked, setIsUnlocked] = useState(!biometricEnabled || Platform.OS === 'web');
   const appState = useRef(AppState.currentState);
 
-  const [fontsLoaded] = useFonts({
+  const [fontsLoadedNative] = useFonts({
     'PlusJakartaSans-Regular': PlusJakartaSans_400Regular,
     'PlusJakartaSans-Medium': PlusJakartaSans_500Medium,
     'PlusJakartaSans-Bold': PlusJakartaSans_700Bold,
     'PlusJakartaSans-ExtraBold': PlusJakartaSans_800ExtraBold,
   });
+
+  const fontsLoaded = Platform.OS === 'web' ? true : fontsLoadedNative;
 
   useEffect(() => {
     setColorScheme(resolvedTheme);
