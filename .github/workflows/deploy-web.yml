@@ -41,18 +41,18 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: lemburin-web
-          path: web-build/
+          path: dist/
           retention-days: 1
 
       - name: 📥 Download Artifact
         uses: actions/download-artifact@v4
         with:
           name: lemburin-web
-          path: web-build/
+          path: dist/
 
       - name: 🚀 Deploy to VPS
         run: |
           rsync -avz --delete \
             -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
-            web-build/ \
+            dist/ \
             ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/www/wwwroot/lemburin.logikraf.id/web/
