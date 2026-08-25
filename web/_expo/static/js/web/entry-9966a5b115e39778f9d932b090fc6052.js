@@ -167597,70 +167597,33 @@ __d(
   [798, 1105, 1939, 2971],
 );
 __d(
-  function (g, r, i, a, m, _e, _d) {
+  function (g, r, i, a, m, e, d) {
     'use strict';
-    (Object.defineProperty(_e, '__esModule', { value: !0 }),
-      Object.defineProperty(_e, 'secureStorage', {
+    (Object.defineProperty(e, '__esModule', { value: !0 }),
+      Object.defineProperty(e, 'secureStorage', {
         enumerable: !0,
         get: function () {
-          return o;
+          return u;
         },
-      }));
-    var e,
-      t = (function (e) {
-        if (e && e.__esModule) return e;
-        var t = {};
-        return (
-          e &&
-            Object.keys(e).forEach(function (n) {
-              var c = Object.getOwnPropertyDescriptor(e, n);
-              Object.defineProperty(
-                t,
-                n,
-                c.get
-                  ? c
-                  : {
-                      enumerable: !0,
-                      get: function () {
-                        return e[n];
-                      },
-                    },
-              );
-            }),
-          (t.default = e),
-          t
-        );
-      })(r(_d[0])),
-      n = r(_d[1]),
-      c = (e = n) && e.__esModule ? e : { default: e };
-    const u = 'lemburin-data-store',
-      o = {
-        getItem: async e => {
-          try {
-            const n = await t.getItemAsync(u);
-            if (n) return n;
-            const o = await c.default.getItem(e);
-            return o ? (await t.setItemAsync(u, o), await c.default.removeItem(e), o) : null;
-          } catch {
-            return null;
-          }
-        },
-        setItem: async (e, n) => {
-          try {
-            await c.default.removeItem(e);
-          } catch {}
-          await t.setItemAsync(u, n);
-        },
-        removeItem: async e => {
-          try {
-            await c.default.removeItem(e);
-          } catch {}
-          await t.deleteItemAsync(u);
-        },
+      }),
+      r(d[0]));
+    const t = 'lemburin-data-store',
+      o = t => ('undefined' == typeof window ? null : window.localStorage.getItem(t)),
+      n = (t, o) => {
+        'undefined' != typeof window && window.localStorage.setItem(t, o);
+      },
+      c = t => {
+        'undefined' != typeof window && window.localStorage.removeItem(t);
+      },
+      u = {
+        isWeb: !0,
+        getItem: async n => o(t) ?? o(n),
+        setItem: async (o, u) => (c(o), void n(t, u)),
+        removeItem: async o => (c(o), void c(t)),
       };
   },
   1939,
-  [1940, 2927],
+  [29, 1940, 2927],
 );
 __d(
   function (g, r, i, a, m, _e, d) {
@@ -251027,268 +250990,230 @@ __d(
   function (g, r, i, a, m, _e, _d) {
     'use strict';
     function e(e) {
-      if (e && e.__esModule) return e;
-      var t = {};
-      return (
-        e &&
-          Object.keys(e).forEach(function (n) {
-            var s = Object.getOwnPropertyDescriptor(e, n);
-            Object.defineProperty(
-              t,
-              n,
-              s.get
-                ? s
-                : {
-                    enumerable: !0,
-                    get: function () {
-                      return e[n];
-                    },
-                  },
-            );
-          }),
-        (t.default = e),
-        t
-      );
-    }
-    function t(e) {
       return e && e.__esModule ? e : { default: e };
     }
     (Object.defineProperty(_e, '__esModule', { value: !0 }),
       Object.defineProperty(_e, 'default', {
         enumerable: !0,
         get: function () {
-          return T;
+          return v;
         },
       }));
-    var n = r(_d[0]);
+    var t = r(_d[0]);
     r(_d[1]);
-    var s = r(_d[2]),
+    var n = r(_d[2]),
       o = r(_d[3]),
-      c = e(r(_d[4])),
-      l = r(_d[5]),
-      u = t(r(_d[6])),
-      d = t(r(_d[7])),
-      h = t(r(_d[8])),
-      S = t(r(_d[9])),
-      f = e(r(_d[10])),
-      b = r(_d[11]),
-      p = r(_d[12]),
-      y = r(_d[13]),
-      k = r(_d[14]),
-      _ = r(_d[15]),
-      x = r(_d[16]),
-      j = r(_d[17]),
-      w = r(_d[18]),
-      v = r(_d[19]),
-      P = r(_d[20]),
-      E = r(_d[21]);
-    function T() {
-      const e = (0, n.c)(47),
-        { resolvedTheme: t, colors: T } = (0, v.useAppTheme)(),
-        { setColorScheme: A } = (0, b.useColorScheme)(),
-        { setSession: L, setLoading: B } = (0, y.useAuthStore)(),
-        { biometricEnabled: J } = (0, k.useSettingsStore)(),
-        [N, O] = (0, s.useState)(!J),
-        M = (0, s.useRef)(u.default.currentState);
-      let I;
+      s = (function (e) {
+        if (e && e.__esModule) return e;
+        var t = {};
+        return (
+          e &&
+            Object.keys(e).forEach(function (n) {
+              var o = Object.getOwnPropertyDescriptor(e, n);
+              Object.defineProperty(
+                t,
+                n,
+                o.get
+                  ? o
+                  : {
+                      enumerable: !0,
+                      get: function () {
+                        return e[n];
+                      },
+                    },
+              );
+            }),
+          (t.default = e),
+          t
+        );
+      })(r(_d[4])),
+      c = r(_d[5]),
+      l = e(r(_d[6])),
+      u = e(r(_d[7])),
+      d = e(r(_d[8])),
+      h = e(r(_d[9]));
+    r(_d[10]);
+    var S = r(_d[11]),
+      f = r(_d[12]),
+      b = r(_d[13]),
+      p = r(_d[14]),
+      y = r(_d[15]),
+      k = r(_d[16]),
+      _ = r(_d[17]),
+      x = r(_d[18]),
+      j = r(_d[19]),
+      w = r(_d[20]),
+      P = r(_d[21]);
+    function v() {
+      const e = (0, t.c)(47),
+        { resolvedTheme: v, colors: E } = (0, j.useAppTheme)(),
+        { setColorScheme: T } = (0, S.useColorScheme)(),
+        { setSession: A, setLoading: J } = (0, b.useAuthStore)(),
+        { biometricEnabled: B } = (0, p.useSettingsStore)(),
+        [N, O] = (0, n.useState)(!B || !0);
+      (0, n.useRef)(l.default.currentState);
+      let L;
       e[0] === Symbol.for('react.memo_cache_sentinel')
-        ? ((I = {
-            'PlusJakartaSans-Regular': P.PlusJakartaSans_400Regular,
-            'PlusJakartaSans-Medium': P.PlusJakartaSans_500Medium,
-            'PlusJakartaSans-Bold': P.PlusJakartaSans_700Bold,
-            'PlusJakartaSans-ExtraBold': P.PlusJakartaSans_800ExtraBold,
+        ? ((L = {
+            'PlusJakartaSans-Regular': w.PlusJakartaSans_400Regular,
+            'PlusJakartaSans-Medium': w.PlusJakartaSans_500Medium,
+            'PlusJakartaSans-Bold': w.PlusJakartaSans_700Bold,
+            'PlusJakartaSans-ExtraBold': w.PlusJakartaSans_800ExtraBold,
           }),
-          (e[0] = I))
-        : (I = e[0]);
-      const [R] = (0, P.useFonts)(I);
-      let C, D, G, z, F, H, K;
-      (e[1] !== t || e[2] !== A
-        ? ((C = () => {
-            A(t);
+          (e[0] = L))
+        : (L = e[0]);
+      const [M] = (0, w.useFonts)(L);
+      let R, C, D, I, z, G, F;
+      (e[1] !== v || e[2] !== T
+        ? ((R = () => {
+            T(v);
           }),
-          (D = [t, A]),
-          (e[1] = t),
-          (e[2] = A),
-          (e[3] = C),
-          (e[4] = D))
-        : ((C = e[3]), (D = e[4])),
-        (0, s.useEffect)(C, D),
-        e[5] !== L
-          ? ((G = () => {
-              p.supabase.auth.getSession().then(e => {
+          (C = [v, T]),
+          (e[1] = v),
+          (e[2] = T),
+          (e[3] = R),
+          (e[4] = C))
+        : ((R = e[3]), (C = e[4])),
+        (0, n.useEffect)(R, C),
+        e[5] !== A
+          ? ((D = () => {
+              f.supabase.auth.getSession().then(e => {
                 const { data: t } = e,
                   { session: n } = t;
-                (L(n), n && (0, j.syncService)());
+                (A(n), n && (0, _.syncService)());
               });
-              const { data: e } = p.supabase.auth.onAuthStateChange((e, t) => {
-                  (L(t), t && (0, j.syncService)());
+              const { data: e } = f.supabase.auth.onAuthStateChange((e, t) => {
+                  (A(t), t && (0, _.syncService)());
                 }),
                 { subscription: t } = e;
               return (
-                (0, w.initNetworkListener)(),
+                (0, x.initNetworkListener)(),
                 () => {
                   t.unsubscribe();
                 }
               );
             }),
-            (e[5] = L),
-            (e[6] = G))
-          : (G = e[6]),
-        e[7] !== B || e[8] !== L ? ((z = [L, B]), (e[7] = B), (e[8] = L), (e[9] = z)) : (z = e[9]),
-        (0, s.useEffect)(G, z),
-        e[10] !== R
-          ? ((F = () => {
-              R && c.hideAsync();
+            (e[5] = A),
+            (e[6] = D))
+          : (D = e[6]),
+        e[7] !== J || e[8] !== A ? ((I = [A, J]), (e[7] = J), (e[8] = A), (e[9] = I)) : (I = e[9]),
+        (0, n.useEffect)(D, I),
+        e[10] !== M
+          ? ((z = () => {
+              M && s.hideAsync();
             }),
-            (H = [R]),
-            (e[10] = R),
-            (e[11] = F),
-            (e[12] = H))
-          : ((F = e[11]), (H = e[12])),
-        (0, s.useEffect)(F, H),
-        e[13] !== J
-          ? ((K = async () => {
-              if (!J) return;
-              const e = await f.hasHardwareAsync(),
-                t = await f.isEnrolledAsync();
-              if (e && t) {
-                const e = await f.authenticateAsync({
-                  promptMessage: 'Buka Lemburin',
-                  fallbackLabel: 'Gunakan PIN',
-                });
-                O(e.success);
-              } else O(!0);
-            }),
-            (e[13] = J),
-            (e[14] = K))
-          : (K = e[14]));
-      const V = K;
-      let q, Q, U, W;
+            (G = [M]),
+            (e[10] = M),
+            (e[11] = z),
+            (e[12] = G))
+          : ((z = e[11]), (G = e[12])),
+        (0, n.useEffect)(z, G),
+        e[13] !== B ? ((F = async () => {}), (e[13] = B), (e[14] = F)) : (F = e[14]));
+      const H = F;
+      let K, V, q, Q;
       if (
-        (e[15] !== J || e[16] !== V || e[17] !== N
-          ? ((q = () => {
-              if (J && !N) {
-                const e = setTimeout(() => {
-                  V();
-                }, 50);
-                return () => clearTimeout(e);
-              }
+        (e[15] !== B || e[16] !== H || e[17] !== N
+          ? ((K = () => {
+              0;
             }),
-            (Q = [J, N, V]),
-            (e[15] = J),
-            (e[16] = V),
+            (V = [B, N, H]),
+            (e[15] = B),
+            (e[16] = H),
             (e[17] = N),
-            (e[18] = q),
-            (e[19] = Q))
-          : ((q = e[18]), (Q = e[19])),
-        (0, s.useEffect)(q, Q),
-        e[20] !== J || e[21] !== V
-          ? ((U = () => {
-              const e = u.default.addEventListener('change', e => {
-                (M.current.match(/inactive|background/) &&
-                  'active' === e &&
-                  J &&
-                  (O(!1),
-                  setTimeout(() => {
-                    V();
-                  }, 50)),
-                  (M.current = e));
-              });
-              return () => {
-                e.remove();
-              };
-            }),
-            (W = [J, V]),
-            (e[20] = J),
-            (e[21] = V),
-            (e[22] = U),
-            (e[23] = W))
-          : ((U = e[22]), (W = e[23])),
-        (0, s.useEffect)(U, W),
-        !R)
+            (e[18] = K),
+            (e[19] = V))
+          : ((K = e[18]), (V = e[19])),
+        (0, n.useEffect)(K, V),
+        e[20] !== B || e[21] !== H
+          ? ((q = () => {}), (Q = [B, H]), (e[20] = B), (e[21] = H), (e[22] = q), (e[23] = Q))
+          : ((q = e[22]), (Q = e[23])),
+        (0, n.useEffect)(q, Q),
+        !M)
       )
         return null;
-      const X = 'dark' === t ? o.DarkTheme : o.DefaultTheme;
-      let Y, Z, $, ee, te, ae, ne, re, se, oe, ce, ie, le, ue, me, de, he;
+      const U = 'dark' === v ? o.DarkTheme : o.DefaultTheme;
+      let W, X, Y, Z, $, ee, te, ae, ne, re, oe, se, ce, ie, le, me, ue;
       return (
         e[24] === Symbol.for('react.memo_cache_sentinel')
-          ? ((Y = { headerShown: !1 }), (e[24] = Y))
-          : (Y = e[24]),
+          ? ((W = { headerShown: !1 }), (e[24] = W))
+          : (W = e[24]),
         e[25] === Symbol.for('react.memo_cache_sentinel')
-          ? ((Z = (0, E.jsx)(o.Stack.Screen, { name: '(auth)', options: { headerShown: !1 } })),
-            (e[25] = Z))
-          : (Z = e[25]),
+          ? ((X = (0, P.jsx)(o.Stack.Screen, { name: '(auth)', options: { headerShown: !1 } })),
+            (e[25] = X))
+          : (X = e[25]),
         e[26] === Symbol.for('react.memo_cache_sentinel')
-          ? (($ = (0, E.jsx)(o.Stack.Screen, { name: '(tabs)', options: { headerShown: !1 } })),
-            (e[26] = $))
-          : ($ = e[26]),
+          ? ((Y = (0, P.jsx)(o.Stack.Screen, { name: '(tabs)', options: { headerShown: !1 } })),
+            (e[26] = Y))
+          : (Y = e[26]),
         e[27] === Symbol.for('react.memo_cache_sentinel')
-          ? ((ee = (0, E.jsx)(o.Stack.Screen, {
+          ? ((Z = (0, P.jsx)(o.Stack.Screen, {
               name: 'overtime/add',
               options: { headerShown: !0, title: 'Tambah Lembur', presentation: 'modal' },
             })),
-            (e[27] = ee))
-          : (ee = e[27]),
+            (e[27] = Z))
+          : (Z = e[27]),
         e[28] === Symbol.for('react.memo_cache_sentinel')
-          ? ((te = (0, E.jsx)(o.Stack.Screen, {
+          ? (($ = (0, P.jsx)(o.Stack.Screen, {
               name: 'overtime/edit/[id]',
               options: { headerShown: !0, title: 'Edit Lembur', presentation: 'modal' },
             })),
-            (e[28] = te))
-          : (te = e[28]),
+            (e[28] = $))
+          : ($ = e[28]),
         e[29] === Symbol.for('react.memo_cache_sentinel')
-          ? ((ae = (0, E.jsx)(o.Stack.Screen, {
+          ? ((ee = (0, P.jsx)(o.Stack.Screen, {
               name: 'overtime/[id]',
               options: { headerShown: !0, title: 'Detail Lembur' },
             })),
-            (e[29] = ae))
-          : (ae = e[29]),
+            (e[29] = ee))
+          : (ee = e[29]),
         e[30] === Symbol.for('react.memo_cache_sentinel')
-          ? ((ne = (0, E.jsx)(o.Stack.Screen, {
+          ? ((te = (0, P.jsx)(o.Stack.Screen, {
               name: 'company/setup',
               options: { headerShown: !0, title: 'Profil Perusahaan' },
             })),
-            (e[30] = ne))
-          : (ne = e[30]),
+            (e[30] = te))
+          : (te = e[30]),
         e[31] === Symbol.for('react.memo_cache_sentinel')
-          ? ((re = (0, E.jsx)(o.Stack.Screen, {
+          ? ((ae = (0, P.jsx)(o.Stack.Screen, {
               name: 'pay-period/setup',
               options: { headerShown: !0, title: 'Periode Gaji' },
             })),
-            (e[31] = re))
-          : (re = e[31]),
+            (e[31] = ae))
+          : (ae = e[31]),
         e[32] === Symbol.for('react.memo_cache_sentinel')
-          ? ((se = (0, E.jsx)(o.Stack.Screen, {
+          ? ((ne = (0, P.jsx)(o.Stack.Screen, {
               name: 'formula/select',
               options: { headerShown: !0, title: 'Pilih Formula' },
             })),
-            (e[32] = se))
-          : (se = e[32]),
+            (e[32] = ne))
+          : (ne = e[32]),
         e[33] === Symbol.for('react.memo_cache_sentinel')
-          ? ((oe = (0, E.jsx)(o.Stack.Screen, {
+          ? ((re = (0, P.jsx)(o.Stack.Screen, {
               name: 'summary/[periodId]',
               options: { headerShown: !0, title: 'Ringkasan Bulanan' },
             })),
-            (e[33] = oe))
-          : (oe = e[33]),
+            (e[33] = re))
+          : (re = e[33]),
         e[34] === Symbol.for('react.memo_cache_sentinel')
-          ? ((ce = (0, E.jsx)(o.Stack.Screen, {
+          ? ((oe = (0, P.jsx)(o.Stack.Screen, {
               name: 'verification/[periodId]',
               options: { headerShown: !0, title: 'Verifikasi Gaji' },
             })),
-            (e[34] = ce))
-          : (ce = e[34]),
+            (e[34] = oe))
+          : (oe = e[34]),
         e[35] === Symbol.for('react.memo_cache_sentinel')
-          ? ((ie = (0, E.jsx)(o.Stack.Screen, {
+          ? ((se = (0, P.jsx)(o.Stack.Screen, {
               name: 'profile/edit',
               options: { headerShown: !0, title: 'Edit Profil' },
             })),
-            (e[35] = ie))
-          : (ie = e[35]),
+            (e[35] = se))
+          : (se = e[35]),
         e[36] === Symbol.for('react.memo_cache_sentinel')
-          ? ((le = (0, E.jsxs)(o.Stack, {
-              screenOptions: Y,
+          ? ((ce = (0, P.jsxs)(o.Stack, {
+              screenOptions: W,
               children: [
+                X,
+                Y,
                 Z,
                 $,
                 ee,
@@ -251296,61 +251221,59 @@ __d(
                 ae,
                 ne,
                 re,
-                se,
                 oe,
-                ce,
-                ie,
-                (0, E.jsx)(o.Stack.Screen, {
+                se,
+                (0, P.jsx)(o.Stack.Screen, {
                   name: 'analytics/yearly',
                   options: { headerShown: !0, title: 'Analitik Tahunan' },
                 }),
               ],
             })),
-            (ue = (0, E.jsx)(_.Toast, {})),
-            (me = (0, E.jsx)(l.StatusBar, { style: 'auto' })),
-            (e[36] = le),
-            (e[37] = ue),
-            (e[38] = me))
-          : ((le = e[36]), (ue = e[37]), (me = e[38])),
-        e[39] !== J || e[40] !== T || e[41] !== V || e[42] !== N
-          ? ((de =
-              J &&
+            (ie = (0, P.jsx)(y.Toast, {})),
+            (le = (0, P.jsx)(c.StatusBar, { style: 'auto' })),
+            (e[36] = ce),
+            (e[37] = ie),
+            (e[38] = le))
+          : ((ce = e[36]), (ie = e[37]), (le = e[38])),
+        e[39] !== B || e[40] !== E || e[41] !== H || e[42] !== N
+          ? ((me =
+              B &&
               !N &&
-              (0, E.jsxs)(d.default, {
+              (0, P.jsxs)(u.default, {
                 className: 'absolute inset-0 z-50 items-center justify-center',
-                style: { backgroundColor: T.background },
+                style: { backgroundColor: E.background },
                 children: [
-                  (0, E.jsx)(d.default, {
+                  (0, P.jsx)(u.default, {
                     className:
                       'w-20 h-20 bg-primary-900/30 rounded-full items-center justify-center mb-6',
-                    children: (0, E.jsx)(x.Ionicons, {
+                    children: (0, P.jsx)(k.Ionicons, {
                       name: 'lock-closed',
                       size: 40,
                       color: '#3b82f6',
                     }),
                   }),
-                  (0, E.jsx)(h.default, {
+                  (0, P.jsx)(d.default, {
                     className: 'text-2xl font-bold mb-2',
-                    style: { color: T.text },
+                    style: { color: E.text },
                     children: 'Aplikasi Terkunci',
                   }),
-                  (0, E.jsx)(h.default, {
+                  (0, P.jsx)(d.default, {
                     className: 'text-center max-w-[250px] mb-10',
-                    style: { color: T.muted },
+                    style: { color: E.muted },
                     children: 'Gunakan otentikasi biometrik untuk membuka aplikasi Lemburin',
                   }),
-                  (0, E.jsxs)(S.default, {
+                  (0, P.jsxs)(h.default, {
                     className:
                       'bg-primary-600 active:bg-primary-700 px-8 py-4 rounded-2xl flex-row items-center shadow-lg shadow-primary-900/50',
-                    onPress: V,
+                    onPress: H,
                     children: [
-                      (0, E.jsx)(x.Ionicons, {
+                      (0, P.jsx)(k.Ionicons, {
                         name: 'scan',
                         size: 20,
                         color: '#fff',
                         style: { marginRight: 10 },
                       }),
-                      (0, E.jsx)(h.default, {
+                      (0, P.jsx)(d.default, {
                         className: 'text-white font-bold text-lg',
                         children: 'Buka Kunci',
                       }),
@@ -251358,27 +251281,27 @@ __d(
                   }),
                 ],
               })),
-            (e[39] = J),
-            (e[40] = T),
-            (e[41] = V),
+            (e[39] = B),
+            (e[40] = E),
+            (e[41] = H),
             (e[42] = N),
-            (e[43] = de))
-          : (de = e[43]),
-        e[44] !== X || e[45] !== de
-          ? ((he = (0, E.jsxs)(o.ThemeProvider, { value: X, children: [le, ue, me, de] })),
-            (e[44] = X),
-            (e[45] = de),
-            (e[46] = he))
-          : (he = e[46]),
-        he
+            (e[43] = me))
+          : (me = e[43]),
+        e[44] !== U || e[45] !== me
+          ? ((ue = (0, P.jsxs)(o.ThemeProvider, { value: U, children: [ce, ie, le, me] })),
+            (e[44] = U),
+            (e[45] = me),
+            (e[46] = ue))
+          : (ue = e[46]),
+        ue
       );
     }
-    c.preventAutoHideAsync();
+    s.preventAutoHideAsync();
   },
   2770,
   [
-    2864, 2771, 39, 81, 2772, 2774, 270, 173, 245, 298, 2705, 2776, 954, 797, 1104, 2779, 2969,
-    2702, 1938, 1103, 2780, 637,
+    2864, 2771, 39, 81, 2772, 2774, 270, 173, 245, 298, 29, 2776, 954, 797, 1104, 2779, 2969, 2702,
+    1938, 1103, 2780, 637,
   ],
 );
 __d(
@@ -253538,70 +253461,58 @@ __d(
       Object.defineProperty(_e, 'default', {
         enumerable: !0,
         get: function () {
-          return s;
+          return f;
         },
       }));
-    var e,
-      t = r(d[0]),
-      n = r(d[1]),
-      c = r(d[2]),
-      o = r(d[3]),
-      u = (e = o) && e.__esModule ? e : { default: e },
-      l = r(d[4]),
-      f = r(d[5]);
-    function s() {
-      const e = (0, t.c)(5),
-        { isAuthenticated: o, isLoading: s } = (0, l.useAuthStore)(),
-        [_, h] = (0, n.useState)(null);
-      let b, y, S;
+    var e = r(d[0]),
+      t = r(d[1]),
+      n = r(d[2]);
+    r(d[3]);
+    var c,
+      o = r(d[4]),
+      l = ((c = o) && c.__esModule, r(d[5])),
+      u = r(d[6]);
+    function f() {
+      const c = (0, e.c)(5),
+        { isAuthenticated: o, isLoading: f } = (0, l.useAuthStore)(),
+        [s, _] = (0, t.useState)(!1);
+      let h, b, y;
       if (
-        (e[0] === Symbol.for('react.memo_cache_sentinel')
-          ? ((b = () => {
-              !(async function () {
-                try {
-                  const e = await u.default.getItem('hasSeenOnboarding');
-                  h('true' === e);
-                } catch {
-                  h(!1);
-                }
-              })();
-            }),
-            (y = []),
-            (e[0] = b),
-            (e[1] = y))
-          : ((b = e[0]), (y = e[1])),
-        (0, n.useEffect)(b, y),
-        s || null === _)
+        (c[0] === Symbol.for('react.memo_cache_sentinel')
+          ? ((h = () => {}), (b = []), (c[0] = h), (c[1] = b))
+          : ((h = c[0]), (b = c[1])),
+        (0, t.useEffect)(h, b),
+        f || null === s)
       )
         return null;
       if (o) {
-        let t;
+        let e;
         return (
-          e[2] === Symbol.for('react.memo_cache_sentinel')
-            ? ((t = (0, f.jsx)(c.Redirect, { href: '/(tabs)' })), (e[2] = t))
-            : (t = e[2]),
-          t
+          c[2] === Symbol.for('react.memo_cache_sentinel')
+            ? ((e = (0, u.jsx)(n.Redirect, { href: '/(tabs)' })), (c[2] = e))
+            : (e = c[2]),
+          e
         );
       }
-      if (!_) {
-        let t;
+      if (!s) {
+        let e;
         return (
-          e[3] === Symbol.for('react.memo_cache_sentinel')
-            ? ((t = (0, f.jsx)(c.Redirect, { href: '/welcome' })), (e[3] = t))
-            : (t = e[3]),
-          t
+          c[3] === Symbol.for('react.memo_cache_sentinel')
+            ? ((e = (0, u.jsx)(n.Redirect, { href: '/welcome' })), (c[3] = e))
+            : (e = c[3]),
+          e
         );
       }
       return (
-        e[4] === Symbol.for('react.memo_cache_sentinel')
-          ? ((S = (0, f.jsx)(c.Redirect, { href: '/(auth)/login' })), (e[4] = S))
-          : (S = e[4]),
-        S
+        c[4] === Symbol.for('react.memo_cache_sentinel')
+          ? ((y = (0, u.jsx)(n.Redirect, { href: '/(auth)/login' })), (c[4] = y))
+          : (y = c[4]),
+        y
       );
     }
   },
   2801,
-  [2864, 39, 81, 2927, 797, 637],
+  [2864, 39, 81, 29, 2927, 797, 637],
 );
 __d(
   function (g, r, i, _a, m, _e, d) {

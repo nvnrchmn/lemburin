@@ -70,8 +70,11 @@ export default function RootLayout() {
   }, [setSession, setLoading]);
 
   useEffect(() => {
-    if (fontsLoaded) {
+    if (fontsLoaded && Platform.OS !== 'web') {
       SplashScreen.hideAsync();
+    } else if (fontsLoaded && Platform.OS === 'web') {
+      const style = document.getElementById('expo-reset');
+      if (style) style.remove();
     }
   }, [fontsLoaded]);
 
