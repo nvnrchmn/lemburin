@@ -1,30 +1,36 @@
-import * as SecureStore from 'expo-secure-store';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-/**
- * Storage adapter yang menyimpan data SENSITIF (profil, employment, gaji,
- * periode, entri lembur) ke expo-secure-store alih-alih AsyncStorage plaintext.
- *
- * Mengapa: AsyncStorage disimpan sebagai plaintext di filesystem perangkat.
- * Kalau HP di-root, di-backup, atau di-sync ke iCloud, data gaji & identitas
- * pengguna bisa bocor. expo-secure-store memakai Keychain (iOS) / Keystore
- * (Android) yang dienkripsi di level OS.
- *
- * Catatan: SecureStore punya batas ukuran per-item (~2KB di beberapa device),
- * tapi data lembur per-periode relatif kecil sehingga aman untuk kasus ini.
- * Bila suatu saat payload membesar, pisahkan ke cache AsyncStorage non-sensitif
- * + simpan hanya ID/flags di SecureStore.
- */
+import { Platform } from 'react-native';
 
 const STATE_KEY = 'lemburin-data-store';
 
+const isWeb = Platform.OS === 'web';
+
+const webStorage = {
+  getItem: (key: string): string | null => {
+    if (typeof window === 'undefined') return null;
+    return window.localStorage.getItem(key);
+  },
+  setItem: (key: string, value: string): void => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(key, value);
+  },
+  removeItem: (key: string): void => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.removeItem(key);
+  },
+};
+
 export const secureStorage = {
+  isWeb,
+
   getItem: async (name: string): Promise<string | null> => {
+    if (isWeb) {
+      return webStorage.getItem(STATE_KEY) ?? webStorage.getItem(name);
+    }
     try {
-      // Coba ambil dari SecureStore dulu
+      const { SecureStore } = require('expo-secure-store');
+      const { default: AsyncStorage } = require('@react-native-async-storage/async-storage');
       const secured = await SecureStore.getItemAsync(STATE_KEY);
       if (secured) return secured;
-      // Fallback: migrasi dari AsyncStorage lama (jika ada)
       const legacy = await AsyncStorage.getItem(name);
       if (legacy) {
         await SecureStore.setItemAsync(STATE_KEY, legacy);
@@ -38,21 +44,34 @@ export const secureStorage = {
   },
 
   setItem: async (name: string, value: string): Promise<void> => {
-    // Hapus salinan plaintext lama (jika ada) agar tidak dobel
+    if (isWeb) {
+      webStorage.removeItem(name);
+      webStorage.setItem(STATE_KEY, value);
+      return;
+    }
     try {
+      const { default: AsyncStorage } = require('@react-native-async-storage/async-storage');
       await AsyncStorage.removeItem(name);
     } catch {
       /* ignore */
     }
+    const { SecureStore } = require('expo-secure-store');
     await SecureStore.setItemAsync(STATE_KEY, value);
   },
 
   removeItem: async (name: string): Promise<void> => {
+    if (isWeb) {
+      webStorage.removeItem(name);
+      webStorage.removeItem(STATE_KEY);
+      return;
+    }
     try {
+      const { default: AsyncStorage } = require('@react-native-async-storage/async-storage');
       await AsyncStorage.removeItem(name);
     } catch {
       /* ignore */
     }
+    const { SecureStore } = require('expo-secure-store');
     await SecureStore.deleteItemAsync(STATE_KEY);
   },
 };
