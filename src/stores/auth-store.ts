@@ -1,5 +1,8 @@
 import { create } from 'zustand';
 import type { Session, User } from '@supabase/supabase-js';
+import { Platform } from 'react-native';
+
+const isWeb = Platform.OS === 'web' || process.env.EXPO_OS === 'web';
 
 interface AuthState {
   session: Session | null;
@@ -11,19 +14,19 @@ interface AuthState {
   reset: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>(set => ({
   session: null,
   user: null,
-  isLoading: true,
+  isLoading: !isWeb,
   isAuthenticated: false,
-  setSession: (session) =>
+  setSession: session =>
     set({
       session,
       user: session?.user ?? null,
       isAuthenticated: !!session,
       isLoading: false,
     }),
-  setLoading: (isLoading) => set({ isLoading }),
+  setLoading: isLoading => set({ isLoading }),
   reset: () =>
     set({
       session: null,

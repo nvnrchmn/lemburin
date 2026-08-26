@@ -14,13 +14,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { syncService } from '@/services/sync-service';
 import { initNetworkListener } from '@/stores/data-store';
 import { useAppTheme } from '@/hooks/use-app-theme';
-import {
-  useFonts,
-  PlusJakartaSans_400Regular,
-  PlusJakartaSans_500Medium,
-  PlusJakartaSans_700Bold,
-  PlusJakartaSans_800ExtraBold,
-} from '@expo-google-fonts/plus-jakarta-sans';
 
 const isWeb = Platform.OS === 'web' || process.env.EXPO_OS === 'web';
 
@@ -34,34 +27,31 @@ export default function RootLayout() {
   const [isUnlocked, setIsUnlocked] = useState(!biometricEnabled || isWeb);
   const appState = useRef(AppState.currentState);
 
-  const [fontsLoadedNative] = useFonts({
-    'PlusJakartaSans-Regular': PlusJakartaSans_400Regular,
-    'PlusJakartaSans-Medium': PlusJakartaSans_500Medium,
-    'PlusJakartaSans-Bold': PlusJakartaSans_700Bold,
-    'PlusJakartaSans-ExtraBold': PlusJakartaSans_800ExtraBold,
-  });
+  const [fontsLoaded] = [true];
 
-  const fontsLoaded = isWeb ? true : fontsLoadedNative;
+  useEffect(() => {
+    if (!isWeb) return;
+    const style = document.getElementById('expo-reset');
+    if (style) style.remove();
+  }, []);
 
   useEffect(() => {
     setColorScheme(resolvedTheme);
   }, [resolvedTheme, setColorScheme]);
 
   useEffect(() => {
-    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      if (session) {
+      if (session && !isWeb) {
         syncService();
       }
     });
 
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (session) {
+      if (session && !isWeb) {
         syncService();
       }
     });
@@ -76,9 +66,6 @@ export default function RootLayout() {
   useEffect(() => {
     if (fontsLoaded && !isWeb) {
       SplashScreen.hideAsync();
-    } else if (fontsLoaded && isWeb) {
-      const style = document.getElementById('expo-reset');
-      if (style) style.remove();
     }
   }, [fontsLoaded]);
 
@@ -133,81 +120,45 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen
           name="overtime/add"
-          options={{
-            headerShown: true,
-            title: 'Tambah Lembur',
-            presentation: 'modal',
-          }}
+          options={{ headerShown: true, title: 'Tambah Lembur', presentation: 'modal' }}
         />
         <Stack.Screen
           name="overtime/edit/[id]"
-          options={{
-            headerShown: true,
-            title: 'Edit Lembur',
-            presentation: 'modal',
-          }}
+          options={{ headerShown: true, title: 'Edit Lembur', presentation: 'modal' }}
         />
         <Stack.Screen
           name="overtime/[id]"
-          options={{
-            headerShown: true,
-            title: 'Detail Lembur',
-          }}
+          options={{ headerShown: true, title: 'Detail Lembur' }}
         />
         <Stack.Screen
           name="company/setup"
-          options={{
-            headerShown: true,
-            title: 'Profil Perusahaan',
-          }}
+          options={{ headerShown: true, title: 'Profil Perusahaan' }}
         />
         <Stack.Screen
           name="pay-period/setup"
-          options={{
-            headerShown: true,
-            title: 'Periode Gaji',
-          }}
+          options={{ headerShown: true, title: 'Periode Gaji' }}
         />
         <Stack.Screen
           name="formula/select"
-          options={{
-            headerShown: true,
-            title: 'Pilih Formula',
-          }}
+          options={{ headerShown: true, title: 'Pilih Formula' }}
         />
         <Stack.Screen
           name="summary/[periodId]"
-          options={{
-            headerShown: true,
-            title: 'Ringkasan Bulanan',
-          }}
+          options={{ headerShown: true, title: 'Ringkasan Bulanan' }}
         />
         <Stack.Screen
           name="verification/[periodId]"
-          options={{
-            headerShown: true,
-            title: 'Verifikasi Gaji',
-          }}
+          options={{ headerShown: true, title: 'Verifikasi Gaji' }}
         />
-        <Stack.Screen
-          name="profile/edit"
-          options={{
-            headerShown: true,
-            title: 'Edit Profil',
-          }}
-        />
+        <Stack.Screen name="profile/edit" options={{ headerShown: true, title: 'Edit Profil' }} />
         <Stack.Screen
           name="analytics/yearly"
-          options={{
-            headerShown: true,
-            title: 'Analitik Tahunan',
-          }}
+          options={{ headerShown: true, title: 'Analitik Tahunan' }}
         />
       </Stack>
       <Toast />
       <StatusBar style="auto" />
 
-      {/* Biometric Lock Screen Overlay */}
       {biometricEnabled && !isUnlocked && (
         <View
           className="absolute inset-0 z-50 items-center justify-center"

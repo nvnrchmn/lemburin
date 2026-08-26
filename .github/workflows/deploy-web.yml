@@ -29,6 +29,10 @@ jobs:
 
       - name: 🏗️ Build Expo Web
         run: npx expo export --platform web
+        env:
+          EXPO_OS: web
+          EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
 
       - name: 🔐 Setup SSH
         run: |
@@ -39,7 +43,16 @@ jobs:
 
       - name: 🚀 Deploy to VPS
         run: |
-          rsync -avz --delete \
+          # NOTE: intentionally NO --delete for _expo assets.
+          # Old hashed bundles must survive so browsers holding a cached
+          # HTML page don't 404 on their bundle (causes blank white screen).
+          rsync -avz \
             -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
             dist/ \
             ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/www/wwwroot/lemburin.logikraf.id/web/
+
+      - name: 🧹 Prune bundles older than 7 days
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            "find /www/wwwroot/lemburin.logikraf.id/web/_expo -type f -mtime +7 -delete 2>/dev/null || true"
