@@ -14,6 +14,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { syncService } from '@/services/sync-service';
 import { initNetworkListener } from '@/stores/data-store';
 import { useAppTheme } from '@/hooks/use-app-theme';
+import { useAppFonts } from '@/hooks/use-app-fonts';
+import { ErrorBoundary } from '@/components/error-boundary';
 
 const isWeb = Platform.OS === 'web' || process.env.EXPO_OS === 'web';
 
@@ -27,7 +29,8 @@ export default function RootLayout() {
   const [isUnlocked, setIsUnlocked] = useState(!biometricEnabled || isWeb);
   const appState = useRef(AppState.currentState);
 
-  const [fontsLoaded] = [true];
+  // Platform-resolved: real expo-font loading on native, instant true on web.
+  const fontsLoaded = useAppFonts();
 
   useEffect(() => {
     // Never let a theme call crash the whole app (it renders nothing at all).
@@ -113,74 +116,76 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={resolvedTheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="overtime/add"
-          options={{ headerShown: true, title: 'Tambah Lembur', presentation: 'modal' }}
-        />
-        <Stack.Screen
-          name="overtime/edit/[id]"
-          options={{ headerShown: true, title: 'Edit Lembur', presentation: 'modal' }}
-        />
-        <Stack.Screen
-          name="overtime/[id]"
-          options={{ headerShown: true, title: 'Detail Lembur' }}
-        />
-        <Stack.Screen
-          name="company/setup"
-          options={{ headerShown: true, title: 'Profil Perusahaan' }}
-        />
-        <Stack.Screen
-          name="pay-period/setup"
-          options={{ headerShown: true, title: 'Periode Gaji' }}
-        />
-        <Stack.Screen
-          name="formula/select"
-          options={{ headerShown: true, title: 'Pilih Formula' }}
-        />
-        <Stack.Screen
-          name="summary/[periodId]"
-          options={{ headerShown: true, title: 'Ringkasan Bulanan' }}
-        />
-        <Stack.Screen
-          name="verification/[periodId]"
-          options={{ headerShown: true, title: 'Verifikasi Gaji' }}
-        />
-        <Stack.Screen name="profile/edit" options={{ headerShown: true, title: 'Edit Profil' }} />
-        <Stack.Screen
-          name="analytics/yearly"
-          options={{ headerShown: true, title: 'Analitik Tahunan' }}
-        />
-      </Stack>
-      <Toast />
-      <StatusBar style="auto" />
+    <ErrorBoundary>
+      <ThemeProvider value={resolvedTheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="overtime/add"
+            options={{ headerShown: true, title: 'Tambah Lembur', presentation: 'modal' }}
+          />
+          <Stack.Screen
+            name="overtime/edit/[id]"
+            options={{ headerShown: true, title: 'Edit Lembur', presentation: 'modal' }}
+          />
+          <Stack.Screen
+            name="overtime/[id]"
+            options={{ headerShown: true, title: 'Detail Lembur' }}
+          />
+          <Stack.Screen
+            name="company/setup"
+            options={{ headerShown: true, title: 'Profil Perusahaan' }}
+          />
+          <Stack.Screen
+            name="pay-period/setup"
+            options={{ headerShown: true, title: 'Periode Gaji' }}
+          />
+          <Stack.Screen
+            name="formula/select"
+            options={{ headerShown: true, title: 'Pilih Formula' }}
+          />
+          <Stack.Screen
+            name="summary/[periodId]"
+            options={{ headerShown: true, title: 'Ringkasan Bulanan' }}
+          />
+          <Stack.Screen
+            name="verification/[periodId]"
+            options={{ headerShown: true, title: 'Verifikasi Gaji' }}
+          />
+          <Stack.Screen name="profile/edit" options={{ headerShown: true, title: 'Edit Profil' }} />
+          <Stack.Screen
+            name="analytics/yearly"
+            options={{ headerShown: true, title: 'Analitik Tahunan' }}
+          />
+        </Stack>
+        <Toast />
+        <StatusBar style="auto" />
 
-      {biometricEnabled && !isUnlocked && (
-        <View
-          className="absolute inset-0 z-50 items-center justify-center"
-          style={{ backgroundColor: colors.background }}
-        >
-          <View className="w-20 h-20 bg-primary-900/30 rounded-full items-center justify-center mb-6">
-            <Ionicons name="lock-closed" size={40} color="#3b82f6" />
-          </View>
-          <Text className="text-2xl font-bold mb-2" style={{ color: colors.text }}>
-            Aplikasi Terkunci
-          </Text>
-          <Text className="text-center max-w-[250px] mb-10" style={{ color: colors.muted }}>
-            Gunakan otentikasi biometrik untuk membuka aplikasi Lemburin
-          </Text>
-          <Pressable
-            className="bg-primary-600 active:bg-primary-700 px-8 py-4 rounded-2xl flex-row items-center shadow-lg shadow-primary-900/50"
-            onPress={() => setIsUnlocked(true)}
+        {biometricEnabled && !isUnlocked && (
+          <View
+            className="absolute inset-0 z-50 items-center justify-center"
+            style={{ backgroundColor: colors.background }}
           >
-            <Ionicons name="scan" size={20} color="#fff" style={{ marginRight: 10 }} />
-            <Text className="text-white font-bold text-lg">Buka Kunci</Text>
-          </Pressable>
-        </View>
-      )}
-    </ThemeProvider>
+            <View className="w-20 h-20 bg-primary-900/30 rounded-full items-center justify-center mb-6">
+              <Ionicons name="lock-closed" size={40} color="#3b82f6" />
+            </View>
+            <Text className="text-2xl font-bold mb-2" style={{ color: colors.text }}>
+              Aplikasi Terkunci
+            </Text>
+            <Text className="text-center max-w-[250px] mb-10" style={{ color: colors.muted }}>
+              Gunakan otentikasi biometrik untuk membuka aplikasi Lemburin
+            </Text>
+            <Pressable
+              className="bg-primary-600 active:bg-primary-700 px-8 py-4 rounded-2xl flex-row items-center shadow-lg shadow-primary-900/50"
+              onPress={() => setIsUnlocked(true)}
+            >
+              <Ionicons name="scan" size={20} color="#fff" style={{ marginRight: 10 }} />
+              <Text className="text-white font-bold text-lg">Buka Kunci</Text>
+            </Pressable>
+          </View>
+        )}
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }

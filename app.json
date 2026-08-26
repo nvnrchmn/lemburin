@@ -22,7 +22,15 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/favicon.png",
+      "name": "Lemburin — Catat Lembur, Hitung Hakmu",
+      "shortName": "Lemburin",
+      "lang": "id",
+      "description": "Catat lembur pribadi dan hitung upah lembur sesuai PP 35/2021. Bandingkan dengan perhitungan perusahaan untuk memastikan tidak ada selisih.",
+      "themeColor": "#1B5DF5",
+      "backgroundColor": "#0F172A",
+      "display": "standalone",
+      "orientation": "portrait"
     },
     "plugins": [
       "expo-router",

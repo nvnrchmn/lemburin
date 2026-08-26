@@ -1,0 +1,77 @@
+name: Verify Native Safety
+
+# Guards the APK against web-only changes.
+# Runs on every push/PR that touches app code, on BOTH branches, because a
+# change made for web can silently break the native bundle.
+
+on:
+  push:
+    branches: [main, web]
+    paths:
+      - 'src/**'
+      - 'app.json'
+      - 'package.json'
+      - 'tailwind.config.js'
+      - 'metro.config.js'
+      - 'babel.config.js'
+  pull_request:
+    branches: [main, web]
+  workflow_dispatch:
+
+jobs:
+  verify:
+    name: Typecheck, Lint, Test & Native Bundle
+    runs-on: ubuntu-latest
+    env:
+      EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: ESLint
+        run: npx eslint .
+
+      - name: Unit tests
+        run: npx vitest run
+
+      - name: Platform-specific pairs are complete
+        run: |
+          for base in src/hooks/use-app-fonts src/lib/secure-storage src/lib/auth-storage; do
+            for ext in native.ts web.ts d.ts; do
+              if [ ! -f "$base.$ext" ]; then
+                echo "::error::Missing $base.$ext - platform split is incomplete"
+                exit 1
+              fi
+            done
+          done
+          echo "All platform-specific pairs present."
+
+      - name: Reject invalid SecureStore import
+        run: |
+          # expo-secure-store exports functions directly. A `{ SecureStore }`
+          # destructure yields undefined and only crashes at runtime on device.
+          if grep -rn "{ *SecureStore *}" src/ --include=*.ts --include=*.tsx; then
+            echo "::error::Use 'import * as SecureStore' - the module has no SecureStore export"
+            exit 1
+          fi
+          echo "No invalid SecureStore usage."
+
+      - name: Build native (Android) bundle
+        run: npx expo export --platform android --output-dir /tmp/native-check
+
+      - name: Build web bundle
+        run: npx expo export --platform web --output-dir /tmp/web-check
+        env:
+          EXPO_OS: web

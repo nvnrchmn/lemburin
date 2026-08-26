@@ -78,6 +78,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "build:web": "EXPO_OS=web expo export --platform web",
+    "verify:native": "bash scripts/verify-native.sh",
     "prepare": "husky"
   },
   "private": true

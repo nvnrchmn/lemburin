@@ -1,67 +1,27 @@
 import { createClient } from '@supabase/supabase-js';
 import { Platform } from 'react-native';
 
+import { authStorage } from './auth-storage';
+
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
 
-const webLocalStorage = {
-  getItem: (key: string): string | null => {
-    if (typeof window === 'undefined') return null;
-    return window.localStorage.getItem(key);
-  },
-  setItem: (key: string, value: string): void => {
-    if (typeof window === 'undefined') return;
-    window.localStorage.setItem(key, value);
-  },
-  removeItem: (key: string): void => {
-    if (typeof window === 'undefined') return;
-    window.localStorage.removeItem(key);
-  },
-};
+if (!supabaseUrl || !supabaseAnonKey) {
+  // Surfaces a clear message instead of a confusing runtime failure later.
+  console.error(
+    'Supabase env vars missing. Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY.',
+  );
+}
 
-const customStorage = {
-  getItem: async (key: string): Promise<string | null> => {
-    if (Platform.OS === 'web') {
-      return webLocalStorage.getItem(key);
-    }
-    try {
-      const { default: AsyncStorage } = await import('@react-native-async-storage/async-storage');
-      return AsyncStorage.getItem(key);
-    } catch {
-      return null;
-    }
-  },
-  setItem: async (key: string, value: string): Promise<void> => {
-    if (Platform.OS === 'web') {
-      webLocalStorage.setItem(key, value);
-      return;
-    }
-    try {
-      const { default: AsyncStorage } = await import('@react-native-async-storage/async-storage');
-      await AsyncStorage.setItem(key, value);
-    } catch {
-      /* ignore */
-    }
-  },
-  removeItem: async (key: string): Promise<void> => {
-    if (Platform.OS === 'web') {
-      webLocalStorage.removeItem(key);
-      return;
-    }
-    try {
-      const { default: AsyncStorage } = await import('@react-native-async-storage/async-storage');
-      await AsyncStorage.removeItem(key);
-    } catch {
-      /* ignore */
-    }
-  },
-};
+const isWeb = Platform.OS === 'web';
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    storage: customStorage,
+    storage: authStorage,
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: false,
+    // On web, OAuth redirects come back with the session in the URL, so it must
+    // be detected. On native the session is restored from storage instead.
+    detectSessionInUrl: isWeb,
   },
 });

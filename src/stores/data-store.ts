@@ -98,17 +98,39 @@ export const useDataStore = create<DataState>()(
 let unsubscribeNetInfo: (() => void) | null = null;
 
 export function initNetworkListener() {
-  if (Platform.OS === 'web' || process.env.EXPO_OS === 'web') return;
   if (unsubscribeNetInfo) return;
-  import('@react-native-community/netinfo').then(({ default: NetInfo }) => {
-    unsubscribeNetInfo = NetInfo.addEventListener(state => {
-      const offline = !(state.isConnected && state.isInternetReachable);
-      useDataStore.getState().setSyncState({ isOffline: offline });
-      if (offline) {
-        useDataStore.getState().setSyncState({ syncStatus: 'offline' });
-      }
-    });
-  });
+
+  const applyOffline = (offline: boolean) => {
+    useDataStore.getState().setSyncState({ isOffline: offline });
+    if (offline) {
+      useDataStore.getState().setSyncState({ syncStatus: 'offline' });
+    }
+  };
+
+  // Web: use the browser's own online/offline events. NetInfo has no reliable
+  // web implementation, and importing it on web pulls in native-only code.
+  if (Platform.OS === 'web' || process.env.EXPO_OS === 'web') {
+    if (typeof window === 'undefined') return;
+    const onOnline = () => applyOffline(false);
+    const onOffline = () => applyOffline(true);
+    window.addEventListener('online', onOnline);
+    window.addEventListener('offline', onOffline);
+    applyOffline(!window.navigator.onLine);
+    unsubscribeNetInfo = () => {
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('offline', onOffline);
+    };
+    return;
+  }
+
+  // Native: NetInfo gives connection + reachability.
+  import('@react-native-community/netinfo')
+    .then(({ default: NetInfo }) => {
+      unsubscribeNetInfo = NetInfo.addEventListener(state => {
+        applyOffline(!(state.isConnected && state.isInternetReachable));
+      });
+    })
+    .catch(e => console.warn('NetInfo unavailable:', e));
 }
 
 export function stopNetworkListener() {
