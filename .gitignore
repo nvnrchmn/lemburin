@@ -42,3 +42,6 @@ yarn-error.*
 # macOS
 .DS_Store
 *.pem
+
+# Web build output (deployed via rsync from dist/, never needed in git)
+web/
