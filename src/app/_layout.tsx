@@ -30,7 +30,12 @@ export default function RootLayout() {
   const [fontsLoaded] = [true];
 
   useEffect(() => {
-    setColorScheme(resolvedTheme);
+    // Never let a theme call crash the whole app (it renders nothing at all).
+    try {
+      setColorScheme(resolvedTheme);
+    } catch (e) {
+      console.warn('setColorScheme failed:', e);
+    }
   }, [resolvedTheme, setColorScheme]);
 
   useEffect(() => {
