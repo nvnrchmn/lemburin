@@ -30,12 +30,6 @@ export default function RootLayout() {
   const [fontsLoaded] = [true];
 
   useEffect(() => {
-    if (!isWeb) return;
-    const style = document.getElementById('expo-reset');
-    if (style) style.remove();
-  }, []);
-
-  useEffect(() => {
     setColorScheme(resolvedTheme);
   }, [resolvedTheme, setColorScheme]);
 
