@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Redirect } from 'expo-router';
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useAuthStore } from '@/stores/auth-store';
 
 export default function Index() {
   const { isAuthenticated, isLoading } = useAuthStore();
-  const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | null>(null);
+  const isWeb = Platform.OS === 'web' || process.env.EXPO_OS === 'web';
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | null>(isWeb ? false : null);
 
   useEffect(() => {
+    if (isWeb) return;
     async function checkOnboarding() {
       try {
         const value = await AsyncStorage.getItem('hasSeenOnboarding');
@@ -20,9 +23,7 @@ export default function Index() {
     checkOnboarding();
   }, []);
 
-  if (isLoading || hasSeenOnboarding === null) {
-    return null; // Splash screen is still visible
-  }
+  if (isLoading) return null;
 
   if (isAuthenticated) {
     return <Redirect href="/(tabs)" />;

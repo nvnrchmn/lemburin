@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Profile, Employment, PayPeriod, OvertimeEntry } from '@/types/database';
 import { secureStorage } from '@/lib/secure-storage';
-import NetInfo from '@react-native-community/netinfo';
+import { Platform } from 'react-native';
 
 export type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error' | 'offline';
 
@@ -99,13 +99,38 @@ let unsubscribeNetInfo: (() => void) | null = null;
 
 export function initNetworkListener() {
   if (unsubscribeNetInfo) return;
-  unsubscribeNetInfo = NetInfo.addEventListener(state => {
-    const offline = !(state.isConnected && state.isInternetReachable);
+
+  const applyOffline = (offline: boolean) => {
     useDataStore.getState().setSyncState({ isOffline: offline });
     if (offline) {
       useDataStore.getState().setSyncState({ syncStatus: 'offline' });
     }
-  });
+  };
+
+  // Web: use the browser's own online/offline events. NetInfo has no reliable
+  // web implementation, and importing it on web pulls in native-only code.
+  if (Platform.OS === 'web' || process.env.EXPO_OS === 'web') {
+    if (typeof window === 'undefined') return;
+    const onOnline = () => applyOffline(false);
+    const onOffline = () => applyOffline(true);
+    window.addEventListener('online', onOnline);
+    window.addEventListener('offline', onOffline);
+    applyOffline(!window.navigator.onLine);
+    unsubscribeNetInfo = () => {
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('offline', onOffline);
+    };
+    return;
+  }
+
+  // Native: NetInfo gives connection + reachability.
+  import('@react-native-community/netinfo')
+    .then(({ default: NetInfo }) => {
+      unsubscribeNetInfo = NetInfo.addEventListener(state => {
+        applyOffline(!(state.isConnected && state.isInternetReachable));
+      });
+    })
+    .catch(e => console.warn('NetInfo unavailable:', e));
 }
 
 export function stopNetworkListener() {

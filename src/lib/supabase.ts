@@ -1,37 +1,27 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 import { Platform } from 'react-native';
+
+import { authStorage } from './auth-storage';
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
 
-// Custom storage to handle SSR (Server-Side Rendering) safely on web
-const customStorage = {
-  getItem: (key: string) => {
-    if (Platform.OS === 'web' && typeof window === 'undefined') {
-      return Promise.resolve(null);
-    }
-    return AsyncStorage.getItem(key);
-  },
-  setItem: (key: string, value: string) => {
-    if (Platform.OS === 'web' && typeof window === 'undefined') {
-      return Promise.resolve();
-    }
-    return AsyncStorage.setItem(key, value);
-  },
-  removeItem: (key: string) => {
-    if (Platform.OS === 'web' && typeof window === 'undefined') {
-      return Promise.resolve();
-    }
-    return AsyncStorage.removeItem(key);
-  },
-};
+if (!supabaseUrl || !supabaseAnonKey) {
+  // Surfaces a clear message instead of a confusing runtime failure later.
+  console.error(
+    'Supabase env vars missing. Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY.',
+  );
+}
+
+const isWeb = Platform.OS === 'web';
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    storage: customStorage,
+    storage: authStorage,
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: false,
+    // On web, OAuth redirects come back with the session in the URL, so it must
+    // be detected. On native the session is restored from storage instead.
+    detectSessionInUrl: isWeb,
   },
 });

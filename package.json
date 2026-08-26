@@ -9,6 +9,7 @@
     "@hookform/resolvers": "^5.4.0",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/datetimepicker": "9.1.0",
+    "@react-native-community/netinfo": "^12.0.1",
     "@supabase/supabase-js": "^2.110.2",
     "base64-arraybuffer": "^1.0.2",
     "date-fns": "^4.4.0",
@@ -77,6 +78,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "build:web": "EXPO_OS=web expo export --platform web",
+    "verify:native": "bash scripts/verify-native.sh",
     "prepare": "husky"
   },
   "private": true
