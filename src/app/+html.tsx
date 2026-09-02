@@ -23,6 +23,12 @@ export default function Root({ children }: PropsWithChildren) {
           content="Catat lembur pribadi dan hitung upah lembur sesuai PP 35/2021. Bandingkan dengan perhitungan perusahaan untuk memastikan tidak ada selisih."
         />
         <meta name="theme-color" content="#0F172A" />
+
+        {/* PWA: manifest + icons. Assets (manifest.json, sw.js, icon-*.png,
+            apple-touch-icon.png) di-copy dari pwa/ saat deploy. */}
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Lemburin" />
@@ -49,7 +55,14 @@ export default function Root({ children }: PropsWithChildren) {
             white flash on load. */}
         <style dangerouslySetInnerHTML={{ __html: bootstrapStyle }} />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(e){console.warn('SW register gagal:',e)})})}})();`,
+          }}
+        />
+      </body>
     </html>
   );
 }

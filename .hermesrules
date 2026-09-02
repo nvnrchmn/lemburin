@@ -16,6 +16,7 @@
 - Audit web bersih: semua halaman render (desktop+mobile), 0 error JS, 0 request gagal, login Supabase terverifikasi, SSL OK sampai 23 Nov.
 - Fix title: `<title data-rh="true"></title>` kosong dari helmet menang di HTML statis export → tambah `Head` expo-router: default "Lemburin" di `src/app/_layout.tsx` + per halaman (welcome/login/register/forgot-password). Status: deployed (rsync dist→web, commit 3442c9f).
 - Fix Google OAuth web (03 Sep, commit a11c9a9): popup + custom scheme `lemburin://` hang selamanya — COOP Google memblokir polling `window.closed` expo-web-browser. Web kini full-page redirect ke `window.location.origin` (`Platform.OS === 'web'` branch di login/register); sesi balik via `#access_token` diproses `detectSessionInUrl`. Native/APK tidak berubah.
+- PWA aktif (03 Sep): `pwa/` di repo berisi manifest.json, sw.js, icon-192/512, icon-maskable-512, apple-touch-icon. Link + registrasi SW di `src/app/+html.tsx`. DEPLOY web = `rsync dist/ web/` + `rsync pwa/ web/` (jangan lupa aset PWA). Cache SW versi `lemburin-v1` — naikkan VERSION di pwa/sw.js saat rilis agar cache lama dibersihkan.
 
 ## Konvensi / Pitfall
 - `verify:native` (scripts/verify-native.sh) wajib sebelum menyentuh kode native.
