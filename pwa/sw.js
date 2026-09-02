@@ -1,6 +1,6 @@
 /* Lemburin service worker — installability + jaringan-first dengan cache.
    Versi naikkan saat rilis baru agar cache lama dibersihkan. */
-const VERSION = 'lemburin-v1';
+const VERSION = 'lemburin-v2';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
