@@ -1,3 +1,4 @@
+import Head from 'expo-router/head';
 import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, Image } from 'react-native';
 import { router } from 'expo-router';
@@ -136,6 +137,9 @@ export default function WelcomeScreen() {
 
   return (
     <View className="flex-1 bg-[#020617]">
+      <Head>
+        <title>Lemburin — Catat Lembur, Hitung Hakmu</title>
+      </Head>
       <StatusBar style="light" />
 
       {/* Background Gradient */}

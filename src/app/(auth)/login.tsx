@@ -1,3 +1,4 @@
+import Head from 'expo-router/head';
 import { useState } from 'react';
 import { View, Text, Pressable, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { Link, router } from 'expo-router';
@@ -117,6 +118,9 @@ export default function LoginScreen() {
 
   return (
     <View className="flex-1 bg-light-bg dark:bg-dark-bg px-5 pt-20">
+      <Head>
+        <title>Masuk — Lemburin</title>
+      </Head>
       {/* Header */}
       <View className="mb-12">
         <Text className="text-white text-5xl font-bold tracking-tight mb-2">Masuk</Text>

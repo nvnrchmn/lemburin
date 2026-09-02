@@ -1,3 +1,4 @@
+import Head from 'expo-router/head';
 import { useState } from 'react';
 import { View, Text, Pressable, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { Link, router } from 'expo-router';
@@ -51,6 +52,9 @@ export default function ForgotPasswordScreen() {
 
   return (
     <View className="flex-1 bg-light-bg dark:bg-dark-bg justify-center px-6">
+      <Head>
+        <title>Lupa Kata Sandi — Lemburin</title>
+      </Head>
       {/* Header */}
       <View className="items-center mb-10">
         <Text className="text-3xl font-bold text-light-text dark:text-dark-text mb-2">

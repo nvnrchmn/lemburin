@@ -1,0 +1,23 @@
+# Lemburin — Catat Lembur, Hitung Hakmu
+
+## Tech Stack
+- Expo SDK ~57 + expo-router ~57 (file-based routing), React 19.2, react-native-web 0.21, TypeScript
+- NativeWind v4 (Tailwind), React Hook Form + Zod, Zustand (auth/data/settings/toast stores)
+- Supabase (auth email + Google, DB), AsyncStorage / SecureStore, biometric lock (native)
+- Date-fns, expo-print/sharing (export), gifted-charts (analytics)
+
+## Arsitektur & Branch
+- `main` = sumber APK (GitHub Actions build-apk: prebuild + gradlew assembleRelease)
+- `web` = sumber web; `build:web` = `EXPO_OS=web expo export --platform web` → dist/
+- Deploy web: rsync dist/ → `/www/wwwroot/lemburin.logikraf.id/web` (root nginx). CI: ci-quality, deploy-web, verify-native.
+- Platform split via file `.web.tsx`/`.native.tsx` + `EXPO_OS` — JANGAN branch `Platform.OS` untuk logika (pitfall lama white screen).
+
+## Status Terakhir (03 Sep 2026)
+- Audit web bersih: semua halaman render (desktop+mobile), 0 error JS, 0 request gagal, login Supabase terverifikasi, SSL OK sampai 23 Nov.
+- Fix title: `<title data-rh="true"></title>` kosong dari helmet menang di HTML statis export → tambah `Head` expo-router: default "Lemburin" di `src/app/_layout.tsx` + per halaman (welcome/login/register/forgot-password). Status: build lokal OK, deploy belum.
+
+## Konvensi / Pitfall
+- `verify:native` (scripts/verify-native.sh) wajib sebelum menyentuh kode native.
+- `Head` expo-router (react-helmet-async): hanya render saat route fokus, no-op di native; Provider otomatis.
+- HTML statis export punya 2 `<title>` — yang pertama (helmet, `data-rh`) yang dipakai browser.
+- Header keamanan + cache HTML no-store ada di konfig nginx lemburin (jangan duplikasi via add_header yang tak diwarisi).

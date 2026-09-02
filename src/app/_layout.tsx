@@ -1,6 +1,7 @@
 import '../global.css';
 import { useEffect, useState, useRef } from 'react';
 import { ThemeProvider, DarkTheme, DefaultTheme, Stack } from 'expo-router';
+import Head from 'expo-router/head';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { AppState, AppStateStatus, View, Text, Pressable, Platform } from 'react-native';
@@ -117,6 +118,9 @@ export default function RootLayout() {
 
   return (
     <ErrorBoundary>
+      <Head>
+        <title>Lemburin</title>
+      </Head>
       <ThemeProvider value={resolvedTheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
