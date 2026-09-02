@@ -1,6 +1,6 @@
 import Head from 'expo-router/head';
 import { useState } from 'react';
-import { View, Text, Pressable, TextInput, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, Pressable, TextInput, ActivityIndicator, Alert, Platform } from 'react-native';
 import { Link, router } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -56,6 +56,24 @@ export default function LoginScreen() {
   const onGoogleLogin = async () => {
     try {
       setIsLoading(true);
+
+      // Web: popup OAuth + custom scheme (lemburin://) tidak bisa dipakai —
+      // polling window.closed diblokir header COOP Google sehingga loading
+      // tidak pernah selesai. Web harus full-page redirect; sesi kembali via
+      // #access_token di URL dan diproses detectSessionInUrl (lib/supabase.ts).
+      if (Platform.OS === 'web') {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo: window.location.origin },
+        });
+        if (error) {
+          showToast(error.message, 'error');
+          setIsLoading(false);
+        }
+        // Sukses: browser pindah ke Google — halaman akan unload. Jangan reset
+        // loading di sini agar tombol tetap disable selama redirect berlangsung.
+        return;
+      }
 
       // Secara eksplisit menggunakan scheme URL
       const redirectUrl = 'lemburin://';

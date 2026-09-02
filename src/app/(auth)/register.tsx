@@ -1,6 +1,6 @@
 import Head from 'expo-router/head';
 import { useState } from 'react';
-import { View, Text, Pressable, TextInput, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, Pressable, TextInput, ActivityIndicator, Alert, Platform } from 'react-native';
 import { Link } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -70,6 +70,21 @@ export default function RegisterScreen() {
   const onGoogleLogin = async () => {
     try {
       setIsLoading(true);
+
+      // Web: popup OAuth diblokir header COOP Google (window.closed tidak bisa
+      // dipantau) → loading selamanya. Web harus full-page redirect; sesi
+      // kembali via #access_token di URL, diproses detectSessionInUrl.
+      if (Platform.OS === 'web') {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo: window.location.origin },
+        });
+        if (error) {
+          showToast(error.message, 'error');
+          setIsLoading(false);
+        }
+        return;
+      }
 
       const redirectUrl = makeRedirectUri();
 
