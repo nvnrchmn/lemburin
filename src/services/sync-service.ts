@@ -57,6 +57,34 @@ export const syncService = async (specifiedPeriodId?: string) => {
 
     if (profileData) {
       setProfile(profileData as any);
+    } else {
+      // Auto-buat profil utk user baru (email/Google). Backend tidak punya
+      // trigger handle_new_user, jadi lakukan upsert di sini supaya alur
+      // selanjutnya (employment, pay_period, entries) punya profil.
+      const meta = (session.user.user_metadata ?? {}) as Record<string, any>;
+      const fullName = meta.full_name || meta.name || (session.user.email ?? 'Pengguna');
+      const { error: profileInsertError } = await supabase.from('profiles').upsert(
+        {
+          user_id: session.user.id,
+          full_name: fullName,
+          avatar_url: meta.picture || meta.avatar_url || null,
+        },
+        { onConflict: 'user_id' },
+      );
+
+      throwSyncError('profiles.upsert(auto-create)', profileInsertError);
+
+      const { data: freshProfile, error: freshProfileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+      throwSyncError('profiles.select(reattempt)', freshProfileError);
+
+      if (freshProfile) {
+        setProfile(freshProfile as any);
+      }
     }
 
     // 1. Fetch Employment - pakai user_id eksplisit supaya RLS pass
