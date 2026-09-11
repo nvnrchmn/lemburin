@@ -2,6 +2,9 @@
 module.exports = {
   content: ['./src/**/*.{js,jsx,ts,tsx}'],
   presets: [require('nativewind/preset')],
+  // Required so NativeWind allows setColorScheme() to be called manually.
+  // Without this, setColorScheme() throws and crashes the root layout on web.
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {

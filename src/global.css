@@ -1,3 +1,23 @@
+/* Plus Jakarta Sans for web.
+   Native (APK) loads these same weights through expo-font in
+   src/hooks/use-app-fonts.native.ts — this @import only affects web. */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  /* Map the font names used in code to the web-loaded family so styling is
+     identical across web and native. */
+  html,
+  body {
+    font-family:
+      'Plus Jakarta Sans',
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      Roboto,
+      sans-serif;
+  }
+}
