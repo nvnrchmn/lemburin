@@ -23,7 +23,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: false
 
       - name: ☕ Setup Java
         uses: actions/setup-java@v4
@@ -46,4 +46,4 @@ jobs:
         with:
           name: Lemburin-APK
           path: android/app/build/outputs/apk/release/app-release.apk
-          retention-days: 7
+          retention-days: 1
