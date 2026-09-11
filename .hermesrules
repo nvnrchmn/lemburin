@@ -1,0 +1,22 @@
+# .hermesrules — Lemburin (overtime tracker, Expo RN)
+
+## Tech Stack
+- **WAJIB BACA**: memory project — Expo React Native, dual-target: **main = Android APK**, **web = deploy web**
+- Runtime: Expo SDK + React Native, NativeWind, Supabase (folder `supabase/`), EAS Build (`eas.json`)
+- **JANGAN pernah branch `Platform.OS` di module yang import package native-only** — pakai Metro resolver `.native.ts`/`.web.ts` + `.d.ts` stub
+- Sebelum ubah apa pun yang menyentuh web: **jalankan `scripts/verify-native.sh`**
+- Verifikasi web pakai headless Chrome (bukan JSDOM)
+
+## Arsitektur
+- `src/` — source app (screens, components, lib)
+- `scripts/` — `verify-native.sh` (WAJIB), `reset-project.js`
+- `supabase/` — backend (auth + DB)
+- Build web: `EXPO_OS=web expo export --platform web` → output statis
+- Android: EAS build (`eas build`)
+
+## Status Terakhir (cek 2026-09-01)
+- ✅ HEAD 2026-08-26: chore stop tracking `web/` build output
+- ✅ Personal overtime tracker: catat lembur, hitung upah (PP 35/2021), verifikasi slip gaji
+- Web live di VPS via nginx statis (TIDAK ada systemd service, TIDAK ada Docker container lagi)
+- Ponytail config FULL untuk review/audit
+- Selalu update file ini saat ada perubahan struktur/status
