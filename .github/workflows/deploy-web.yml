@@ -1,11 +1,13 @@
 name: Deploy Web
 
+# Deploy dipindah ke build lokal di VPS (22 Sep 2026). Pemicu lama:
+# on:
+#   workflow_dispatch:
+#   push:
+#     branches:
+#       - web
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - web
-
 jobs:
   deploy-web:
     name: Build Expo Web & Deploy
